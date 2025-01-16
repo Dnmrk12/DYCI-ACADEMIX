@@ -1862,7 +1862,7 @@ const [showPopupTitleTooltip, setShowPopupTitleTooltip] = useState(false);
           <div className="presentation-popup__header">
             <div className="presentation-popup__title-group">
               <div className="presentation-popup__title-wrapper">
-                <img src={projectPicture || "https://firebasestorage.googleapis.com/v0/b/dyci-academix.appspot.com/o/wagdelete%2Facademixlogo.png?alt=media&token=8f83d11b-3604-41e5-9a46-d1df0d44aed5"} alt="Presentation icon" className="presentation-popup__icon" />
+                <img src={projectPicture || img18} alt="Presentation icon" className="presentation-popup__icon" />
                 <div className="presentation-popup__title-container" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   {isEditingTitle && projectStatus !== "Complete" && isAdmin ? (
                     <input
@@ -3298,25 +3298,45 @@ const handleAddColumn = (columnTitle) => {
   const handleCardClick = async (task) => {
     const auth = getAuth();
     const uid = auth.currentUser ? auth.currentUser.uid : "";
-
+  
     try {
+      // Fetch user data
+      const userDocRef = doc(db, `users/${uid}`);
+      const userDocSnapshot = await getDoc(userDocRef);
+      
+      if (userDocSnapshot.exists()) {
+        const userData = userDocSnapshot.data();
+        setUserPictureComment(userData.userPicture || null);
+        setFirstName(userData.firstName || "");
+        setLastName(userData.lastName || "");
+      }
+  
+      // Fetch project picture from Epic document
+      const epicDocRef = doc(db, `Kanban/${selectedEpicId}`);
+      const epicDoc = await getDoc(epicDocRef);
+      if (epicDoc.exists()) {
+        setProjectPicture(epicDoc.data().projectPicture || null);
+      }
+  
       // Fetch the Member data
-      const memberSnapshot = await getDocs(query(collection(db, `Kanban/${selectedEpicId}/Member`), where("MemberUid", "==", uid)));
-
+      const memberSnapshot = await getDocs(
+        query(collection(db, `Kanban/${selectedEpicId}/Member`), 
+        where("MemberUid", "==", uid))
+      );
+  
       if (!memberSnapshot.empty) {
-        const memberDoc = memberSnapshot.docs[0].data(); // Assuming each UID has only one document
+        const memberDoc = memberSnapshot.docs[0].data();
         const hasAccess = memberDoc.Access === true;
-
-        // Open the popup in all cases
+  
         setShowPresentationPopup(true);
-        fetchMembersWithAccess(); // Trigger fetchMembersWithAccess
+        fetchMembersWithAccess();
       } else {
         console.warn("No member found with the provided UID.");
-        setShowPresentationPopup(true); // Open the popup even if no member exists
+        setShowPresentationPopup(true);
       }
     } catch (error) {
       console.error("Error fetching member data:", error);
-      setShowPresentationPopup(true); // Open the popup in case of an error
+      setShowPresentationPopup(true);
     }
   };
 
