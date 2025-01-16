@@ -1,0 +1,226 @@
+.sprint-report-container { 
+    position: relative;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    margin-top: 30px;
+    height: auto;
+    width: 270%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    max-width: 1200px;
+}
+
+.sprint-report-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 15px;
+}
+
+.sprint-report-name {
+    color: #2665AC;
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+    white-space: nowrap; /* Prevent the text from wrapping */
+	overflow: hidden; /* Hide overflowing text */
+	text-overflow: ellipsis; /* Add ellipsis when text overflows */
+	max-width: 300px; /* Adjust the maximum width as needed */
+}
+
+.sprint-report-title-custom-tooltip {
+	position: absolute;
+	top: 5%; /* Position below the title */
+	background-color: #eff6ff; /* Dark background */
+	color: #2665AC; /* White text */
+	padding: 5px 10px; /* Add spacing */
+	border-radius: 4px; /* Rounded corners */
+	font-size: 14px; /* Tooltip font size */
+	font-weight: 400;
+	white-space: nowrap; /* Prevent wrapping */
+	z-index: 10; /* Ensure it appears on top */
+	box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2); /* Optional shadow */
+	word-wrap: break-word; /* Ensures words break into the next line */
+    white-space: normal; /* Allows multiple lines */
+    line-height: 1.5; /* Adds spacing between lines for readability */
+    text-align: left; /* Keeps text centered */
+    max-width: 25%; /* Ensures it doesn't exceed modal width */
+}
+
+/* Container: sprint report header */ 
+.sprint-report-sprint-header {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    flex-direction: column;
+    gap: 4px;
+    border-bottom: 1px solid #2665AC;
+    padding: 0.5rem;
+}
+  
+.sprint-report-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #2665AC;
+}
+
+/* Container: sprint report Sprint dates */
+.sprint-report-dates {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #769FCD;
+    font-size: 14px;
+}
+  
+.sprint-report-clock-icon {
+    margin-right: -6px;
+}
+  
+.sprint-report-days-remaining {
+    color: #769FCD;
+}
+
+/* chart */
+.sprint-report-chart-container {
+    width: 80%;
+    height: 400px;
+    margin: 20px auto;
+    display: flex;
+    justify-content: center;
+}
+
+/* Table container styling */
+.sprint-report-grid-table-container {
+    width: 100%;
+    overflow-x: auto; /* Allows horizontal scrolling if content overflows */
+    padding: 2px 0px 20px;
+}
+
+.sprint-report-grid-table-container::-webkit-scrollbar {
+    height: 15px !important;
+}
+
+.sprint-report-grid-table-container::-webkit-scrollbar-track {
+    background: #B9D7EA;
+    border-radius: 8px;
+}
+
+.sprint-report-grid-table-container::-webkit-scrollbar-thumb {
+    background: #2665AC;
+    border-radius: 8px;
+}
+
+.sprint-report-grid-table-container::-webkit-scrollbar-thumb:hover {
+    background: #769FCD;
+}
+
+/* Table styling */
+.sprint-report-grid-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    color: #2665ac;
+    text-align: left;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    table-layout: auto; /* Allows cells to adjust to content */
+}
+
+/* Table header styling */
+.sprint-report-grid-table th,
+.sprint-report-grid-table td {
+    padding: 12px 16px;
+    border: 1px solid #b9d7ea;
+    white-space: nowrap; /* Prevents text from wrapping to the next line */
+    overflow: hidden; /* Prevents content from overflowing */
+    text-overflow: ellipsis; /* Adds "..." if content overflows */
+}
+
+/* Header background and font styling */
+.sprint-report-grid-table th {
+    background-color: #f5f9fc;
+    font-weight: bold;
+    color: #2665ac;
+}
+
+/* Even row background color */
+.sprint-report-grid-table tr:nth-child(even) {
+    background-color: #f9fbfd;
+}
+
+/* Assignee and Reporter columns to align images and text in a single line */
+.sprint-report-grid-table td img {
+    margin-right: 8px;
+    vertical-align: middle;
+    display: inline-block; /* Ensures the image and text stay in a single line */
+    width: 20px;
+    height: 20px;
+}
+
+/* Prevent row breaks by using white-space: nowrap */
+.sprint-report-grid-table td {
+    white-space: nowrap;
+    overflow: hidden; /* Ensures content is clipped and prevents overflow */
+    text-overflow: ellipsis; /* Add "..." when content overflows */
+}
+
+/* User info (assignee and reporter) styling */
+.sprint-report-user-info {
+    display: flex;
+    align-items: center;
+}
+
+.sprint-report-user-info img {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.sprint-report-user-info span {
+    font-size: 14px;
+    color: #3a74b4;
+}
+
+/* Row span styling for remaining column */
+.sprint-report-grid-table td[rowspan] {
+    text-align: center;
+    vertical-align: middle;
+    color: #3a74b4;
+    font-size: 20px;
+}
+
+/* Overall table cell alignment */
+.sprint-report-grid-table td,
+.sprint-report-grid-table th {
+    text-align: left;
+    padding: 10px;
+}
+
+/* start and complete sprint */
+.sprint-report-grid-sprint-wrapper {
+    background-color: white;
+    margin-top: 50px;
+    overflow: hidden; /* Ensures border-radius is applied to child elements */
+}
+  
+.sprint-report-sprint-dates-container {
+    display: flex;
+    align-items: center;
+    padding: 10px 0px;
+    width: 100%;
+}
+  
+.sprint-report-sprint-date-text {
+    color: #769FCD;
+    font-size: 14px;
+    margin: 0;
+    white-space: nowrap;
+}
+  
+.sprint-report-sprint-date-label {
+    color: #2665ac;
+    margin-right: 4px;
+    font-weight: 500;
+}

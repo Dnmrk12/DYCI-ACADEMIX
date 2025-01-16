@@ -1,0 +1,2688 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Montserrat", sans-serif;
+}
+
+
+body {
+  width:100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: auto;
+    background-color: #F7FBFC;
+}
+
+
+.main-container {
+    grid-area: main;
+    padding:20px 80px;
+    height: 850px;
+}
+
+.main-title {
+    display: flex;
+    justify-content: space-between;
+}
+
+.main-cards {
+    display: grid;
+    position: relative;
+    width: 788px;
+    grid-template-columns:1fr 1fr 1fr;
+    gap: 20px;
+    left: -74px;
+    top:20px;
+    border-radius: 20px;
+}
+
+.cards {
+    display: flex;
+    flex-direction: row-reverse;
+    padding: 10px 35px;
+    border-radius: 10px;
+}
+
+.dashboardtitle{
+    display:flex;
+    position: relative;
+    width:95%;
+    color: #3A74B4;
+    left:-80px;
+    top: 5px;
+    font-size: 25px;
+    font-weight: 600;
+}
+
+.TotalPro{
+    color: #2665AC;
+    font-size: 20px;
+    font-weight: 600;
+    position: relative;
+}
+
+.card:first-child {
+     background-color: #F7FBFC;
+     border-radius: 15px;
+}
+
+.card:nth-child(2) {
+    background-color: #F7FBFC;
+     border-radius: 15px;
+}
+
+.card:nth-child(3) {
+    background-color: #F7FBFC;
+     border-radius: 15px;
+}
+
+.card:nth-child(4) {
+    background-color: #F7FBFC;
+     border-radius: 15px;
+}
+
+.card:nth-child(5) {
+    background-color: #F7FBFC;
+     border-radius: 15px;
+}
+
+.card:nth-child(6) {
+    background-color: #F7FBFC;
+     border-radius: 15px;
+}
+
+
+.card:first-child:hover {
+    background-color: #F7FBFC;
+    border: 2px solid #2665AC;
+    border-radius: 15px;
+}
+
+.card:nth-child(2):hover {
+   background-color: #F7FBFC;
+   border: 2px solid #2665AC;
+    border-radius: 15px;
+}
+
+.card:nth-child(3):hover {
+   background-color: #F7FBFC;
+   border: 2px solid #2665AC;
+    border-radius: 15px;
+}
+
+.card:nth-child(4):hover {
+   background-color: #F7FBFC;
+   border: 2px solid #2665AC;
+    border-radius: 15px;
+}
+
+.card:nth-child(5):hover {
+   background-color: #F7FBFC;
+   border: 2px solid #2665AC;
+    border-radius: 15px;
+}
+
+.card:nth-child(6):hover {
+   background-color: #F7FBFC;
+   border: 2px solid #2665AC;
+    border-radius: 15px;
+}
+
+
+.card:first-child:hover .menu-dots{
+    display: flex; /* Show the dots on hover */
+    position: absolute;
+    top: -1px;
+    left: 205px;
+    font-weight:900;
+    font-size: 20px;
+    color:#3A74B4;
+    cursor: pointer;
+}
+
+.card:nth-child(2):hover .menu-dots{
+    display: flex; /* Show the dots on hover */
+    position: absolute;
+    top: -1px;
+    left: 475px;
+    font-weight:900;
+    font-size: 20px;
+    color:#3A74B4;
+    cursor: pointer;
+}
+
+.card:nth-child(3):hover .menu-dots{
+    display: flex; /* Show the dots on hover */
+    position: absolute;
+    top: -1px;
+    left: 743px;
+    font-weight:900;
+    font-size: 20px;
+    color:#3A74B4;
+    cursor: pointer;
+}
+
+.card:nth-child(4):hover .menu-dots{
+    display: flex; /* Show the dots on hover */
+    position: absolute;
+    top: 108px;
+    left: 205px;
+    font-weight:900;
+    font-size: 20px;
+    color:#3A74B4;
+    cursor: pointer;
+}
+
+.card:nth-child(5):hover .menu-dots{
+    display: flex; /* Show the dots on hover */
+    position: absolute;
+    top: 108px;
+    left: 475px;
+    font-weight:900;
+    font-size: 20px;
+    color:#3A74B4;
+    cursor: pointer;
+}
+
+.card:nth-child(6):hover .menu-dots{
+    display: flex; /* Show the dots on hover */
+    position: absolute;
+    top: 108px;
+    left: 743px;
+    font-weight:900;
+    font-size: 20px;
+    color:#3A74B4;
+    cursor: pointer;
+}
+
+
+.card:first-child:hover {
+    background-color: #F7FBFC;
+    border: 2px solid #2665AC;
+    border-radius: 15px;
+}
+
+.card:nth-child(2):hover {
+   background-color: #F7FBFC;
+   border: 2px solid #2665AC;
+    border-radius: 15px;
+}
+
+.card:nth-child(3):hover {
+   background-color: #F7FBFC;
+   border: 2px solid #2665AC;
+    border-radius: 15px;
+}
+
+.card:nth-child(4):hover {
+   background-color: #F7FBFC;
+   border: 2px solid #2665AC;
+    border-radius: 15px;
+}
+
+.card:nth-child(5):hover {
+   background-color: #F7FBFC;
+   border: 2px solid #2665AC;
+    border-radius: 15px;
+}
+
+.card:nth-child(6):hover {
+   background-color: #F7FBFC;
+   border: 2px solid #2665AC;
+    border-radius: 15px;
+}
+
+
+.card:first-child:hover {
+    background-color: #F7FBFC;
+    border: 2px solid #2665AC;
+    border-radius: 15px;
+}
+
+.card:nth-child(2):hover {
+   background-color: #F7FBFC;
+   border: 2px solid #2665AC;
+    border-radius: 15px;
+}
+
+.card:nth-child(3):hover {
+   background-color: #F7FBFC;
+   border: 2px solid #2665AC;
+    border-radius: 15px;
+}
+
+.card:nth-child(4):hover {
+   background-color: #F7FBFC;
+   border: 2px solid #2665AC;
+    border-radius: 15px;
+}
+
+.card:nth-child(5):hover {
+   background-color: #F7FBFC;
+   border: 2px solid #2665AC;
+    border-radius: 15px;
+}
+
+.card:nth-child(6):hover {
+   background-color: #F7FBFC;
+   border: 2px solid #2665AC;
+    border-radius: 15px;
+}
+
+.card-inner {
+    display: flex;
+    align-items:flex-start;
+    flex-direction: column;
+    justify-content:start;
+    padding:15px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+
+.TotalProCount {
+    color: #1A9172;
+    font-weight: 500;
+}
+
+.ongoingproj {
+    color: #FF8C29;
+    font-weight: 500;
+}
+.completeproj {
+    color: #FF8C29;
+    font-weight: 500;
+}
+
+.totaltask {
+    color: #0295AA;
+    font-weight: 500;
+}
+
+.taskongoing {
+    color: #9CAC25;
+    font-weight: 500;
+}
+
+.completedtask {
+    color: #00B4F5;
+    font-weight: 500;
+}
+
+
+.project-overview-container {
+    display: flex;
+    position: relative;
+    top: 80px;
+    left:-70px;
+    width: 780px;
+    padding: 40px 20px 20px 23px;
+    border-radius: 10px;
+    background-color: #F7FBFC;
+    box-shadow: 2px 2px 8px grey;
+}
+
+.project-overview-container:hover .menu-dots {
+    display: flex; /* Show the dots on hover */
+    position: absolute;
+    top: -1px;
+    left: 730px;
+    font-weight:900;
+    font-size: 20px;
+    color:#3A74B4;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.project-overview-container:hover  {
+    display: flex;
+    position: relative;
+    top: 80px;
+    left:-70px;
+    width: 780px;
+    padding: 40px 20px 20px 23px;
+    border-radius: 10px;
+    border: 2px solid #2665AC;
+    background-color: #F7FBFC;
+    box-shadow: 2px 2px 8px grey;
+}
+
+.no-projects-message {
+  text-align: center;
+    font-size: 15px;
+    color: #2665AC;
+    font-weight: 500;
+    white-space: nowrap; 
+    margin-top: 40px;
+    margin-left:270px;
+}
+
+
+.overview-title {
+    position: relative;
+    font-size: 16px;
+    font-weight: 600;
+    bottom: 25px;
+    left:10px;
+    color: #2665AC;
+    white-space: nowrap; 
+}
+
+.overview-cards {
+    display: flex;
+    position: relative;
+    gap: 20px;
+    background-color: #F7FBFC;
+    left: -337px;
+    margin-top: 10px;
+
+}
+
+
+
+.overview-card {
+  background-color: #F7FBFC;
+  padding: 15px;
+  border-radius: 15px;
+  width: 230px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  border: 2px solid #769FCD;
+}
+
+.overview-project-title {
+  font-size: 1vw;
+  margin-bottom: 5px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #2665AC;
+}
+
+.overview-project-title:hover {
+  text-decoration: underline;
+  color: #2665AC;
+  
+}
+
+.overview-title-tooltip {
+	position: absolute;
+	top: 33%; /* Position below the title */
+	background-color: #eff6ff; /* Dark background */
+	color: #2665AC; /* White text */
+	padding: 5px 10px; /* Add spacing */
+	border-radius: 4px; /* Rounded corners */
+	font-size: 14px; /* Tooltip font size */
+	white-space: nowrap; /* Prevent wrapping */
+	z-index: 10; /* Ensure it appears on top */
+	box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2); /* Optional shadow */
+  word-wrap: break-word; /* Ensures words break into the next line */
+  white-space: normal; /* Allows multiple lines */
+  line-height: 1.5; /* Adds spacing between lines for readability */
+  text-align: left; /* Keeps text centered */
+  max-width: 50%; /* Ensures it doesn't exceed modal width */
+}
+
+
+.overview-card p {
+  font-size: 16px;
+  color: #2665AC;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    appearance: none; /* Removes default styling */
+}
+
+progress::-webkit-progress-bar {
+    background-color: #e0e0e0;
+    border-radius: 5px;
+}
+
+progress::-webkit-progress-value {
+    background-color: #2665AC; /* Customize this color for progress */
+    border-radius: 5px;
+}
+
+progress::-moz-progress-bar {
+    background-color: #2665AC; /* For Firefox */
+}
+
+/* Profile Picture Styles */
+.assignees {
+  display: flex;
+  margin-top: auto; /* Push to the bottom of the card */
+  position: relative; /* Keep within the card */
+  z-index: 1; /* Ensure it is above other elements if needed */
+}
+
+.assignee-user-image {
+  margin-right: 5px; /* Space between assignee items */
+}
+
+.assignee-avatar {
+  width: 22px;
+  height: 22px;
+  background-color: #2665AC;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  top: -4px;
+  border: 2px solid white;
+  margin-right: 5px; /* Space between avatar items */
+}
+
+.assignee-count,
+.extra-count {
+  font-size: 14px;
+  font-weight: bold;
+  color: #2665AC;
+  margin-left: 5px; /* Space before the count */
+}
+
+
+
+.menu-dots{
+    display: flex;
+    position: absolute;
+    left:-1000000px;
+}
+
+
+.chart-container {
+    position: relative;
+    bottom: 225px;
+    right:70px;
+    width: 780px;
+    height: 310px;
+    background-color: #F7FBFC;
+    box-shadow: 2px 2px 8px grey;
+    color:#0078FF;
+    border-radius: 8px;
+    box-shadow: 2px 2px 8px grey;
+}
+
+
+.chart-container canvas{
+    width:100%;
+    padding:15px;
+}
+
+.chart-title-label{
+  position:absolute;
+  font-weight: 600;
+  color:#2665AC;
+  left:20px;
+  top:23px;
+}
+
+
+
+.chart-container:hover .menu-dots {
+    display:flex;
+    position: absolute;
+    bottom: 280px;
+    left: 730px;
+    font-weight:900;
+    font-size: 20px;
+    color:#3A74B4;
+    cursor: pointer;
+}
+
+.chart-container:hover {
+    position: relative;
+    bottom: 225px;
+    right:70px;
+    width: 780px;
+    height: 310px;
+    background-color: #F7FBFC;
+    box-shadow: 2px 2px 8px grey;
+    color:#0078FF;
+    border-radius: 8px;
+    border: 2px solid #2665AC;
+    box-shadow: 2px 2px 8px grey;
+}
+  
+
+.calendar-container {
+  position: relative;
+  bottom:178px;
+  left:750px;
+  z-index: 10;
+  width: 405px;
+  height: 50%;
+}
+
+
+.react-calendar {
+  position: absolute;
+  width: 405px;
+  height:340px;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 2px 2px 8px grey;
+  padding: 1rem;
+}
+
+.react-calendar:hover  {
+  background-color: #F7FBFC;
+  border: 2px solid #2665AC;
+}
+
+.menu-dots-calendar {
+  display: none; /* Hide by default */
+  position: absolute;
+  top: 5px;
+  right: 20px;
+  font-weight: 900;
+  font-size: 20px;
+  color: #3A74B4;
+  cursor: pointer;
+  z-index: 10;
+}
+
+
+.calendar-container:hover .menu-dots-calendar {
+  display: block; /* Show when container is hovered */
+}
+  
+
+  .react-calendar__tile {
+    padding: 1rem 0.5rem;
+    background-color: white;
+    text-align: center;
+    border-radius: 8px;
+    font-weight: bold;
+    border-radius: 10px;
+  }
+  
+  .react-calendar__tile--now {
+    background: #7FB2EB; /* Highlight current day */
+    color: white;
+  }
+  
+  .react-calendar__tile--active {
+    background: #7FB2EB; /* Highlight selected day */
+    color: black;
+  }
+  
+  .react-calendar__navigation button {
+    color:#2665AC;
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+  
+  .react-calendar__month-view__days__day--weekend {
+    color: #d9534f; /* Highlight weekend days */
+  }
+  
+  .react-calendar__tile--active:enabled:hover,
+  .react-calendar__tile--active:enabled:focus {
+    background-color: #005BBB;
+  }
+  
+  .react-calendar__tile:enabled:hover,
+  .react-calendar__tile:enabled:focus {
+    background-color: #aad4f6;
+  }
+  
+  .react-calendar__month-view__days{
+    border-radius: 20px;
+  }
+
+  .react-calendar__tile.react-calendar__month-view__days__day{
+    padding:10px;
+    color:#2665AC;
+  }
+
+  .react-calendar__month-view__weekdays__weekday.react-calendar__month-view__weekdays__weekday{
+    color:#2665AC;
+  }
+
+  .react-calendar__tile.react-calendar__month-view__days__day--neighboringMonth{
+    color:#7FB2EB;
+  }
+
+
+
+  .highlightendDate {
+    background-color: #aad4f6;
+    color: white;
+    border-radius: 100%;
+  }
+
+
+
+  .highlightWarning{
+    background-color: #AE2525;  /* Red highlight kapag malapit na ang deadline */
+    color: white;
+    border-radius: 100%;
+}
+
+  .popupdaysRemaining {
+    position: absolute;
+    margin-top: -100px;
+    margin-left: -1140px;
+    padding: 10px;
+    transform: translate(-50%, -50%);
+    background: #d6e6f2;
+    border-radius: 6px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    font-size: 0.9rem;
+   min-width: 200px;
+    width: auto; /* Allow dynamic resizing */
+    word-wrap: break-word; /* Break long words */
+    
+  }
+
+
+
+.calendarProjectName{
+  margin-left: 17px;
+  font-size: 4wv;
+  font-weight: 700;
+  color:#2665AC;
+  cursor: pointer;
+}
+
+.calendarProjectName:hover{
+  text-decoration: underline;
+  color:#2665AC;
+  
+}
+
+  .daysRemaining{
+    color:#769FCD;
+  }
+
+
+  .projectIcon{
+    position: relative;
+   top:5px;
+   right:10px;
+}
+
+.dateRemindGroup{
+white-space: nowrap;
+}
+
+
+.iconReminder {
+  position: relative;
+  cursor: pointer; /* Makes the icon look clickable */
+  display: inline-block;
+  margin-left: -10px;
+  top:10px;
+  padding-left:10px;
+}
+
+.tooltipReminder {
+  visibility: hidden;
+  position: absolute;
+  width: 220px; /* Adjust width as per your content */
+  height: 7.5em;
+  background-color: #BFDBEC; /* BFDBEC */
+  color: #3A74B4; /* Tooltip text color */
+  text-align: center;
+  font-size: 1em;
+  border-radius: 20px;
+  padding: 10px;
+  font-size: 12px;
+  top: 29px;
+  left: -45px;
+  transform: translateX(-50%);
+  z-index: 1001;
+  white-space: pre-line; /* Allow multi-line text */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.iconReminder:hover .tooltipReminder {
+    visibility: visible;
+    opacity: 1;
+}
+
+
+.tooltipReminder::after {
+  content: '';
+  position: absolute;
+  top: -10px; /* At the bottom of the tooltip */
+  left: 80%;
+  rotate: 180deg;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #BFDBEC transparent transparent transparent;
+  }
+  
+
+
+  .highlightCompleted {
+    background-color: #25AE88 !important;
+    color: white;
+    border-radius: 100%;
+  }
+  
+  .iconCompleted {
+    position: relative;
+  cursor: pointer; /* Makes the icon look clickable */
+  display: inline-block;
+  margin-left: -10px;
+  top:10px;
+  padding-left:10px;
+  }
+  
+  .tooltipCompleted {
+    visibility: hidden;
+    position: absolute;
+    width: 220px; /* Adjust width as per your content */
+    height: 3em;
+    background-color: #BFDBEC; /* BFDBEC */
+    color: #3A74B4; /* Tooltip text color */
+    text-align: center;
+    font-size: 2em;
+    border-radius: 20px;
+    padding: 10px;
+    font-size: 12px;
+    top: 29px;
+    left: -45px;
+    transform: translateX(-50%);
+    z-index: 1001;
+    white-space: pre-line; /* Allow multi-line text */
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  
+
+  .iconCompleted:hover .tooltipCompleted {
+    visibility: visible;
+    opacity: 1;
+}
+
+
+.tooltipCompleted::after {
+  content: '';
+  position: absolute;
+  top: -10px; /* At the bottom of the tooltip */
+  left: 80%;
+  rotate: 180deg;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #BFDBEC transparent transparent transparent;
+  }
+
+
+  .recent-messages-container {
+    position: relative;
+    background-color: #F7FBFC;
+    padding: 20px 20px ;
+    border-radius: 12px;
+    box-shadow: 2px 2px 8px grey;
+    bottom: 10px;
+    left: 755px;
+    width: 155%;
+    height:350px;
+    max-width: 400px; 
+   
+  }
+
+
+  .recent-messages-container:hover {
+    
+    border: 2px solid #2665AC;
+   
+  }
+
+
+  .recent-messages-container:hover .menu-dots{
+    display:flex;
+    position: absolute;
+    bottom: 320px;
+    left: 350px;
+    font-weight:900;
+    font-size: 20px;
+    color:#3A74B4;
+    cursor: pointer;
+  }
+
+
+  .no-messages {
+    text-align: center;
+    font-size: 15px;
+    color: #2665AC;
+    font-weight: 500;
+    white-space: nowrap; 
+    margin-top: 80px;
+    margin-left:10px;
+  }
+
+
+  .messages-list {
+    display: flex;
+    flex-direction: column;
+    max-height: 250px; /* Adjust this height as needed */
+    width:360px;
+    overflow-y: auto; /* Vertical scrollbar when needed */
+    overflow-x: hidden; /* Prevent horizontal scrollbar */
+    padding-right: 10px; /* Padding for scrollbar */
+}
+
+/* Custom scrollbar styles */
+.messages-list::-webkit-scrollbar {
+    width: 8px; /* Width of the scrollbar */
+}
+
+.messages-list::-webkit-scrollbar-thumb {
+    background-color: #769FCD; /* Scrollbar thumb color */
+    border-radius: 10px;
+}
+
+.messages-list::-webkit-scrollbar-thumb:hover {
+    background-color: #1d4f8b; /* Darker color on hover */
+}
+
+.messages-list::-webkit-scrollbar-track {
+    background: #F3F9FB; /* Scrollbar track color */
+}
+  
+  .recent-messages-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .recent-messages-header h2 {
+    position: relative;
+    top:-20px;
+    right:1px;
+    font-size: 15px;
+    color: #2665AC;
+    white-space: nowrap; 
+  }
+  
+  .search-box {
+    position:static;
+    align-items: center;
+    margin-top: 30px;
+    right:-15px;
+    color:#2665AC;
+
+  }
+  
+  
+  .search-box .searchrecent {
+    border: 1px solid #d1d9e6;
+    border-radius: 10px;
+    padding: 4px 10px;
+    font-size: 14px;
+    outline: none;
+    box-shadow: 2px 2px 8px grey;
+  }
+  
+  .search-box .magnifyingglass {
+    position: absolute;
+    left: 355px;
+    top:54px;
+    width:20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .messages-list {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .message-item {
+    display: flex;
+    position: relative;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 10px; /* Adjust padding for better spacing */
+    border-bottom: 1px solid #f1f1f1;
+    width: 100%; /* Ensure it fits the container */
+    height: 70px;
+    box-sizing: border-box; /* Include padding in width */
+  }
+  
+  .message-item:last-child {
+    border-bottom: none;
+  }
+  
+  .message-icon {
+    font-size: 24px;
+    margin-right: 12px;
+    
+  }
+  
+  .message-icon img {
+    width: 30px; /* Adjust size as needed */
+    height: 30px; /* Adjust size as needed */
+    border-radius: 50%; /* Makes the image round */
+    object-fit: cover; /* Ensures the image maintains its aspect ratio and covers the area */
+  }
+  
+  .message-details {
+    flex-grow: 1;
+  }
+  
+  .message-title {
+    font-weight: bold;
+    color: #2665AC;
+    white-space: nowrap; /* Prevents wrapping to a new line */
+    overflow: hidden; /* Hides the overflowing text */
+    text-overflow: ellipsis; /* Adds '...' at the end of the truncated text */
+    display: block; /* Ensures proper behavior inside flex containers */
+    width:220px;
+    justify-content: space-between;
+  }
+
+  .message-title:hover{
+    text-decoration: underline;
+    color: #2665AC;
+  }
+
+
+.recent-title-tooltip{
+  position: absolute;
+	top: 50%; /* Position below the title */
+	background-color: #eff6ff; /* Dark background */
+	color: #2665AC; /* White text */
+	padding: 5px 10px; /* Add spacing */
+	border-radius: 4px; /* Rounded corners */
+	font-size: 14px; /* Tooltip font size */
+	white-space: nowrap; /* Prevent wrapping */
+	z-index: 1000; /* Ensure it appears on top */
+	box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2); /* Optional shadow */
+  word-wrap: break-word; /* Ensures words break into the next line */
+  white-space: normal; /* Allows multiple lines */
+  line-height: 1.5; /* Adds spacing between lines for readability */
+  text-align: left; /* Keeps text centered */
+  max-width: 80%; /* Ensures it doesn't exceed modal width */
+}
+
+
+  .message-time{
+    color:#2665AC;
+    font-size: 13px;
+    position: relative;
+    left:10px;
+    white-space: nowrap;
+  }
+  
+  .unread-badge {
+    position: relative;
+    background-color: #2665AC;
+    color: white;
+    border-radius: 12px;
+    justify-content: center;
+    text-align: center;
+    bottom:10px;
+    left:29px;
+    padding: 3px 12px 3px 4px; 
+    font-size: 8px;
+    font-weight: 400;
+    width:15px;
+    height:15px;
+  }
+  
+  .message-snippet {
+    font-size: 13px;
+    color: #2665AC;
+    white-space: nowrap; /* Prevents wrapping to a new line */
+    overflow: hidden; /* Hides the overflowing text */
+    text-overflow: ellipsis; /* Adds '...' at the end of the truncated text */
+    display: block; /* Ensures proper behavior inside flex containers */
+    width:220px;
+}
+
+
+
+  
+.addnewwidgetIcon{
+    display: flex;
+    position: relative;
+    width:40px;
+    left: -10px;
+    color: #2665AC;
+    cursor: pointer;
+} 
+
+.addnewWidget{
+    display: flex;
+    position: relative;
+    align-Items: center;
+    justify-Content: center;
+    padding: 10px 10px;
+    border-Radius: 5px;
+    border: none;
+    color: #2665AC;
+    cursor: pointer;
+    font-Size: 19px;
+    font-Weight: 600;
+    width: 420px;
+    height: 70px;
+    right: -740px;
+    top: -285px;
+}
+
+.addwidgetbutton{
+    display: flex;
+    position: relative;
+    align-Items: center;
+    justify-Content: center;
+    padding: 10px 10px;
+    background-Color: #f4f8fb;
+    border-Radius: 5px;
+    border: none;
+    color: #2665AC;
+    cursor: pointer;
+    font-Size: 19px;
+    font-Weight: 600;
+    width: 600px;
+    height: 70px;
+    right: -5px;
+    top: -10px;
+    box-Shadow: 2px 2px 8px #5559;
+ }
+
+ /*REMOVE BUTTONS*/
+ .remove-button-totalP{
+  display: flex;
+  position: absolute;
+  left:160px;
+  bottom:150px;
+  padding:5px 20px 5px 20px;
+  border: 1px solid #769FCD;
+  border-radius: 5px;
+  color:#3A74B4;
+  background-color: #D6E6F2;
+  cursor: pointer;
+ }
+
+ .remove-button-ongoingP{
+  display: flex;
+  position: absolute;
+  left:420px;
+  bottom:150px;
+  padding:5px 20px 5px 20px;
+  border: 1px solid #769FCD;
+  border-radius: 5px;
+  color:#3A74B4;
+  background-color: #D6E6F2;
+  cursor: pointer;
+ }
+
+ .remove-button-complP{
+  display: flex;
+  position: absolute;
+  left:680px;
+  bottom:150px;
+  padding:5px 20px 5px 20px;
+  border: 1px solid #769FCD;
+  border-radius: 5px;
+  color:#3A74B4;
+  background-color: #D6E6F2;
+  cursor: pointer;
+ }
+
+ .remove-button-taskstotal{
+  display: flex;
+  position: absolute;
+  left:160px;
+  bottom:40px;
+  padding:5px 20px 5px 20px;
+  border: 1px solid #769FCD;
+  border-radius: 5px;
+  color:#3A74B4;
+  background-color: #D6E6F2;
+  cursor: pointer;
+ }
+
+ .remove-button-ongoingtasks{
+  display: flex;
+  position: absolute;
+  left:420px;
+  bottom:40px;
+  padding:5px 20px 5px 20px;
+  border: 1px solid #769FCD;
+  border-radius: 5px;
+  color:#3A74B4;
+  background-color: #D6E6F2;
+  cursor: pointer;
+ }
+
+ .remove-button-completetasks{
+  display: flex;
+  position: absolute;
+  left:680px;
+  bottom:40px;
+  padding:5px 20px 5px 20px;
+  border: 1px solid #769FCD;
+  border-radius: 5px;
+  color:#3A74B4;
+  background-color: #D6E6F2;
+  cursor: pointer;
+ }
+
+ .remove-button-calendar {
+  display: flex;
+  position: absolute;
+  right: 1px;
+  top: 30px;
+  padding: 5px 20px;
+  border: 1px solid #769FCD;
+  border-radius: 5px;
+  color: #3A74B4;
+  background-color: #D6E6F2;
+  cursor: pointer;
+  z-index: 100;/* Ensure the remove button stays on top */
+}
+
+ .remove-button-projectoverview{
+  display: flex;
+  position: absolute;
+  left:675px;
+  bottom:140px;
+  padding:5px 20px 5px 20px;
+  border: 1px solid #769FCD;
+  border-radius: 5px;
+  color:#3A74B4;
+  background-color: #D6E6F2;
+  cursor: pointer;
+ }
+
+ .remove-button-recentmessages{
+  display: block;
+  position: absolute;
+  left:270px;
+  width:110px;
+  bottom:290px;
+  padding:5px 20px 5px 20px;
+  border: 1px solid #769FCD;
+  border-radius: 5px;
+  color:#3A74B4;
+  background-color: #D6E6F2;
+  cursor: pointer;
+  z-index: 10;
+ }
+ 
+
+ .remove-button-chart{
+  display: flex;
+  position: absolute;
+  left:695px;
+  bottom:250px;
+  padding:5px 20px 5px 20px;
+  border: 1px solid #769FCD;
+  border-radius: 5px;
+  color:#3A74B4;
+  background-color: #D6E6F2;
+  cursor: pointer;
+  
+ }
+
+
+ /*POPUP MESSAGE*/
+
+ .modal-confirmation{
+  position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 100;
+}
+
+
+
+ .confirmation-popup-totalproj {
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px;
+  width: 600px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+
+.confirmation-popup-totalproj p{
+  color: #2665AC;
+
+}
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+  }
+  
+  .btnYestotalproj,
+  .btnNototalproj {
+  padding: 8px 42px;
+  border-radius: 9999px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  }
+  
+  .btnYestotalproj {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnNototalproj {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnYestotalproj:hover {
+  background-color: #1976d2;;
+  }
+  
+  .btnNototalproj:hover {
+  background-color: #1976d2;;
+  }
+
+
+.modal-confirmation-ongoingproj{
+  position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 100;
+}
+
+
+
+
+.confirmation-popupongoingproj {
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px;
+  width: 600px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+
+}
+
+.confirmation-popupongoingproj p{
+  color: #2665AC;
+
+
+}
+
+  
+  .btnYesongoingproj,
+  .btnNoongoingproj {
+  padding: 8px 42px;
+  border-radius: 9999px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  }
+  
+  .btnYesongoingproj {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnNoongoingproj {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnYesongoingproj:hover {
+  background-color: #1976d2;;
+  }
+  
+  .btnNoongoingproj:hover {
+  background-color: #1976d2;;
+  }
+
+
+
+.modal-confirmation-completeproj{
+  position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 100;
+}
+
+
+
+.confirmation-popupcompleteproj {
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px;
+  width: 600px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+
+}
+
+.confirmation-popupcompleteproj p{
+  color: #2665AC;
+
+}
+
+.btnYescompleteproj,
+  .btnNocompleteproj {
+  padding: 8px 42px;
+  border-radius: 9999px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  }
+  
+  .btnYescompleteproj {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnNocompleteproj {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnYescompleteproj:hover {
+  background-color: #1976d2;;
+  }
+  
+  .btnNocompleteproj:hover {
+  background-color: #1976d2;;
+  }
+
+
+
+.modal-confirmation-totaltasks{
+  position: fixed;
+  top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 100;
+}
+
+
+
+.confirmation-popuptotaltasks {
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px;
+  width: 600px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+
+}
+
+.confirmation-popuptotaltasks p{
+  color: #2665AC;
+
+}
+
+.btnYestotaltasks,
+  .btnNototaltasks {
+  padding: 8px 42px;
+  border-radius: 9999px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  }
+  
+  .btnYestotaltasks {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnNototaltasks {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnYestotaltasks:hover {
+  background-color: #1976d2;;
+  }
+  
+  .btnNototaltasks:hover {
+  background-color: #1976d2;;
+  }
+
+
+.modal-confirmation-ongoingtasks{
+  position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 100;
+}
+
+
+.confirmation-popup-ongoingtasks {
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px;
+  width: 600px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+
+}
+
+.confirmation-popup-ongoingtasks p{
+  color: #2665AC;
+
+
+}
+
+.btnYesongoingtasks,
+  .btnNoongoingtasks {
+  padding: 8px 42px;
+  border-radius: 9999px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  }
+  
+  .btnYesongoingtasks {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnNoongoingtasks {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnYesongoingtasks:hover {
+  background-color: #1976d2;;
+  }
+  
+  .btnNoongoingtasks:hover {
+  background-color: #1976d2;;
+  }
+
+
+
+.modal-confirmation-completetasks{
+  position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 100;
+}
+
+
+
+
+.confirmation-popupcompletetasks {
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px;
+  width: 600px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+
+}
+
+.confirmation-popupcompletetasks p{
+  color: #2665AC;
+
+
+}
+
+.btnYescompletetasks,
+  .btnNocompletetasks {
+  padding: 8px 42px;
+  border-radius: 9999px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  }
+  
+  .btnYescompletetasks {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnNocompletetasks {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnYescompletetasks:hover {
+  background-color: #1976d2;;
+  }
+  
+  .btnNocompletetasks:hover {
+  background-color: #1976d2;;
+  }
+
+
+.modal-confirmation-recentmessages{
+  position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 100;
+
+}
+
+.confirmation-popup-recentmessage {
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px;
+  width: 600px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+
+}
+
+
+.confirmation-popup-recentmessage p{
+  color: #2665AC;
+
+
+ }
+
+
+ .btnYesRecentM,
+ .btnNoRecentM {
+ padding: 8px 42px;
+ border-radius: 9999px;
+ font-size: 14px;
+ border: none;
+ cursor: pointer;
+ }
+ 
+ .btnYesRecentM {
+ background-color: #2665AC;
+ color: white;
+ }
+ 
+ .btnNoRecentM {
+ background-color: #2665AC;
+ color: white;
+ }
+ 
+ .btnYesRecentM:hover {
+ background-color: #1976d2;;
+ }
+ 
+ .btnNoRecentM:hover {
+ background-color: #1976d2;;
+ }
+
+
+
+.modal-confirmation-chart{
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 100;
+}
+
+
+
+.confirmation-popup-chart{
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px;
+  width: 600px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+}
+
+
+
+.confirmation-popup-chart p {
+  color: #2665AC;
+
+}
+
+
+
+.btnYeschart,
+  .btnNochart {
+  padding: 8px 42px;
+  border-radius: 9999px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  }
+  
+  .btnYeschart {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnNochart {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnYeschart:hover {
+  background-color: #1976d2;;
+  }
+  
+  .btnNochart:hover {
+  background-color: #1976d2;;
+  }
+
+
+
+.modal-confirmation-calendar{
+  position: fixed;
+  top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 100;
+}
+
+
+
+.confirmation-popupcalendar{
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px;
+  width: 600px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+
+}
+
+
+.confirmation-popupcalendar p {
+  color: #2665AC;
+
+
+}
+
+
+.btnYescalendar,
+  .btnNocalendar {
+  padding: 8px 42px;
+  border-radius: 9999px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  }
+  
+  .btnYescalendar {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnNocalendar {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnYescalendar:hover {
+  background-color: #1976d2;;
+  }
+  
+  .btnNocalendar:hover {
+  background-color: #1976d2;;
+  }
+
+
+
+.modal-confirmation-projoverview{
+  position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 100;
+}
+
+
+
+.confirmation-popupprojoverview{
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px;
+  width: 600px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+
+  }
+  
+  
+  .confirmation-popupprojoverview p {
+    color: #2665AC;
+
+
+  }
+  
+  
+  .btnYesprojoverview ,
+  .btnNoprojoverview {
+  padding: 8px 42px;
+  border-radius: 9999px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  }
+  
+  .btnYesprojoverview {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnNoprojoverview {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnYesprojoverview :hover {
+  background-color: #1976d2;;
+  }
+  
+  .btnNoprojoverview:hover {
+  background-color: #1976d2;;
+  }
+
+
+
+.assignee-avatar {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  background-color: #2665AC;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  top: -4px;
+  border: 2px solid white;
+}
+
+/*dropdown and prev, next button for project overview*/
+.filter-dropdown {
+  display: flex;
+  position: relative;
+  height:30px;
+  bottom:30px;
+  left:350px;
+}
+
+.filter-select {
+  position: relative;
+  right:25px;
+  padding: 5px;
+  font-size: 13px;
+   border-radius: 5px;
+   color:#2665AC;
+   border: none;
+   cursor:pointer;
+  background-color: #F3F9FB;
+  box-shadow: 1px 1px 8px grey;
+}
+
+.nav-buttons {
+  display: flex;
+  align-items: center;
+}
+
+.left-button,
+.right-button {
+  background-color: #D6E6F2;
+  color: #3A74B4;
+  border: none;
+  border-radius: 20px;
+  padding: 1px;
+  width:35px;
+  font-size: 25px;
+  cursor: pointer;
+  margin: 0 0.5rem;
+}
+
+.left-button:hover,
+.right-button:hover {
+  background-color: #7FB2EB;
+}
+
+.filter-dropdown-chart{
+  display: flex;
+  position: absolute;
+  height:30px;
+  bottom:270px;
+  left:470px;
+}
+.filter-select-lastYMW{
+  padding: 5px;
+  font-size: 13px;
+   border-radius: 5px;
+   box-shadow: 2px 2px 8px grey;
+   color:#2665AC;
+   border: none;
+  background-color: #F3F9FB;
+cursor:pointer;
+}
+
+
+
+.filter-select-protask{
+  padding: 5px;
+  font-size: 13px;
+   border-radius: 5px;
+   box-shadow: 2px 2px 8px grey;
+   color:#2665AC;
+   border: none;
+  background-color: #F3F9FB;
+  margin-left:15px;
+  cursor:pointer;
+}
+
+
+.chartcomparedlabel{
+  position: absolute;
+  color:#2665AC;
+  left:350px;
+  top:18px;
+  font-weight: 400;
+  font-size: 13px;
+}
+
+.notification-container{
+  position: relative;
+  background-color: #F7FBFC;
+  border-radius: 10px;
+  box-shadow: 2px 2px 8px grey;
+  width:403px;
+  height:335px;
+  padding:15px;
+  margin-left: 750px;
+  top: -1105px;
+}
+
+
+
+
+.notification-container:hover {
+  border: 2px solid #2665AC; /* Border applies only to notification container */
+  top: -1105px;
+}
+
+/* Hover effect for dots inside the notification container */
+.notification-container:hover .menu-dots-notif {
+  display: flex;
+  position: absolute;
+  bottom: 308px;
+  left: 350px;
+  font-weight: 900;
+  font-size: 20px;
+  color: #3A74B4;
+  cursor: pointer;
+}
+
+.menu-dots-notif{
+  display: none;
+}
+
+
+.notification-widget-item {
+  position: relative;
+  max-height: 250px; /* Set maximum height for vertical scrolling */
+  overflow-y: auto; /* Enable vertical scrolling only */
+  overflow-x: hidden; /* Disable horizontal scrolling */
+  padding-right: 10px; /* Add padding for better aesthetics */
+  bottom:10px;
+}
+
+/* Optional: Add a custom scrollbar */
+.notification-widget-item::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+.notification-widget-item::-webkit-scrollbar-thumb {
+  background-color: #769FCD; /* Scrollbar thumb color */
+  border-radius: 10px; /* Rounded edges for the scrollbar */
+}
+
+.notification-widget-item::-webkit-scrollbar-thumb:hover {
+  background-color: #1d4f8b; /* Darker color on hover */
+}
+
+.notification-widget-item::-webkit-scrollbar-track {
+  background: #F3F9FB; /* Background of the scrollbar track */
+}
+
+.remove-button-notifcon{
+  display: flex;
+  position: absolute;
+  left:290px;
+  bottom:260px;
+  padding:5px 20px 5px 20px;
+  border: 1px solid #769FCD;
+  border-radius: 5px;
+  color:#3A74B4;
+  background-color: #D6E6F2;
+  cursor: pointer;
+ }
+
+
+.modal-confirmation-notifcontainer{
+  position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 100;
+
+}
+
+
+ .confirmation-popup-notification-container{
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px;
+  width: 600px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+}
+
+
+
+.confirmation-popup-notification-container p {
+  color: #2665AC;
+
+
+}
+
+
+
+.btnYesnotifcon,
+  .btnNonotifcon {
+  padding: 8px 42px;
+  border-radius: 9999px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  }
+  
+  .btnYesnotifcon {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnNonotifcon {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnYesnotifcon:hover {
+  background-color: #1976d2;;
+  }
+  
+  .btnNonotifcon:hover {
+  background-color: #1976d2;;
+  }
+
+
+
+.avatar{
+  position: relative;
+    max-width: 40px;
+    bottom:8px;
+    height: 41px;
+    border-radius: 300px;
+    border:1px solid #2665AC;
+    right: 2px;
+}
+
+.credentialsicon{
+  position: relative;
+  width:15px;
+  top:2px;
+}
+
+.notifprofile{
+  position: relative;
+    max-width: 40px;
+    top:-1px;
+    min-height: 40px;
+    border-radius: 300px;
+    border:1px solid #2665AC;
+    right: 1px;
+}
+
+
+.notifname{
+  font-size: 15px;
+  font-weight: 600;
+  color:#2665AC;
+}
+
+.notification-container h3{
+  font-weight: 600;
+  font-size: 20px;
+  color:#2665AC;
+}
+
+.notification-container p{
+  font-size:14px;
+  color:#2665AC;
+}
+
+.time{
+  position: relative;
+  left:220px;
+  bottom:29px;
+  font-size:10px;
+  color:#2665AC;
+}
+
+.notification-list{
+  position: relative;
+  top:10px;
+}
+
+
+.notification-item{
+  display: flex;
+  align-items: flex-start;
+  gap: 10px; /* Add space between avatar and details */
+  margin-bottom: 10px; /* Space between items */
+  width: 300px;
+  right:10px;
+}
+
+.dropdown-notification-item{
+  position: relative;
+  top:10px;
+  margin-top:10px;
+  left:10px;
+}
+
+.notificationfilter{
+  padding: 5px;
+  margin-left:230px;
+  margin-bottom:20px;
+  font-size: 13px;
+   color:#2665AC;
+   border:none;
+   border-radius: 5px;
+  background-color: #F3F9FB;
+  box-shadow: 1px 1px 8px grey;
+}
+
+.invisible-content {
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s, opacity 0.5s linear;
+}
+
+.visible-content {
+  visibility: visible;
+  opacity: 1;
+  transition: visibility 0s, opacity 0.5s linear;
+}
+
+
+
+
+.activetaskcon {
+  position: relative;
+  background-color: #F7FBFC;
+  border-radius: 10px;
+  box-shadow: 2px 2px 8px grey;
+  bottom: 1077px;
+    left: 755px;
+    width: 155%;
+    height: 350px;
+    max-width: 400px;
+  padding: 15px;
+  padding-left: 20px;
+}
+
+/* Activetask Container Hover */
+.activetaskcon:hover {
+  border: 2px solid #2665AC; /* Border applies only to activetaskcontainer */
+}
+
+/* Hover effect for dots inside the activetask container */
+.activetaskcon:hover .menu-dots-activetask {
+  display: flex;
+  position: absolute;
+  bottom: 320px;
+  left: 350px;
+  font-weight: 900;
+  font-size: 20px;
+  color: #3A74B4;
+  cursor: pointer;
+}
+
+
+.menu-dots-activetask{
+  display: none;
+}
+
+.no-tasks-message {
+  text-align: center;
+    font-size: 15px;
+    color: #2665AC;
+    font-weight: 500;
+    white-space: nowrap; 
+    margin-top: 100px;
+    margin-left:10px;
+}
+
+
+.activetask-details{
+  position: relative;
+  left:60px;
+}
+
+
+.remove-button-activetask{
+  display: flex;
+  position: absolute;
+  left:280px;
+  bottom:290px;
+  padding:5px 20px 5px 20px;
+  border: 1px solid #769FCD;
+  border-radius: 5px;
+  color:#3A74B4;
+  background-color: #D6E6F2;
+  cursor: pointer;
+ }
+
+
+ .modal-confirmation-activetasks{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+
+
+ .confirmation-popup-activetask-container{
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px;
+  width: 600px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+
+}
+
+
+
+.confirmation-popup-activetask-container p {
+  color: #2665AC;
+
+}
+
+
+.btnYesactivetask,
+  .btnNoactivetask {
+  padding: 8px 42px;
+  border-radius: 9999px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  }
+  
+  .btnYesactivetask {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnNoactivetask {
+  background-color: #2665AC;
+  color: white;
+  }
+  
+  .btnYesactivetask:hover {
+  background-color: #1976d2;;
+  }
+  
+  .btnNoactivetask:hover {
+  background-color: #1976d2;;
+  }
+
+
+
+.activetaskavatar{
+  position: relative;
+    max-width: 40px;
+    top:43px;
+    height: 41px;
+    border-radius: 300px;
+    border:1px solid #2665AC;
+    right: 2px;
+}
+
+
+.sortduedate{
+  position: relative;
+  font-size: 12px;
+  color:#2665AC;
+  top:25px;
+  left:7px;
+}
+
+.sortduedateicon{
+  position: relative;
+  width:8px;
+  top:2px;
+  left:2px;
+}
+
+.activetaskprofile{
+  position: relative;
+    max-width: 40px;
+    top:1px;
+    min-height: 40px;
+    border-radius: 300px;
+    border:1px solid #2665AC;
+    right: 1px;
+}
+
+
+.activetaskname{
+  font-weight: bold;
+  color: #2665AC;
+  white-space: nowrap; /* Prevents wrapping to a new line */
+  overflow: hidden; /* Hides the overflowing text */
+  text-overflow: ellipsis; /* Adds '...' at the end of the truncated text */
+  display: block; /* Ensures proper behavior inside flex containers */
+  width:190px;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.activetaskname:hover{
+ text-decoration: underline;
+  color:#2665AC;
+}
+
+
+
+  
+  .Activetask-title-tooltip {
+    position: absolute;
+    background-color: #eff6ff; /* Dark background */
+    color: #2665AC; /* White text */
+    padding: 5px 10px; /* Add spacing */
+    border-radius: 4px; /* Rounded corners */
+    font-size: 14px; /* Tooltip font size */
+      font-weight: 400;
+    white-space: nowrap; /* Prevent wrapping */
+    z-index: 10; /* Ensure it appears on top */
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2); /* Optional shadow */
+      word-wrap: break-word; /* Ensures words break into the next line */
+      white-space: normal; /* Allows multiple lines */
+      line-height: 1.5; /* Adds spacing between lines for readability */
+      text-align: left; /* Keeps text centered */
+      max-width: 50%; /* Ensures it doesn't exceed modal width */
+  }
+  
+
+
+.activetaskcon h3{
+  position: relative;
+  top:10px;
+  width:130px;
+  font-weight: 600;
+  font-size: 20px;
+  color:#2665AC;
+}
+
+.activetaskcon p{
+  font-size:14px;
+  color:#2665AC;
+  word-break: break-word;
+}
+
+.activetasktime{
+  position: relative;
+  left:200px;
+  bottom:38px;
+  font-size:11px;
+  color:#2665AC;
+}
+
+.activetask-list{
+  position: relative;
+  top:10px;
+  left:200px;
+  padding:5px;
+}
+
+
+.activetask-item{
+  position: relative;
+  margin-bottom: -25px;
+  height: 100px;
+}
+
+.activetask-widget-item{
+  position: relative;
+  height: 230px; /* Set maximum height for vertical scrolling */
+  overflow-y: auto; /* Enable vertical scrolling only */
+  overflow-x: hidden; /* Disable horizontal scrolling */
+  padding-right: 10px; /* Add padding for better aesthetics */
+  bottom:-10px;
+}
+
+/* Optional: Add a custom scrollbar */
+.activetask-widget-item::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+.activetask-widget-item::-webkit-scrollbar-thumb {
+  background-color: #769FCD; /* Scrollbar thumb color */
+  border-radius: 10px; /* Rounded edges for the scrollbar */
+}
+
+.activetask-widget-item::-webkit-scrollbar-thumb:hover {
+  background-color: #1d4f8b; /* Darker color on hover */
+}
+
+.activetask-widget-item::-webkit-scrollbar-track {
+  background: #F3F9FB; /* Background of the scrollbar track */
+}
+
+.searchacttask {
+  position:relative;
+  align-items: center;
+  top: -1px;
+  left:180px;
+  color:#2665AC;
+
+}
+
+
+.acttask-search-box .searchacttask {
+  border: 1px solid #d1d9e6;
+  border-radius: 10px;
+  padding: 4px 10px;
+  font-size: 14px;
+  outline: none;
+  box-shadow: 2px 2px 8px grey;
+  left:150px;
+}
+
+.acttask-search-box .magnifyingglass-acttask {
+  position: absolute;
+  left: 335px;
+  top:67px;
+  width:20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+
+.sort-dropdown-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 14px;
+  color: #2665AC;
+}
+
+.sort-dropdown-menu {
+  position: absolute;
+  top: 20px;
+  left:50px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+  z-index: 1;
+}
+
+.sort-dropdown-menu button {
+  padding: 10px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: #2665AC;
+}
+
+.sort-dropdown-menu button:hover {
+  background-color: #D6E6F2;
+}
+
+
+@media screen and (max-width: 1600px){
+  body {
+    width: 100vw;
+    }
+
+  
+  .grid-container{
+  width:100vw;
+  height:100vh;
+  }
+  
+  
+  
+  }
+
+
+@media screen and (max-width: 1200px){
+  body {
+    width: 100vw;
+    }
+
+  
+  .grid-container{
+  width:100vw;
+  height:100vh;
+  }
+  
+  
+  
+  #sidebar {
+      grid-area: sidebar;
+      position: relative;
+      width: 227px;
+      height: 160vh;
+      background-color: #B9D7EA;
+      border-top-right-radius: 50px;
+      border-bottom-right-radius: 50px;
+      box-shadow: 2px 2px 6px grey;
+      transition: all 0.5s;
+      -webkit-transition: all 0.5s;
+  }
+  
+  }
+
+
+  @media screen and (max-width: 992px){
+    body {
+      width: 100vw;
+      }
+  
+    
+    .grid-container{
+    width:100vw;
+    height:100vh;
+    }
+    
+    
+    
+    #sidebar {
+        grid-area: sidebar;
+        position: relative;
+        width: 227px;
+        height: 165vh;
+        background-color: #B9D7EA;
+        border-top-right-radius: 50px;
+        border-bottom-right-radius: 50px;
+        box-shadow: 2px 2px 6px grey;
+        transition: all 0.5s;
+        -webkit-transition: all 0.5s;
+    }
+    
+    }
+
+
+    @media screen and (max-width: 768px){
+      body {
+        width: 100vw;
+        }
+    
+      
+      .grid-container{
+      width:100vw;
+      height:100vh;
+      }
+      
+      
+      
+      #sidebar {
+          grid-area: sidebar;
+          position: relative;
+          width: 227px;
+          height: 160%;
+          background-color: #B9D7EA;
+          border-top-right-radius: 50px;
+          border-bottom-right-radius: 50px;
+          box-shadow: 2px 2px 6px grey;
+          transition: all 0.5s;
+          -webkit-transition: all 0.5s;
+      }
+      
+      }
+
+      @media screen and (max-width: 576px){
+        body {
+          width: 100vw;
+          }
+      
+        
+        .grid-container{
+        width:100vw;
+        height:100vh;
+        }
+        
+        
+        
+        #sidebar {
+            grid-area: sidebar;
+            position: relative;
+            width: 227px;
+            height: 160%;
+            background-color: #B9D7EA;
+            border-top-right-radius: 50px;
+            border-bottom-right-radius: 50px;
+            box-shadow: 2px 2px 6px grey;
+            transition: all 0.5s;
+            -webkit-transition: all 0.5s;
+        }
+        
+        }
+
+
+        @media screen and (max-width: 375px){
+          body {
+            width: 100vw;
+            }
+        
+          
+          .grid-container{
+          width:100vw;
+          height:100vh;
+          }
+          
+          
+          
+          #sidebar {
+              grid-area: sidebar;
+              position: relative;
+              width: 227px;
+              height: 160%;
+              background-color: #B9D7EA;
+              border-top-right-radius: 50px;
+              border-bottom-right-radius: 50px;
+              box-shadow: 2px 2px 6px grey;
+              transition: all 0.5s;
+              -webkit-transition: all 0.5s;
+          }
+          
+          }

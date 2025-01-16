@@ -1,0 +1,503 @@
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-content {
+  width: 920px;
+  height: 600px;
+  background-color: #EEEEEE;
+  border-radius: 15px;
+  display: flex;
+
+}
+
+.widgetcontainer{
+  display: flex;
+  position: relative;
+  top: 40px;
+  left: 245px;
+  width: 900px;
+  overflow:scroll;
+  overflow-x:hidden;
+  background-color: #EEEEEE;
+  height: 550px;
+}
+
+
+/* Optional: Add a custom scrollbar */
+.widgetcontainer::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+.widgetcontainer::-webkit-scrollbar-thumb {
+  background-color: #769FCD; /* Scrollbar thumb color */
+  border-radius: 10px; /* Rounded edges for the scrollbar */
+}
+
+.widgetcontainer::-webkit-scrollbar-thumb:hover {
+  background-color: #1d4f8b; /* Darker color on hover */
+}
+
+.widgetcontainer::-webkit-scrollbar-track {
+  background: #F3F9FB; /* Background of the scrollbar track */
+}
+
+.widget-list {
+  flex: 1;
+  padding: 10px;
+  display: flex;
+  position: relative;
+  top: 40px;
+  left: 5px;
+  flex-direction: column;
+  gap: 15px; 
+}
+
+.widget-item {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  width:100%;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  
+}
+
+.widget-item.hidden {
+  display: none;
+}
+
+.widget-icon {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+  /* Add icon styles here */
+}
+
+.widget-info {
+  flex: 1;
+}
+
+.widget-info h3 {
+  margin-left:15px;
+  margin-top: 0;
+  margin-bottom: 5px;
+  font-size: 15px;
+  color:#2665AC;
+}
+
+.widget-info p {
+  margin-left:15px;
+  margin-top: 0;
+  margin-bottom: 5px;
+  font-size: 13px;
+  color:#2665AC;
+}
+
+.add-widget {
+  position: relative;
+  width: 140px;
+  height: 35px;
+  left:12px;
+  padding-left: 15px;
+  background-color: #2665AC;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+}
+
+.add-widget:hover {
+  background-color: #7FB2EB;
+  color: white;
+ 
+}  
+
+.sidebar {
+  display: flex;
+  position: relative;
+  right: 671px;
+  width: 250px;
+  background-color: #D6E6F2;
+  border-right: 1px solid #ddd;
+  border-radius: 20px;
+}
+
+
+.sidebar input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+}
+
+.sidebar .sidebartitle{
+  margin-top: 25px;
+  margin-left: 26px;
+  white-space: nowrap;
+  color:#2665AC;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.sidebar .sidebarsubtitle {
+  position: relative;
+  top: 160px;
+  right: 168px;
+  color:#2665AC;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.sidebar ul {
+  position: relative;
+  list-style: none;
+  right: 275px;
+  top: 200px;
+  color:#2665AC;
+}
+
+.sidebar li {
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 400;
+  padding: 5px 0;
+  cursor: pointer;
+}
+
+.sidebar li:hover {
+  text-decoration: underline;
+}
+
+.sidebar li.active-category {
+  text-decoration: underline;
+  font-weight: 600; /* Optional: Highlight the active category with bold text */
+  color: #164A76;  /* Optional: Different color for active category */
+}
+
+
+
+.popupmagnifyingglass{
+  display: flex;
+  position: relative;
+  margin-top: -45px;
+  margin-left: -305px;
+  width:20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  }
+
+
+.popupsearch{
+  display:flex;
+  position: absolute;
+  top: 85px;
+  left: 30px;
+  color:#769FCD;
+  max-width: 200px;
+  box-shadow: 2px 2px 5px grey;
+}
+
+.popupmagnifyingglass{
+  position: absolute;
+  top: 138px;
+    left: 508px;
+    width:20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+
+
+.popupclose {
+  position: relative;
+  top: 10px;
+  height:40px;
+  right: 30px;
+  padding: 8px 12px;
+  color: #2665AC;
+  font-size: 20px;
+  font-weight: 500;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+
+/*plus icon Add widget*/
+.plusaddwidgetProOv{
+  display:flex;
+  position: absolute;
+  right: 108px;
+  top:7px;
+  width: 17px;
+  height: 22px;
+}
+
+.plusaddwidgetrecent{
+  display:flex;
+  position: absolute;
+  right: 108px;
+  top:7px;
+  width: 17px;
+  height: 22px;
+}
+
+.plusaddwidgetPerOv{
+  display:flex;
+  position: absolute;
+  right: 108px;
+  top:7px;
+  width: 17px;
+  height: 22px;
+}
+
+.plusaddwidgetCalendar{
+  display:flex;
+  position: absolute;
+  right: 108px;
+  top:7px;
+  width: 17px;
+  height: 22px;
+}
+
+.plusaddwidgetTotalPro{
+  display:flex;
+  position: absolute;
+  right: 108px;
+  top:7px;
+  width: 17px;
+  height: 22px;
+}
+
+
+/*widget Icons*/
+.projoverviewiconpopup{
+  display:flex;
+  position: relative;
+  width:60px;
+  bottom:5px;
+  right:8px;
+}
+
+
+.recentMiconpopup{
+  display:flex;
+  position: relative;
+  width:60px;
+  bottom:5px;
+  right:8px;
+}
+
+.perOviconpopup{
+  display:flex;
+  position: relative;
+  width:60px;
+  bottom:5px;
+  right:8px;
+}
+
+.Calendariconpopup{
+  display:flex;
+  position: relative;
+  width:60px;
+  bottom:5px;
+  right:8px;
+}
+
+.totprojiconpopup{
+  display:flex;
+  position: relative;
+  width:60px;
+  bottom:5px;
+  right:8px;
+}
+
+.tottasksiconpopup{
+  display:flex;
+  position: relative;
+  width:60px;
+  bottom:5px;
+  right:8px;
+}
+
+.confirmation-dialog {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  width: 400px;
+}
+
+.confirmation-content {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.confirmation-content h3 {
+  color: #3A74B4;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.confirmation-content p {
+  color: #2665AC;
+  margin: 5px 0;
+  font-size: 13px;
+}
+
+.widget-to-remove {
+  background: #f5f5f5;
+  padding: 15px;
+  border-radius: 6px;
+  margin: 10px 0;
+}
+
+.widget-to-remove h4 {
+  color: #2665AC;
+  margin: 0 0 5px 0;
+  font-size: 16px;
+}
+
+.confirmation-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.confirm-button, .cancel-button {
+  padding: 8px 20px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.confirm-button {
+  background-color: #2665AC;
+  color: white;
+}
+
+.cancel-button {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.confirm-button:hover {
+  background-color: #7FB2EB;
+}
+
+.cancel-button:hover {
+  background-color: #d0d0d0;
+}
+
+.widget-to-remove {
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.widget-remove-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.widget-icon-container {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.widget-icon-preview {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.widget-to-remove h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.widget-to-remove p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.compltasksiconpopup{
+  display:flex;
+  position: relative;
+  width:60px;
+  bottom:5px;
+  right:8px;
+}
+
+.complprojiconpopup{
+  display:flex;
+  position: relative;
+  width:60px;
+  bottom:5px;
+  right:8px;
+}
+
+.onProiconpopup{
+  display:flex;
+  position: relative;
+  width:60px;
+  bottom:5px;
+  right:8px;
+}
+
+
+.onTasksiconpopup{
+  display:flex;
+  position: relative;
+  width:60px;
+  bottom:5px;
+  right:8px;
+}
+
+.actTasksiconpopup{
+  display:flex;
+  position: relative;
+  width:60px;
+  bottom:5px;
+  right:8px;
+}
+
+.notifIconpopup{
+  display:flex;
+  position: relative;
+  width:60px;
+  bottom:5px;
+  right:8px;
+}

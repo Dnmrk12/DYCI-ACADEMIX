@@ -1,0 +1,1188 @@
+.scrum-container {
+  position: relative;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  margin-top: 30px;
+  height: auto;
+  width: 270%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  max-width: 1200px; /* Add a max-width */
+}
+
+.scrum-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.scrum-title {
+  color: #2665AC;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.scrum-create-epic-btn {
+  padding: 8px 16px;
+  background-color: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 20px;
+  margin-right: 40px;
+  color: #2665AC;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.scrum-create-epic-btn:hover {
+  background-color: #D6E6F2;
+}
+
+.scrum-controls-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.scrum-search-container {
+  position: relative;
+  /* Remove margin-bottom as it's handled by the container */
+}
+
+.scrum-search-input {
+  width: 250px; /* Adjust this to match the width of the scrum-title */
+  max-width: 100%;
+  border: 1px solid #d1d9e6;
+  color: #2665AC;
+  border-radius: 10px;
+  padding: 8px 16px;
+  padding-right: 40px;
+  font-size: 14px;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.scrum-search-input::placeholder {
+  color: #2665AC;
+}
+
+.scrum-search-icon {
+  position: absolute;
+  margin-left: -35px; /* Adjust this value to position the icon closer to the right edge */
+  top: 48%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.scrum-table-header {
+  display: grid;
+  grid-template-columns: 40px 2fr 1.5fr 1fr 1.5fr 1fr 40px;
+  gap: 16px;
+  padding: 8px 16px;
+  border-bottom: 1px solid #2665AC;
+  color: #2665AC;
+  font-size: 14px;
+  align-items: center;
+}
+
+.scrum-project-row {
+  display: grid;
+  grid-template-columns: 40px 2fr 1.5fr 1fr 1.5fr 1fr 40px;
+  gap: 16px;
+  padding: 12px 16px;
+  align-items: center;
+  position: relative;
+}
+
+.scrum-project-row:hover {
+  background-color: #D6E6F2;
+}
+
+.scrum-bookmark-icon {
+width: 20px;
+cursor: pointer;
+color: #2665AC;
+height: 20px;
+object-fit: contain;
+}
+
+.scrum-bookmark-icon:hover,
+.scrum-bookmark-icon:focus,
+.scrum-bookmark-icon.clicked {
+  fill: #2665AC;
+}
+
+.scrum-project-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scrum-project-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: cover; /* Ensure the image fills the container */
+  border-radius: 50%; /* Makes it circular */
+  overflow: hidden; /* Clips any part of the image spilling outside */
+}
+
+
+.scrum-project-name {
+  color: #2665AC;
+cursor: pointer;
+margin-left: 0px; /* Keep the text in the same position */
+top: 0px; /* Keep the text vertically fixed */
+white-space: nowrap; /* Prevent the text from wrapping */
+	overflow: hidden; /* Hide overflowing text */
+	text-overflow: ellipsis; /* Add ellipsis when text overflows */
+	max-width: 200px; /* Adjust the maximum width as needed */
+}
+
+.scrum-project-name:hover {
+  text-decoration: underline;
+}
+
+.scrum-title-tooltip {
+	position: absolute;
+	top: 100%; /* Position below the title */
+	background-color: #eff6ff; /* Dark background */
+	color: #2665AC; /* White text */
+	padding: 5px 10px; /* Add spacing */
+	border-radius: 4px; /* Rounded corners */
+	font-size: 14px; /* Tooltip font size */
+	white-space: nowrap; /* Prevent wrapping */
+	z-index: 10; /* Ensure it appears on top */
+	box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2); /* Optional shadow */
+  word-wrap: break-word; /* Ensures words break into the next line */
+  white-space: normal; /* Allows multiple lines */
+  line-height: 1.5; /* Adds spacing between lines for readability */
+  text-align: left; /* Keeps text centered */
+  max-width: 80%; /* Ensures it doesn't exceed modal width */
+}
+
+.scrum-project-key {
+  color: #2665AC;
+}
+
+.scrum-project-name-cell {
+  display: flex;
+align-items: center;
+gap: 12px;
+position: relative; /* Ensure the child elements are positioned relative to their containers */
+}
+
+
+.scrum-master-cell {
+  display: flex;
+align-items: center;
+gap: 12px;
+position: relative; /* Ensure the child elements are positioned relative to their containers */
+}
+
+
+
+.scrum-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.scrum-master-name {
+  color: #2665AC;
+cursor: pointer;
+position: relative;
+margin-left: 0px; /* Keep the text in the same position */
+top: 0px; /* Keep the text vertically fixed */
+}
+
+.scrum-master-name:hover {
+  text-decoration: underline;
+}
+
+.scrum-more-options-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.scrum-more-options-btn:hover {
+  background-color: #D6E6F2
+}
+
+/* menu dropdown */
+.scrum-more-options-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 40px;
+}
+
+.scrum-dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 120px;
+  z-index: 10;
+}
+
+.scrum-dropdown-item {
+  display: block;
+  padding: 8px 16px;
+  width: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #2665AC;
+  font-size: 14px;
+  text-align: center;
+}
+
+.scrum-dropdown-item:hover {
+  background-color: #D6E6F2;
+}
+
+.scrum-dropdown-item:first-child {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.scrum-dropdown-item:last-child {
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Create epic popup */
+.scrum-epic-modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+.scrum-epic-popup-container {
+  background: white;
+  border-radius: 16px;
+  width: 800px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.scrum-epic-popup-title {
+  color: #2665AC;
+  font-size: 24px;
+  font-weight: 400;
+  margin-bottom: 16px;
+}
+
+.scrum-epic-upload-section {
+  flex: 1 1;
+  background: #F1F9FA;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  height: 185px;
+}
+
+.scrum-epic-popup-content {
+  display: flex;
+  gap: 24px;
+  padding: 0 8px;
+}
+
+.scrum-epic-popup-divider {
+  height: 1px;
+  background: #3A74B4;
+  margin: 0 -10px 24px;
+  width: 770px;
+}
+
+.scrum-epic-form-section {
+  height: 240px;
+  width: 320px;
+}
+
+.scrum-epic-popup-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: -24px;
+}
+
+.scrum-epic-upload-area {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 65px;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  height: 130px;
+  margin-top: 3px;
+}
+
+.scrum-epic-image-container {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 4px;
+  background: #F1F9FA;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 33px;
+}
+
+.scrum-epic-project-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.scrum-epic-upload-text {
+  color: #769FCD;
+  font-size: 14px;
+  margin: 0;
+  text-align: center;
+  margin-left: 3px;
+}
+
+.scrum-epic-upload-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  margin-left: 16px;
+}
+
+.scrum-epic-upload-button {
+  background: #2665AC;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.scrum-epic-upload-button:hover {
+  background: #1976d2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.scrum-epic-input:hover {
+  border-color: #2665AC;
+}
+.scrum-epic-input {
+  width: 100%;
+  padding: 8px 16px;
+  border: 1px solid #e3e8ef;
+  color: #2665AC;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 16px;
+  outline: none;
+  transition: border-color 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.scrum-epic-input::placeholder {
+  color: #2665AC;
+}
+
+.scrum-epic-date-input::placeholder {
+  color: #2665AC;
+}
+
+.scrum-epic-action-button:hover {
+  background: #1976d2;
+}
+.scrum-epic-action-button {
+  padding: 8px 32px;
+  border-radius: 9999px;
+  font-size: 14px;
+  color: white;
+  background: #2665AC;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.scrum-epic-upload-area::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1px;
+  height: 100px;
+  border-left: 1px dashed #2665AC;
+}
+
+.scrum-epic-date-group {
+  margin-bottom: 16px;
+}
+
+.scrum-epic-date-input:hover {
+  border-color: #2665AC;
+}
+.scrum-epic-date-input {
+  width: 100%;
+  padding: 8px 16px;
+  color: #2665AC;
+  padding-right: 40px;
+  border: 1px solid #e3e8ef;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  position: relative;
+  background-color: white;
+}
+
+.scrum-epic-date-label {
+  color: #2665AC;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.scrum-epic-time-button:hover {
+  border-color: #2665AC;
+}
+.scrum-epic-time-button {
+  padding: 8px 16px;
+  border: 1px solid #e3e8ef;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #2665AC;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 120px;
+}
+
+.scrum-epic-date-row {
+  display: flex;
+  gap: 12px;
+}
+
+.scrum-epic-date-group {
+  margin-bottom: 16px;
+}
+
+.scrum-epic-date-label {
+  color: #2665AC;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.scrum-epic-date-row {
+  display: flex;
+  gap: 12px;
+}
+
+.scrum-epic-date-input-container {
+  position: relative;
+  cursor: pointer;
+}
+.scrum-epic-date-input-container {
+  flex: 1 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.scrum-epic-calendar-icon {
+  position: absolute;
+  right: 12px;
+  color: #2665AC;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Hide the default date picker icon */
+.scrum-epic-date-input::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  cursor: pointer;
+}
+
+.scrum-epic-time-dropdown {
+  position: absolute;
+  z-index: 50;
+  width: 120px;
+  margin-top: 4px;
+  background-color: white;
+  border: 1px solid #e3e8ef;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.scrum-epic-time-dropdown-option:hover {
+  background-color: #F1F9FA;
+}
+.scrum-epic-time-dropdown-option {
+  width: 100%;
+  padding: 8px 16px;
+  text-align: left;
+  color: #2665AC;
+  font-size: 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+/* Custom scrollbar for time dropdown */
+.scrum-epic-time-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrum-epic-time-dropdown::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.scrum-epic-time-dropdown::-webkit-scrollbar-thumb {
+  background: #2665AC;
+  border-radius: 4px;
+}
+
+.scrum-epic-time-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #1976d2;
+}
+
+/* delete project popup */
+.scrum-delete-modal {
+  position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.scrum-delete-popup-container {
+  background-color: white;
+    border-radius: 8px;
+    padding: 24px;
+    width: 600px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.scrum-delete-popup-message {
+    color: #3A74B4;
+    margin: 0;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.scrum-delete-popup-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.scrum-yes-action-button:hover, .scrum-no-action-button:hover {
+  background-color: #1976d2;
+}
+.scrum-yes-action-button, .scrum-no-action-button {
+  background-color: #2665AC;
+  color: white;
+}
+.scrum-yes-action-button, .scrum-no-action-button {
+  padding: 8px 42px;
+  border-radius: 9999px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+}
+
+/* Done section styles */
+.scrum-done-section {
+  display: flex;
+  align-items: center;
+  padding: 16px 0;
+  margin-top: 16px;
+  cursor: pointer;
+  gap: 8px; /* Small gap between text and icon */
+}
+
+.scrum-done-name {
+  color: #2665AC;
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.scrum-done-icon {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+}
+
+.scrum-done-section:hover .scrum-done-icon {
+  opacity: 1;
+}
+
+.scrum-done-project-name {
+  text-decoration: line-through;
+  color: #2665AC;
+}
+
+.scrum-done-project-key {
+  text-decoration: line-through;
+  color: #2665AC;
+}
+
+/* Done Menu Styles */
+.scrum-done-menu-container {
+  position: relative;
+}
+
+.scrum-done-menu-button {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scrum-done-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #769FCD; /* Set the color directly here */
+  outline: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  width: 280px;
+  z-index: 1000;
+  padding: 16px;
+}
+
+
+.scrum-done-dropdown-header {
+  color: #2665AC;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.scrum-done-dropdown-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.scrum-done-dropdown-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.scrum-done-radio {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: #1976d2;
+}
+
+.scrum-done-radio-label {
+  color: #2665AC;
+  font-size: 14px;
+}
+
+/* guidelineIcon */
+.scrum-guidelinesIcon {
+  position: relative;
+  top: 1px;
+  width: 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+/* guidelinesPopup */
+.scrum-guidelines {
+  position: absolute;
+  display: flex;
+  padding: 30px;
+  flex-direction: column;
+  width: 1040px;
+  height: 550px;
+  margin-top: -90px;
+  margin-left: 50px;
+  justify-content: center;
+  transform: (50%, 50%);
+  background-color: #D6E6F2;
+  border-radius: 20px;
+  z-index: 2000;
+  gap: 20px;
+}
+
+.scrum-icons {
+  margin-right: 15px;
+  width: 70px;
+  height: auto;
+}
+
+.scrum-instruction p,
+.scrum-representation-instruction p,
+.scrum-project-instruction p {
+  margin: 0;
+}
+
+.scrum-epic-icons {
+  position: relative;
+  width: 20px;
+  left: -5px;
+}
+
+.scrum-guidelines-scroll {
+  overflow-x: scroll;
+  overflow-x: hidden;
+  display: flex;
+  margin-top: -30px;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.scrum-guidelines-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.scrum-guidelines-scroll::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey;
+  border-radius: 10px;
+}
+
+.scrum-guidelines-scroll::-webkit-scrollbar-thumb {
+  background: #769FCD;
+  border-radius: 10px;
+}
+
+.scrum-guidelines h4 {
+  position: relative;
+  bottom: 30px;
+  right: 30px;
+  background-color: #2665AC;
+  color: #F7FBFC;
+  font-weight: 500;
+  padding: 20px;
+  border-radius: 20px 20px 0 0;
+  width: 1040px;
+}
+
+.scrum-instruction {
+  display: flex;
+  padding: 20px;
+  width: 900px;
+  margin-left: 30px;
+  margin-top: 10px;
+  color: #2665AC;
+  font-size: 15px;
+  background-color: #F7FBFC;
+  border-radius: 20px;
+  box-shadow: 2px 2px 8px grey;
+  align-items: center;
+}
+
+.scrum-epic-instruction {
+  text-align: column;
+  padding: 20px;
+  width: 900px;
+  height: 200px;
+  margin-left: 30px;
+  color: #2665AC;
+  font-size: 15px;
+  background-color: #F7FBFC;
+  border-radius: 20px;
+  box-shadow: 2px 2px 8px grey;
+}
+
+.scrum-epic-instruction div {
+  margin-bottom: 10px;
+}
+
+.scrum-epic-instruction b {
+  display: flex;
+  padding: 5px;
+  width: 900px;
+  font-weight: 400;
+}
+
+.scrum-epic-instruction p {
+  display: flex;
+  position: relative;
+  float: right;
+  padding: 5px;
+  width: 250px;
+  font-weight: 400;
+  left: 10px;
+  bottom: 100px;
+  margin: 0;
+}
+
+.priority-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.priority-levels {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: white;
+  padding: 15px 15px;
+  border-radius: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: row;
+}
+
+.priority {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  margin: 5px 0;
+}
+
+.caret {
+  display: inline-block;
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: -2px; /* Tighten the spacing between multiple carets */
+  width: 24px; /* Fixed width to align text */
+  text-align: right; /* Align carets to the right */
+}
+
+.priority.low {
+  color: #4F95FF;
+}
+
+.priority.low .caret {
+  color: #4F95FF;
+}
+
+.priority.medium {
+  color: #FF9D4D;
+}
+
+.priority.medium .caret {
+  color: #FF9D4D;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.priority.high {
+  color: #FF6B6B;
+}
+
+.priority.high .caret {
+  color: #FF6B6B;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.scrum-representation-instruction {
+  display: flex;
+  padding: 20px;
+  width: 900px;
+  margin-left: 30px;
+  color: #2665AC;
+  font-size: 15px;
+  background-color: #F7FBFC;
+  border-radius: 20px;
+  box-shadow: 2px 2px 8px grey;
+  align-items: center;
+  position: relative;
+}
+
+.scrum-representation-instruction p {
+  margin: 0;
+  width: 70%;
+}
+
+.scrum-project-instruction {
+  display: flex;
+  padding: 20px;
+  width: 900px;
+  margin-bottom: 10px;
+  margin-left: 30px;
+  color: #2665AC;
+  font-size: 15px;
+  background-color: #F7FBFC;
+  border-radius: 20px;
+  box-shadow: 2px 2px 8px grey;
+  align-items: center;
+}
+
+.scrum-guidelines-done {
+  position: relative;
+  width: 75px;
+  padding: 4px;
+  border: none;
+  background-color: #3A74B4;
+  color: #F7FBFC;
+  font-size: 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  left: 855px;
+}
+
+.scrum-guidelines-done:hover {
+  background-color: #769FCD;
+}
+
+.scrum-overdue-icon {
+  position: relative;
+  width: 12px;
+  height: 12px;
+}
+
+/* tooltip for overdue */
+/* tooltip for overdue */
+.scrum-epic-tooltip-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.scrum-epic-tooltip-container:hover .scrum-epic-custom-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.scrum-epic-custom-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  background-color: #D6E6F2;
+  border: 1px solid #2665AC;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #3b82f6;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s;
+  margin-top: 8px;
+  z-index: 1000;
+  width: 200px;
+  text-align: center;
+}
+
+.scrum-epic-tooltip-content {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.5;
+  display: block;
+  max-width: 200px;
+  overflow: hidden;
+}
+
+.scrum-epic-custom-tooltip::before, 
+.scrum-epic-custom-tooltip::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  border-style: solid;
+}
+
+.scrum-epic-custom-tooltip::before {
+  top: -8px;
+  border-width: 0 8px 8px 8px;
+  border-color: transparent transparent #2665AC transparent;
+}
+
+.scrum-epic-custom-tooltip::after {
+  top: -7px;
+  border-width: 0 7px 7px 7px;
+  border-color: transparent transparent #D6E6F2 transparent;
+}
+
+/* members */
+.scrum-member-icon-container {
+  display: flex;
+  align-items: center;
+  gap: -8px;
+}
+
+.scrum-member-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  margin-right: -8px;
+}
+
+.scrum-member-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: #EFF6FF;
+  color: #2665AC;
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.scrum-progress-bar-container {
+  width: 90%;
+}
+
+.scrum-progress-bar {
+  height: 8px;
+  background-color: #E5E7EB;
+  border-radius: 4px;
+  position: relative;
+}
+
+.scrum-progress {
+  height: 100%;
+  background-color: #2665AC;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.scrum-progress-percentage {
+  display: none;
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #2665AC;
+  color:  #D6E6F2;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.scrum-progress-bar:hover .scrum-progress-percentage {
+  display: block;
+}
+
+.scrum-epic-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.scrum-epic-popup-modal {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.scrum-epic-popup-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 16px;
+}
+
+.scrum-epic-popup-message {
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #25AE88;
+  word-wrap: break-word; /* Ensures words break into the next line */
+  white-space: normal; /* Allows multiple lines */
+  line-height: 1.5; /* Adds spacing between lines for readability */
+  text-align: center; /* Keeps text centered */
+  max-width: 100%; /* Ensures it doesn't exceed modal width */
+}
+
+.scrum-epic-popup-button {
+  background-color: #25AE88;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.scrum-epic-popup-button:hover {
+  background-color: #1D8C6E;
+}
+
+.scrum-epic-popup-error-message {
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #AE2525;
+}
+
+.scrum-epic-popup-error-button {
+  background-color: #AE2525;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.scrum-epic-popup-error-button:hover {
+  background-color: #912121;
+}

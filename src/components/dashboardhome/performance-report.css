@@ -1,0 +1,204 @@
+.performance-report-container {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+    margin-top: 30px;
+    width:295%;
+    height: 1100px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    max-width: 1260px; /* Add a max-width */
+  }
+  
+  .Performance-report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  .Performance-report-header h1 {
+    color: #2665AC;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .Performance-report-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 24px;
+  }
+  
+  .Performance-report-content > * {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+  }
+
+
+  
+.Performance-chart-container {
+    position: relative;
+    top: 45px;
+    left:10px;
+    width: 850px;
+    height:810px;
+    background-color: #F7FBFC;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    color:#0078FF;
+    border-radius: 8px;
+   
+}
+
+
+.Performance-chart-container canvas{
+    padding:10px;
+    
+
+}
+
+.Performance-chart-title-label{
+  position:absolute;
+  font-weight: 600;
+  color:#2665AC;
+  left:20px;
+  top:23px;
+}
+
+
+
+.Performance-filter-dropdown-chart{
+    display: flex;
+    position: absolute;
+    height:30px;
+    bottom:760px;
+    left:470px;
+  }
+  .Performance-filter-select-lastYMW{
+    padding: 5px;
+    font-size: 13px;
+     border-radius: 5px;
+     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+     color:#2665AC;
+     border: none;
+    background-color: #F3F9FB;
+  
+  }
+  
+  
+  
+  .Performance-filter-select-protask{
+    padding: 5px;
+    font-size: 13px;
+     border-radius: 5px;
+     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+     color:#2665AC;
+     border: none;
+    background-color: #F3F9FB;
+    margin-left:15px;
+    position: relative;
+    
+  }
+  
+
+  .productivity-rate-container {
+    background-color: #f0f4f8;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    padding: 24px;
+    position: relative;
+    top: 45px;
+    height: 350px;
+    color: #2665AC;
+  }
+  
+  .productivity-rate-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .completionrateIcon {
+    width: 160px;
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    left: 70px;
+    top:30px;
+  }
+  
+  .productivity-rate-info {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    bottom:30px;
+    left:45px;
+    white-space: nowrap;
+  }
+  
+  .productivity-rate-info p {
+    margin-top: 10px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  .productivity-rate-info p:first-child {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+
+  .work-progress-container {
+    background-color: #f0f4f8;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    padding: 24px;
+    position: relative;
+    bottom: 405px;
+    left:875px;
+    width: 350px;
+    height: 370px;
+    color: #2665AC;
+  }
+  
+  .work-progress-details {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    bottom: 30px;
+    left: 45px;
+    white-space: nowrap;
+  }
+  
+  .work-progress-details p {
+    margin-top: 10px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  .work-progress-details p:first-child {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .work-progress-select{
+    padding: 5px;
+    font-size: 13px;
+     border-radius: 5px;
+     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+     color:#2665AC;
+     border: none;
+    background-color: #F3F9FB;
+  }
+  
+
+
+
+  

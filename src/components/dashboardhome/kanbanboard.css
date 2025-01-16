@@ -1,0 +1,1169 @@
+.kanban-board {
+  position: relative;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  margin-top: 30px;
+  height: auto;
+  width: 270%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  max-width: 1200px;
+}
+
+.kanban-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.kanban-board-title {
+  color: #2665AC;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.guidelinesIcon {
+  position: relative;
+  top: 2px;
+  width: 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.kanban-filter-dropdown {
+  position: relative;
+  min-width: 120px;
+}
+
+.kanban-filter-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Keeps text and icon properly spaced */
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #2665AC;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.2s ease-in-out;
+  width: 100%; /* Fill the parent container */
+  min-width: 120px; /* Match parent's min-width */
+}
+
+.kanban-filter-btn:hover {
+  background-color: #D6E6F2;
+}
+
+.kanban-chevron-icon {
+	transform: rotate(0deg);
+	transition: transform 0.3s ease;
+	margin-left: auto;
+}
+  
+.rotate {
+	transform: rotate(180deg);
+	transition: transform 0.3s ease;
+}
+
+.filter-dropdown-content {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background-color: white;
+  width: 100%; /* Match the button width */
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.filter-option {
+  padding: 8px 16px;
+  font-size: 14px;
+  text-align: center;
+  cursor: pointer;
+  color: #2665AC;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.filter-option:first-child {
+  border-radius: 8px 8px 0 0;
+}
+
+.filter-option:last-child {
+  border-radius: 0 0 8px 8px;
+}
+
+.filter-option:hover {
+  background-color: #D6E6F2;
+}
+
+.create-epic-btn {
+  padding: 8px 16px;
+  background-color: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 20px;
+  color: #2665AC;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.create-epic-btn:hover {
+  background-color: #D6E6F2;
+}
+
+.kanban-guidelines {
+  position: absolute;
+  display: flex;
+  padding: 30px;
+  flex-direction: column;
+  width: 1040px;
+  height: 550px;
+  margin-top: -90px;
+  margin-left: 50px;
+  justify-content: center;
+  transform: (50%, 50%);
+  background-color: #D6E6F2;
+  border-radius: 20px;
+  z-index: 2000;
+  gap: 20px;
+}
+
+.kanban-icons {
+  margin-right: 15px;
+  width: 70px;
+  height: auto;
+}
+
+.kanban-instruction p,
+.kanban-representation-instruction p,
+.kanban-project-instruction p {
+  margin: 0;
+}
+
+.kanban-epic-icons {
+  position: relative;
+  width: 20px;
+  left: -5px;
+}
+
+.kanban-guidelines-scroll {
+  overflow-x: scroll;
+  overflow-x: hidden;
+  display: flex;
+  margin-top: -30px;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.kanban-guidelines-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.kanban-guidelines-scroll::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey;
+  border-radius: 10px;
+}
+
+.kanban-guidelines-scroll::-webkit-scrollbar-thumb {
+  background: #769FCD;
+  border-radius: 10px;
+}
+
+.kanban-guidelines h4 {
+  position: relative;
+  bottom: 30px;
+  right: 30px;
+  background-color: #2665AC;
+  color: #F7FBFC;
+  font-weight: 500;
+  padding: 20px;
+  border-radius: 20px 20px 0 0;
+  width: 1040px;
+}
+
+.kanban-instruction {
+  display: flex;
+  padding: 20px;
+  width: 900px;
+  margin-left: 30px;
+  margin-top: 10px;
+  color: #2665AC;
+  font-size: 15px;
+  background-color: #F7FBFC;
+  border-radius: 20px;
+  box-shadow: 2px 2px 8px grey;
+  align-items: center;
+}
+
+.kanban-epic-instruction {
+  text-align: column;
+  padding: 20px;
+  width: 900px;
+  height: 200px;
+  margin-left: 30px;
+  color: #2665AC;
+  font-size: 15px;
+  background-color: #F7FBFC;
+  border-radius: 20px;
+  box-shadow: 2px 2px 8px grey;
+}
+
+.kanban-epic-instruction div {
+  margin-bottom: 10px;
+}
+
+.kanban-epic-instruction b {
+  display: flex;
+  padding: 5px;
+  width: 900px;
+  font-weight: 400;
+}
+
+.kanban-epic-instruction p {
+  display: flex;
+  position: relative;
+  float: right;
+  padding: 5px;
+  width: 250px;
+  font-weight: 400;
+  left: 10px;
+  bottom: 100px;
+  margin: 0;
+}
+
+.priority-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.priority-levels {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: white;
+  padding: 15px 15px;
+  border-radius: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: row;
+}
+
+.priority {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  margin: 5px 0;
+}
+
+.caret {
+  display: inline-block;
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: -2px;
+  width: 24px;
+  text-align: right;
+}
+
+.priority.low {
+  color: #4F95FF;
+}
+
+.priority.low .caret {
+  color: #4F95FF;
+}
+
+.priority.medium {
+  color: #FF9D4D;
+}
+
+.priority.medium .caret {
+  color: #FF9D4D;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.priority.high {
+  color: #FF6B6B;
+}
+
+.priority.high .caret {
+  color: #FF6B6B;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.kanban-representation-instruction {
+  display: flex;
+  padding: 20px;
+  width: 900px;
+  margin-left: 30px;
+  color: #2665AC;
+  font-size: 15px;
+  background-color: #F7FBFC;
+  border-radius: 20px;
+  box-shadow: 2px 2px 8px grey;
+  align-items: center;
+  position: relative;
+}
+
+.kanban-representation-instruction p {
+  margin: 0;
+  width: 70%;
+}
+
+.kanban-project-instruction {
+  display: flex;
+  padding: 20px;
+  width: 900px;
+  margin-bottom: 10px;
+  margin-left: 30px;
+  color: #2665AC;
+  font-size: 15px;
+  background-color: #F7FBFC;
+  border-radius: 20px;
+  box-shadow: 2px 2px 8px grey;
+  align-items: center;
+}
+
+.kanban-guidelines-done {
+  position: relative;
+  width: 75px;
+  padding: 4px;
+  border: none;
+  background-color: #3A74B4;
+  color: #F7FBFC;
+  font-size: 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  left: 855px;
+}
+
+.kanban-guidelines-done:hover {
+  background-color: #769FCD;
+}
+
+/* epic phase columns */
+.kanban-columns {
+  display: grid;
+  grid-template-columns: repeat(4, 0fr);
+  grid-gap: 20px;
+  position: relative;
+  margin-top: 2rem;
+  overflow-x: auto;
+  padding: 20px 0px;
+}
+
+.kanban-columns::-webkit-scrollbar {
+	height: 15px !important;
+}
+
+.kanban-columns::-webkit-scrollbar-track {
+	background: #B9D7EA;
+	border-radius: 8px;
+}
+
+.kanban-columns::-webkit-scrollbar-thumb {
+	background: #2665AC;
+	border-radius: 8px;
+}
+
+.kanban-columns::-webkit-scrollbar-thumb:hover {
+	background: #769FCD;
+}
+
+.kanban-column {
+  background-color: #EFF4F6;
+  border-radius: 8px;
+  padding: 20px;
+  min-height: 500px;
+  width: 365px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease-in-out; /* Smooth animation */
+}
+
+.column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.kanban-column-title {
+  color: #2665AC;
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.kanban-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.kanban-card:hover {
+  border: 2px solid #2665AC;
+  cursor: pointer;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: #2665AC;
+  cursor: pointer;
+  padding: 4px;
+  margin-top: -25px;
+  margin-right: -45px;
+  opacity: 0; /* Hide by default */
+  transition: opacity 0.2s ease; /* Smooth transition for showing/hiding */
+}
+
+/* Show the remove button when hovering over the kanban card */
+.kanban-card:hover .remove-btn {
+  opacity: 1;
+}
+
+/* Keep the dots styling the same */
+.dots {
+  font-size: 30px;
+  line-height: 1;
+}
+
+/* Add active state for the card when menu is open */
+.kanban-card.active .remove-btn {
+  opacity: 1;
+}
+
+.remove-menu {
+  position: absolute;
+  right: 5px;
+  top: 30px;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 0;
+  z-index: 10;
+  width: 130px;
+}
+
+.remove-menu button {
+  width: 100%;
+  text-align: center;
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  color: #2665AC;
+  font-size: 14px;
+  cursor: pointer;
+  display: block;
+  margin: 0;
+  border-radius: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.remove-menu button:hover {
+  background-color: #D6E6F2;
+}
+
+.remove-menu button:first-child {
+  border-radius: 4px 4px 0 0;
+}
+
+.remove-menu button:last-child {
+  border-radius: 0 0 4px 4px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  padding-right: 40px;  /* Make space for percentage */
+}
+
+.card-header h4 {
+  color: #2665AC;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  white-space: nowrap; /* Prevent the text from wrapping */
+	overflow: hidden; /* Hide overflowing text */
+	text-overflow: ellipsis; /* Add ellipsis when text overflows */
+	max-width: 200px; /* Adjust the maximum width as needed */
+}
+
+.flex.items-center.gap-2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* Adjust this value as needed */
+}
+
+.project-name-icon {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  border-radius: 9999px;
+  top: -4px;
+}
+
+.title-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.title-tooltip {
+	position: absolute;
+	top: 30%; /* Position below the title */
+	background-color: #eff6ff; /* Dark background */
+	color: #2665AC; /* White text */
+	padding: 5px 10px; /* Add spacing */
+	border-radius: 4px; /* Rounded corners */
+	font-size: 14px; /* Tooltip font size */
+  font-weight: 400;
+	white-space: nowrap; /* Prevent wrapping */
+	z-index: 10; /* Ensure it appears on top */
+	box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2); /* Optional shadow */
+  word-wrap: break-word; /* Ensures words break into the next line */
+  white-space: normal; /* Allows multiple lines */
+  line-height: 1.5; /* Adds spacing between lines for readability */
+  text-align: left; /* Keeps text centered */
+  max-width: 80%; /* Ensures it doesn't exceed modal width */
+}
+
+/* epic phase overdue tooltip */
+.kanban-epic-tooltip-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.overdue-icon {
+  position: relative;
+  top: -4px;
+  width: 12px;
+  height: 12px;
+}
+
+.kanban-epic-tooltip-container:hover .kanban-epic-custom-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.kanban-epic-custom-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  background-color: #D6E6F2;
+  border: 1px solid #2665AC;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #3b82f6;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s;
+  margin-top: 8px;
+  z-index: 1000;
+  width: 200px;
+  text-align: left;
+}
+
+.kanban-epic-tooltip-content {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.5;
+  display: block;
+  max-width: 200px;
+  overflow: hidden;
+}
+
+.kanban-epic-custom-tooltip::before, 
+.kanban-epic-custom-tooltip::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  border-style: solid;
+}
+
+.kanban-epic-custom-tooltip::before {
+  top: -8px;
+  border-width: 0 8px 8px 8px;
+  border-color: transparent transparent #2665AC transparent;
+}
+
+.kanban-epic-custom-tooltip::after {
+  top: -7px;
+  border-width: 0 7px 7px 7px;
+  border-color: transparent transparent #D6E6F2 transparent;
+}
+
+.epic-project-icon {
+  position: relative;
+  width: 20px;
+  top: -4px;
+}
+
+.task-code {
+  color: #2665AC;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.progress-bar {
+  height: 8px;
+  background-color: #E5E7EB;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.progress {
+  height: 100%;
+  background-color: #2665AC;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-percentage {
+  position: absolute;
+  top: 70px;
+  right: 16px;
+  transform: translateY(-50%);
+  color: #2665AC;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.assignees {
+  display: flex;
+  margin-left: 0px;
+  margin-top: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.assignee-user-image {
+  position: relative;
+  border-radius: 50%;
+  display: flex;
+  margin-right: 5px;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.assignee-count {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  background-color: #EFF6FF;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #2665AC;
+  font-size: 12px;
+  margin-left: -8px;
+  top: -4px;
+  border: 2px solid white;
+  font-weight: 500;
+}
+
+.extra-count {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  background-color: #EFF6FF;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #2665AC;
+  font-size: 12px;
+  margin-left: -8px;
+  top: -4px;
+  border: 2px solid white;
+  font-weight: 500;
+}
+
+.assignees img {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  top: -4px;
+}
+
+/* create and edit epic popup */
+.epic-modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+.epic-container {
+  background: white;
+  border-radius: 16px;
+  width: 800px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.epic-project-image {
+  width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.epic-upload-content {
+  flex: 1 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-left: 10px;
+}
+
+.epic-image-container {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 4px;
+  background: #F1F9FA;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 33px;
+}
+
+.epic-title {
+  color: #2665AC;
+  font-size: 24px;
+  font-weight: 400;
+  margin-bottom: 16px;
+}
+
+.epic-divider {
+  height: 1px;
+  background: #3A74B4;
+  margin: 0 -10px 24px;
+  width: 770px;
+}
+
+.epic-content {
+  display: flex;
+  gap: 24px;
+  padding: 0 8px;
+}
+
+.epic-upload-section {
+  flex: 1 1;
+  background: #F1F9FA;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  height: 185px;
+}
+
+.epic-upload-area {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 65px;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  height: 130px;
+  margin-top: 3px;
+}
+
+.epic-upload-area::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1px;
+  height: 100px;
+  border-left: 1px dashed #2665AC;
+}
+
+.epic-upload-text {
+  color: #769FCD;
+  font-size: 14px;
+  margin: 0;
+  text-align: center;
+  margin-left: 3px;
+}
+
+.epic-upload-button {
+  background: #2665AC;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.epic-upload-button:hover {
+  background: #1976d2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.epic-form-section {
+  height: 240px;
+  width: 320px;
+}
+
+.epic-input {
+  width: 100%;
+  padding: 8px 16px;
+  border: 1px solid #e3e8ef;
+  color: #2665AC;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 16px;
+  outline: none;
+  transition: border-color 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.epic-input:hover {
+  border-color: #2665AC;
+}
+
+.epic-date-label {
+  color: #2665AC;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.epic-date-group {
+  margin-bottom: 16px;
+}
+
+.epic-date-row {
+  display: flex;
+  gap: 12px;
+}
+
+.epic-date-input-container {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Hide the default date picker icon */
+.epic-date-input::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  cursor: pointer;
+}
+
+.epic-date-input {
+  width: 100%;
+  padding: 8px 16px;
+  color: #2665AC;
+  padding-right: 40px;
+  border: 1px solid #e3e8ef;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  position: relative;
+  background-color: white;
+}
+
+.epic-date-input:hover {
+  border-color: #2665AC;
+}
+
+/* Updated calendar icon positioning */
+.epic-calendar-icon {
+  position: absolute;
+  right: 12px;
+  color: #2665AC;
+  pointer-events: none; /* This ensures the hidden native picker is still clickable */
+  z-index: 1;
+}
+
+.epic-date-input-container {
+  position: relative;
+  cursor: pointer;
+}
+
+.epic-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: -24px;
+}
+
+.epic-action-button {
+  padding: 8px 32px;
+  border-radius: 9999px;
+  font-size: 14px;
+  color: white;
+  background: #2665AC;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.epic-action-button:hover {
+  background: #1976d2;
+}
+
+.epic-input::placeholder {
+  color: #2665AC;
+}
+
+.epic-date-input::placeholder {
+  color: #2665AC;
+}
+
+.time-dropdown {
+  position: absolute;
+  z-index: 50;
+  width: 120px;
+  margin-top: 4px;
+  background-color: white;
+  border: 1px solid #e3e8ef;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.time-dropdown-option {
+  width: 100%;
+  padding: 8px 16px;
+  text-align: left;
+  color: #2665AC;
+  font-size: 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.time-dropdown-option:hover {
+  background-color: #F1F9FA;
+}
+
+/* Custom scrollbar for time dropdown */
+.time-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.time-dropdown::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.time-dropdown::-webkit-scrollbar-thumb {
+  background: #2665AC;
+  border-radius: 4px;
+}
+
+.time-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #1976d2;
+}
+
+/* Update time button styling */
+.epic-time-button {
+  padding: 8px 16px;
+  border: 1px solid #e3e8ef;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #2665AC;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 120px;
+}
+
+.epic-time-button:hover {
+  border-color: #2665AC;
+}
+
+/* invite success and error popup */
+.kanban-invite-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.kanban-invite-popup-modal {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.kanban-invite-popup-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 16px;
+}
+
+.kanban-invite-popup-message {
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #25AE88;
+  word-wrap: break-word; /* Ensures words break into the next line */
+  white-space: normal; /* Allows multiple lines */
+  line-height: 1.5; /* Adds spacing between lines for readability */
+  text-align: center; /* Keeps text centered */
+  max-width: 100%; /* Ensures it doesn't exceed modal width */
+}
+
+.kanban-invite-popup-button {
+  background-color: #25AE88;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.kanban-invite-popup-button:hover {
+  background-color: #1D8C6E;
+}
+
+.kanban-invite-popup-error-message {
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #AE2525;
+}
+
+.kanban-invite-popup-error-button {
+  background-color: #AE2525;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.kanban-invite-popup-error-button:hover {
+  background-color: #912121;
+}
+
+/* delete epic project popup */
+.confirmation-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.confirmation-content {
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px;
+  width: 600px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.confirmation-content-title {
+  color: #3A74B4;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+  word-wrap: break-word; /* Ensures words break into the next line */
+  white-space: normal; /* Allows multiple lines */
+  line-height: 1.5; /* Adds spacing between lines for readability */
+  text-align: center; /* Keeps text centered */
+  max-width: 100%; /* Ensures it doesn't exceed modal width */
+}
+
+.confirmation-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.confirm-btn,
+.no-btn {
+  padding: 8px 42px;
+  border-radius: 9999px;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+}
+
+.confirm-btn {
+  background-color: #2665AC;
+  color: white;
+}
+
+.no-btn {
+  background-color: #2665AC;
+  color: white;
+}
+
+.confirm-btn:hover {
+  background-color: #1976d2;;
+}
+
+.no-btn:hover {
+  background-color: #1976d2;;
+}

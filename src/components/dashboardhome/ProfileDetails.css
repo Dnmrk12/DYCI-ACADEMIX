@@ -1,0 +1,295 @@
+.profile-container {
+    width: 1245px;
+    margin-top:30px;
+    background: #F7FBFC;
+    border: 1px solid #d9e3f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  .profile-header {
+    background: linear-gradient(90deg, #8FB0D4, #D6E6F2);
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    width:95%;
+    height:180px;
+    top:70px;
+    border-radius: 30px;
+    place-self: center;
+  }
+  
+  .profile-img-container {
+    width: 150px;
+    height: 140px;
+    border-radius: 10%;
+    border: 1px solid #2665AC;
+    position: absolute;
+    float: left;
+    left: 12%;
+    bottom: -70px;
+    transform: translateX(-50%);
+    overflow: hidden; /* Ensures content stays within the rounded edges */
+  }
+
+
+  .profile-image {
+    width: 100%; /* Fills the container's width */
+    height: 100%; /* Fills the container's height */
+    object-fit: cover; /* Crops the image proportionally to fill the container */
+    border-radius: inherit; /* Matches the container's rounded edges */
+  }
+
+
+  .hover-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40%;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+  }
+  
+  .profile-img-container:hover .hover-overlay {
+    opacity: 1;
+  }
+  .upload-label {
+    cursor: pointer;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .camera-icon {
+   width:20px;
+    margin-bottom: 5px; /* Space between icon and text */
+  }
+  
+  .upload-label span {
+    font-size: 10px;
+    color: #F7FBFC;
+  }
+  
+  .profile-details {
+    padding: 60px 20px 20px;
+    text-align: center;
+    margin-top: -25px;
+  }
+  
+  .profile-user-name {
+    font-size: 40px;
+    font-weight: 500;
+    margin-left: 250px;
+    margin-top: 85px;
+    color: #2665AC;
+  }
+  
+  
+  .profile-links a {
+    text-decoration: none;
+    font-size: 18px;
+    color: #3A74B4;
+    margin: 0 10px;
+    float:left;
+    position: relative;
+    left:75px;
+    top:160px;
+  }
+
+
+  .profileTab:hover,
+.projectArchiveTab:hover {
+    text-decoration: underline;
+}
+
+/* Highlight active button */
+.active {
+    text-decoration: underline;
+    color: #2665AC;
+}
+  
+  
+  .profile-info {
+    margin-top: 120px;
+    place-self: center;
+    text-align: left;
+    color:#2665AC;
+    width:87%;
+  }
+  
+  .profile-info div {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 0;
+    border-bottom: 1px solid #2665AC;
+    
+  }
+  
+  .profile-info div:last-child {
+    border-bottom: none;
+  }
+
+
+  .info{
+    font-size: 1.2em;
+font-weight: 700;
+width: 30%;
+  }
+
+
+  .info-details{
+    font-size: 19px;
+    flex: 1; /* Expands to fill remaining space */
+    text-align: left; /* Aligns the text in this section to the left */
+    margin-right: 0; /* Removes excess margin */
+  }
+  
+  .edit {
+    display: none;
+    position: relative;
+    color: #2665AC;
+    text-decoration: none;
+    font-size: 12px;
+    cursor: pointer;
+    margin-right:110px;
+    top:5px;
+    float: right;
+   
+  }
+
+  .profile-info div:hover .edit {
+    display: block;
+    color: #2665AC; /* Change color when hovering over the parent div */
+    text-decoration: none; /* Optional for emphasis */
+    transition: opacity 0.3s ease-in-out;
+}
+
+
+.edit-field {
+  font-size: 19px;
+  color: #2665AC;
+  border: none;
+  border-radius: 5px;
+  width:57%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    outline: none;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.edit-field-profile-name {
+  font-size: 40px;
+  color: #2665AC;
+  border: none;
+  border-radius: 5px;
+  outline: none;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.navigation-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #007BFF;
+  color: #fff;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.archive-container {
+  width: 1053px;
+  margin-top:100px;
+  place-self: center;
+  background: #F7FBFC;
+ 
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.profile-container, .archive-container {
+  padding: 20px;
+}
+
+
+
+.profile-links a {
+  margin-left: 15px;
+ 
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.profile-links a:hover {
+  text-decoration: underline;
+}
+
+
+.project-item-icon:hover{
+  cursor: pointer;
+text-decoration: underline;
+color: #2665AC;
+}
+
+
+.owner-item:hover{
+  cursor: pointer;
+text-decoration: underline;
+color: #2665AC;
+}
+
+.owner-image{
+  position: relative;
+  width: 20px;
+  height: 20px;
+  right: 4px;
+  top: 4px;
+}
+
+
+.project-image{
+  position: relative;
+  width: 20px;
+  height: 20px; 
+  right: 4px;
+  top: 4px;
+}
+/*
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+ table td {
+  border-bottom: 1px solid #2665AC;
+  padding: 15px;
+  text-align: left;
+  position: relative;
+  left:40px;
+  color: #2665AC;
+}
+
+table th {
+  padding: 10px;
+  text-align: center;
+  color: #2665AC;
+  
+  font-weight: bold;
+}
+
+table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+*/
+  

@@ -1,0 +1,1155 @@
+.groupchat-container {
+	position: relative;
+	padding: 20px;
+	background-color: white;
+	border-radius: 8px;
+	margin-top: 30px;
+	height: auto;
+	width: 270%;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+	max-width: 1200px;
+}
+
+.groupchat-header {
+	display: flex;
+	align-items: flex-start;
+	gap: 16px;
+	margin-bottom: 15px;
+}
+
+.groupchat-video {
+	width: 100%;
+	height: 100px;  /* Adjust as needed */
+	object-fit: cover;
+	cursor: pointer;
+  }
+
+.groupchat-name {
+	color: #2665AC;
+	font-size: 24px;
+	font-weight: bold;
+	margin: 0;
+	white-space: nowrap; /* Prevent the text from wrapping */
+	overflow: hidden; /* Hide overflowing text */
+	text-overflow: ellipsis; /* Add ellipsis when text overflows */
+	max-width: 300px; /* Adjust the maximum width as needed */
+}
+
+.groupchat-title-custom-tooltip {
+	position: absolute;
+	top: 5%; /* Position below the title */
+	background-color: #eff6ff; /* Dark background */
+	color: #2665AC; /* White text */
+	padding: 5px 10px; /* Add spacing */
+	border-radius: 4px; /* Rounded corners */
+	font-size: 14px; /* Tooltip font size */
+	font-weight: 400;
+	white-space: nowrap; /* Prevent wrapping */
+	z-index: 10; /* Ensure it appears on top */
+	box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2); /* Optional shadow */
+	word-wrap: break-word; /* Ensures words break into the next line */
+    white-space: normal; /* Allows multiple lines */
+    line-height: 1.5; /* Adds spacing between lines for readability */
+    text-align: left; /* Keeps text centered */
+    max-width: 25%; /* Ensures it doesn't exceed modal width */
+}
+
+/* Container: velocity sprint header */
+.groupchat-sprint-header {
+	display: flex;
+	align-items: flex-start;
+	margin-bottom: 16px;
+	flex-direction: column;
+	gap: 4px;
+	border-bottom: 1px solid #2665AC;
+	padding: 0.5rem;
+}
+
+.groupchat-sprint-title {
+	font-size: 16px;
+	font-weight: 500;
+	color: #2665AC;
+}
+
+/* Container: burndown Sprint dates */
+.groupchat-sprint-dates {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: #769FCD;
+	font-size: 14px;
+}
+
+.groupchat-clock-icon {
+	margin-right: -6px;
+}
+
+.groupchat-days-remaining {
+	color: #769FCD;
+}
+
+/* group chat section */
+.groupchat-chat-main-container {
+	display: flex;
+	gap: 20px;
+	width: 100%;
+	margin-top: 20px;
+}
+
+.groupchat-chat-wrapper {
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+	gap: 10px;
+	position: relative;
+	/* Add this */
+}
+
+.groupchat-chat-header {
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 20px;
+	padding: 10px;
+	background-color: white;
+	border-radius: 8px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+	width: 100%;
+}
+
+.groupchat-project-icon {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+.groupchat-project-name {
+	font-size: 20px;
+	font-weight: bold;
+	color: #2665AC;
+	white-space: nowrap; /* Prevent the text from wrapping */
+	overflow: hidden; /* Hide overflowing text */
+	text-overflow: ellipsis; /* Add ellipsis when text overflows */
+	max-width: 300px; /* Adjust the maximum width as needed */
+}
+
+.groupchat-project-title-custom-tooltip {
+	position: absolute;
+	top: 5%; /* Position below the title */
+	left: 9%;
+	background-color: #eff6ff; /* Dark background */
+	color: #2665AC; /* White text */
+	padding: 5px 10px; /* Add spacing */
+	border-radius: 4px; /* Rounded corners */
+	font-size: 14px; /* Tooltip font size */
+	font-weight: 400;
+	white-space: nowrap; /* Prevent wrapping */
+	z-index: 10; /* Ensure it appears on top */
+	box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2); /* Optional shadow */
+	word-wrap: break-word; /* Ensures words break into the next line */
+    white-space: normal; /* Allows multiple lines */
+    line-height: 1.5; /* Adds spacing between lines for readability */
+    text-align: left; /* Keeps text centered */
+    max-width: 40%; /* Ensures it doesn't exceed modal width */
+}
+
+/* Messages Container */
+.groupchat-messages-container {
+	flex-grow: 1;
+	overflow-y: auto;
+	max-height: 760px;
+	max-width: 760px;
+	padding: 10px;
+	height: 760px;
+	/* Fixed height */
+	flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.groupchat-messages-container::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+	/* Add this line to control horizontal scrollbar height */
+}
+
+.groupchat-messages-container::-webkit-scrollbar-track {
+	background: #B9D7EA;
+	border-radius: 3px;
+}
+
+.groupchat-messages-container::-webkit-scrollbar-thumb {
+	background: #2665AC;
+	border-radius: 3px;
+}
+
+.groupchat-messages-container::-webkit-scrollbar-thumb:hover {
+	background: #769FCD;
+}
+
+/* Today Divider */
+.groupchat-today-divider {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	margin: 20px 0;
+}
+
+.groupchat-today-divider::before,
+.groupchat-today-divider::after {
+	content: '';
+	flex-grow: 1;
+	height: 1px;
+	background-color: #2665AC;
+	opacity: 0.5;
+}
+
+.groupchat-today-text {
+	padding: 0 10px;
+	color: #2665AC;
+	font-size: 14px;
+	white-space: nowrap;
+}
+
+/* Message Styles */
+.groupchat-message {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 5px;
+    max-width: 70%;
+  }
+  
+  .groupchat-message-delete {
+    position: absolute;
+    left: -25px;
+    top: 11px; /* Adjust this to vertically center the trash icon */
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+  
+  .groupchat-message-delete:hover {
+    opacity: 1;
+  }
+  
+  /* Adjustments for received messages */
+  .groupchat-message-wrapper.received .groupchat-message-delete {
+    left: auto;
+    right: -25px;
+  }
+
+.groupchat-message.sent {
+	align-self: flex-end;
+}
+
+.groupchat-message.received {
+	align-self: flex-start;
+}
+
+.groupchat-message-content {
+	padding: 10px;
+	border-radius: 8px;
+	max-width: 500px;
+	white-space: pre-wrap;
+	/* Preserves spaces and handles newlines */
+	word-wrap: break-word;
+	/* Breaks long words */
+	overflow-wrap: break-word;
+	/* Adds fallback for word-breaking */
+}
+
+.groupchat-message-content .mention {
+    font-weight: 600;
+    color: #2665AC;
+}
+
+.groupchat-message-content .everyone-mention {
+    font-weight: 600;
+    color: #2665AC;
+}
+
+.groupchat-message-content .mention:hover{
+    text-decoration: underline;
+    text-decoration-color: #2665AC;
+    cursor: pointer;
+}
+
+.groupchat-message.sent .groupchat-message-content {
+	background-color: #D6E6F2;
+	color: #2665AC;
+}
+
+.groupchat-message.received .groupchat-message-content {
+	background-color: #F0F4F8;
+	color: #2665AC;
+}
+
+
+.groupchat-message-timestamp {
+	font-size: 12px;
+	color: #769FCD;
+	margin-top: 2px;
+	/* Reduced from 5px */
+	margin-bottom: 20px;
+	align-self: flex-end;
+}
+
+.groupchat-message-files.received .groupchat-message-timestamp,
+.groupchat-message.received .groupchat-message-timestamp {
+    align-self: flex-start; /* Align to the left for received messages */
+}
+
+.groupchat-message-input-container {
+	z-index: 10;
+	/* Add this to ensure it stays on top */
+	display: flex;
+	flex-shrink: 0;
+	align-items: center;
+	background-color: white;
+	border: 1px solid #E0E0E0;
+	border-radius: 12px;
+	padding: 8px;
+	margin-top: 10px;
+	width: 100%;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.groupchat-message-input-container:hover {
+	border-color: #2665AC;
+}
+
+.groupchat-file-upload {
+	cursor: pointer;
+	margin-right: 12px;
+	display: flex;
+	align-items: center;
+}
+
+.groupchat-message-input {
+	flex-grow: 1;
+	border: none;
+	outline: none;
+	font-size: 16px;
+	color: #2665AC;
+}
+
+.groupchat-message-input::placeholder {
+	color: #769FCD;
+}
+
+.groupchat-send-message {
+	cursor: pointer;
+	margin-left: 12px;
+	display: flex;
+	align-items: center;
+}
+
+.groupchat-upload-icon,
+.groupchat-send-icon {
+	transition: transform 0.2s ease;
+}
+
+.groupchat-upload-icon:hover,
+.groupchat-send-icon:hover {
+	transform: scale(1.1);
+}
+
+.groupchat-right-container {
+	flex-shrink: 0;
+	width: 380px;
+	padding: 10px;
+	background-color: #D6E6F2;
+	border-radius: 8px;
+	box-shadow: 0 0 20px rgba(255, 255, 255, 0.9);
+	/* Bright white outer halo */
+	height: 890px;
+	max-height: 890px;
+	overflow-y: auto;
+}
+
+.groupchat-right-container::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+	/* Add this line to control horizontal scrollbar height */
+}
+
+.groupchat-right-container::-webkit-scrollbar-track {
+	background: #B9D7EA;
+	border-radius: 3px;
+}
+
+.groupchat-right-container::-webkit-scrollbar-thumb {
+	background: #2665AC;
+	border-radius: 3px;
+}
+
+.groupchat-right-container::-webkit-scrollbar-thumb:hover {
+	background: #769FCD;
+}
+
+/* Scrum Master Profile Styles */
+.groupchat-scrum-master-profile {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-bottom: 20px;
+}
+
+.groupchat-scrum-master-image {
+	width: 120px;
+	height: 120px;
+	border-radius: 50%;
+	object-fit: cover;
+	margin-bottom: 10px;
+	border: 3px solid #2665AC;
+}
+
+.groupchat-scrum-master-details {
+	text-align: center;
+}
+
+.groupchat-scrum-master-name {
+	color: #2665AC;
+	font-size: 18px;
+	margin-bottom: 5px;
+}
+
+.groupchat-scrum-master-role {
+	color: #769FCD;
+	font-size: 14px;
+}
+
+/* Members List Styles */
+.groupchat-members-title {
+	color: #2665AC;
+	text-align: center;
+	margin-bottom: 15px;
+	font-size: 16px;
+}
+
+/* Horizontal Members List */
+.groupchat-members-list-horizontal {
+	display: flex;
+	justify-content: center;
+	gap: 10px;
+	overflow-x: auto;
+	padding: 10px 0;
+}
+
+.groupchat-member-item-horizontal {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-start;
+	/* Center content vertically */
+	width: 100px;
+	/* Fixed width */
+	height: 140px;
+	/* Fixed height */
+	padding: 8px;
+	background-color: #F0F4F8;
+	border-radius: 8px;
+	overflow: hidden;
+	/* Prevent content overflow */
+}
+
+.groupchat-member-item-horizontal:hover {
+	background-color: #B9D7EA;
+	cursor: pointer;
+}
+
+
+.groupchat-member-image-horizontal {
+	width: 50px;
+	height: 50px;
+	border-radius: 50%;
+	object-fit: cover;
+	margin-bottom: 8px;
+}
+
+.groupchat-member-details-horizontal {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+}
+
+.groupchat-member-details-horizontal .groupchat-member-name {
+	color: #2665AC;
+	font-size: 12px;
+	font-weight: 500;
+	margin-bottom: 4px;
+}
+
+.groupchat-member-details-horizontal .groupchat-member-role {
+	color: #769FCD;
+	font-size: 12px;
+}
+
+.groupchat-member-name {
+	color: #2665AC;
+	font-size: 14px;
+	font-weight: 500;
+}
+
+.groupchat-member-role {
+	color: #769FCD;
+	font-size: 12px;
+}
+
+/* Members Navigation Styles */
+.groupchat-members-navigation {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 10px;
+	margin-top: 15px;
+}
+
+.groupchat-nav-button {
+	background-color: white;
+	border: none;
+	border-radius: 50%;
+	width: 40px;
+	height: 40px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+}
+
+.groupchat-nav-button:hover:not(:disabled) {
+	background-color: #769FCD;
+}
+
+.groupchat-nav-button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.groupchat-page-indicator {
+	color: #2665AC;
+	font-size: 14px;
+}
+
+.groupchat-file-preview-container.upload-preview {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 20px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 5px;
+	background-color: white;
+	z-index: 5;
+	max-width: 760px;
+	overflow-x: auto;
+}
+
+.groupchat-file-preview-container.in-message {
+    display: flex;
+    gap: 10px;
+    padding: 5px;
+    max-width: 100%;
+    overflow-x: auto;
+    position: relative;
+}
+
+.groupchat-file-preview-container::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+	/* Add this line to control horizontal scrollbar height */
+}
+
+.groupchat-file-preview-container::-webkit-scrollbar-track {
+	background: #B9D7EA;
+	border-radius: 3px;
+}
+
+.groupchat-file-preview-container::-webkit-scrollbar-thumb {
+	background: #2665AC;
+	border-radius: 3px;
+}
+
+.groupchat-file-preview-container::-webkit-scrollbar-thumb:hover {
+	background: #769FCD;
+}
+
+.groupchat-image-delete {
+    position: absolute;
+    left: -2px;
+    top: 11px; /* Adjust this to vertically center the trash icon */
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.groupchat-image-upload-wrapper.in-message-file {
+    position: relative;
+  }
+
+.groupchat-image-upload-wrapper {
+	position: relative;
+	width: 150px;
+	height: 80px;
+	border-radius: 8px;
+	overflow: hidden;
+	flex-shrink: 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.groupchat-image-preview {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	background-color: #F0F4F8;
+	cursor: pointer;
+}
+
+.groupchat-file-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	background-color: #F0F4F8;
+	color: #2665AC;
+	font-size: 10px;
+	text-align: center;
+	padding: 3px;
+	box-sizing: border-box;
+	word-break: break-word;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	border-radius: 8px;
+}
+
+.groupchat-remove-file {
+	position: absolute;
+	top: 3px;
+	right: 3px;
+	background-color: white;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	padding: 2px;
+	z-index: 10;
+}
+
+.groupchat-remove-file:hover {
+	background-color: #D6E6F2;
+}
+
+.groupchat-image-wrapper {
+	position: relative;
+  }
+
+.groupchat-image-actions {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    display: flex;
+    gap: 5px;
+}
+  
+.groupchat-image-download {
+    background-color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+  
+.groupchat-image-download:hover {
+    background-color: #D6E6F2;
+}
+
+/* Image Preview Modal Styles */
+.groupchat-image-preview-modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.8);
+	/* Slightly darker for better contrast */
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1000;
+	padding: 20px;
+}
+
+/* Image Navigation Buttons */
+.groupchat-image-preview-nav-left,
+.groupchat-image-preview-nav-right {
+	position: fixed;
+	top: 50%;
+	transform: translateY(-50%);
+	background-color: white;
+	border: none;
+	border-radius: 50%;
+	width: 40px;
+	height: 40px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+	z-index: 1100;
+	transition: background-color 0.3s ease;
+}
+
+.groupchat-image-preview-nav-left {
+	left: 20px;
+}
+
+.groupchat-image-preview-nav-right {
+	right: 20px;
+}
+
+.groupchat-image-preview-nav-left:hover,
+.groupchat-image-preview-nav-right:hover {
+	background-color: #D6E6F2;
+}
+
+/* Adjust modal content to make room for navigation buttons */
+.groupchat-image-preview-modal-content {
+	position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	max-width: 90%;
+	max-height: 90%;
+	width: auto;
+	height: auto;
+}
+
+.groupchat-image-preview-full {
+	max-width: 90%;
+	max-height: 90vh;
+	min-width: 670px;
+	/* Minimum width to ensure larger preview */
+	min-height: 670px;
+	/* Minimum height to ensure larger preview */
+	width: auto;
+	height: auto;
+	object-fit: contain;
+	border-radius: 8px;
+}
+
+.groupchat-image-preview-close {
+	position: fixed;
+	top: 20px;
+	right: 20px;
+	background-color: white;
+	border: none;
+	border-radius: 50%;
+	width: 40px;
+	height: 40px;
+	display: flex;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+	z-index: 1100;
+	transition: background-color 0.3s ease;
+}
+
+.groupchat-image-preview-close:hover {
+	background-color: #D6E6F2;
+}
+
+.groupchat-message-wrapper {
+    position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 2px;
+	max-width: 100%;
+}
+
+.groupchat-message-files {
+	display: flex;
+	flex-direction: column;
+	max-width: 100%;
+	align-self: flex-end;
+	gap: 2px;
+	margin-bottom: 5px;
+}
+
+.groupchat-file-preview-outer-container {
+    position: relative;
+  }
+  
+  .groupchat-message-delete.image-delete {
+    position: absolute;
+    left: -25px;
+    top: 40px; /* Adjust this value to position the icon exactly where you want */
+    cursor: pointer;
+  }
+
+  .groupchat-message-delete.document-delete {
+	position: absolute;
+	left: -25px;
+	top: 25px; /* Adjust this value to position the icon exactly where you want */
+	cursor: pointer;
+  }
+
+.groupchat-message-files.sent {
+	align-self: flex-end;
+}
+
+.groupchat-message-files.received {
+	align-self: flex-start;
+}
+
+.groupchat-message-files .groupchat-file-preview-container {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	max-width: 400px;
+}
+
+.groupchat-message-files .groupchat-image-upload-wrapper {
+	width: 180px;
+	height: 100px;
+	overflow: hidden;
+}
+
+.groupchat-message-files .groupchat-image-preview {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.groupchat-message-files .groupchat-message-timestamp {
+	margin-top: 2px;
+	align-self: flex-end;
+	font-size: 12px;
+	color: #769FCD;
+}
+
+.groupchat-message-files.received .groupchat-message-timestamp {
+	align-self: flex-start;
+}
+
+.groupchat-message-wrapper.received {
+  flex-direction: row;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  gap: 10px; /* Add some space between profile and message */
+}
+
+.groupchat-message-wrapper.sent {
+	margin-bottom: 10px;
+  }
+
+.groupchat-receiver-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.groupchat-receiver-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 5px;
+}
+
+.groupchat-receiver-name {
+	color: #2665AC;
+	font-size: 12px;
+	margin-bottom: 4px;
+	align-self: flex-start;
+  }
+
+  .groupchat-receiver-name:hover {
+    text-decoration: underline;
+    text-decoration-color: #2665AC; /* Set your desired underline color */
+	cursor: pointer;
+}
+  
+  .groupchat-message-container.received {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+  }
+
+  .groupchat-message-container.sent {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+  }
+
+/* Photo Gallery Styles */
+.groupchat-photo-gallery {
+	margin-top: 20px;
+	border-radius: 8px;
+	padding: 15px;
+}
+
+.groupchat-photo-container {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 10px;
+	max-height: 200px;
+	overflow-y: auto;
+}
+
+.groupchat-photo-item {
+	border-radius: 8px;
+	overflow: hidden;
+	position: relative;
+	cursor: pointer;
+	transition: transform 0.3s ease;
+}
+
+.groupchat-photo {
+	width: 100%;
+	height: 100px;
+	object-fit: cover;
+}
+
+.groupchat-view-all-photos,
+.groupchat-view-less-photos {
+	text-align: center;
+	color: #2665AC;
+	font-size: 14px;
+	margin-top: 10px;
+	cursor: pointer;
+	transition: color 0.3s ease;
+}
+
+.groupchat-view-all-photos:hover,
+.groupchat-view-less-photos:hover {
+	color: #769FCD;
+}
+
+/* Scrollbar for photo container */
+.groupchat-photo-container::-webkit-scrollbar {
+	width: 8px;
+}
+
+.groupchat-photo-container::-webkit-scrollbar-track {
+	background: #B9D7EA;
+	border-radius: 3px;
+}
+
+.groupchat-photo-container::-webkit-scrollbar-thumb {
+	background: #2665AC;
+	border-radius: 3px;
+}
+
+.groupchat-photo-container::-webkit-scrollbar-thumb:hover {
+	background: #769FCD;
+}
+
+.groupchat-attachments-container {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.groupchat-attachment-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px;
+	transition: background-color 0.3s ease;
+	cursor: pointer;
+	border-radius: 8px;
+}
+
+.groupchat-attachment-item:hover {
+	background-color: #B9D7EA;
+}
+
+.groupchat-attachment-icon {
+	width: 40px;
+	height: 40px;
+	object-fit: contain;
+}
+
+.groupchat-attachment-details {
+	display: flex;
+	flex-direction: column;
+}
+
+.groupchat-attachment-name {
+	font-size: 14px;
+	color: #2665AC;
+	transition: text-decoration 0.3s ease;
+}
+
+.groupchat-attachment-name:hover {
+	text-decoration: underline;
+}
+
+.groupchat-view-all-attachments,
+.groupchat-view-less-attachments {
+	text-align: center;
+	color: #2665AC;
+	font-size: 14px;
+	margin-top: 10px;
+	cursor: pointer;
+	transition: color 0.3s ease;
+}
+
+.groupchat-view-all-attachments:hover,
+.groupchat-view-less-attachments:hover {
+	color: #769FCD;
+}
+
+.groupchat-document-upload-wrapper {
+	position: relative;
+	display: flex;
+	align-items: center;
+	background-color: #F0F4F8;
+	border-radius: 8px;
+	padding: 10px;
+	max-width: 100%;
+}
+
+.groupchat-document-item {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	gap: 10px;
+}
+
+.groupchat-document-icon {
+	width: 40px;
+	height: 40px;
+	object-fit: contain;
+}
+
+.groupchat-document-details {
+	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+.groupchat-document-name {
+	font-weight: 500;
+	color: #2665AC;
+	max-width: 200px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.groupchat-document-size {
+	color: #769FCD;
+	font-size: 12px;
+}
+
+.groupchat-document-metadata {
+	display: flex;
+	gap: 10px;
+	font-size: 12px;
+	color: #769FCD;
+}
+
+.groupchat-document-download {
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 5px;
+	transition: transform 0.2s ease;
+}
+
+.groupchat-document-download:hover {
+	transform: scale(1.1);
+}
+
+/* mention */
+.groupchat-mention-list {
+	position: absolute;
+	bottom: 50px;
+	/* Position above the input */
+	left: 0;
+	width: 100%;
+	max-height: 250px;
+	overflow-y: auto;
+	background: white;
+	border: 1px solid #B9D7EA;
+	border-radius: 8px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	z-index: 10;
+}
+
+.groupchat-mention-item {
+	display: flex;
+	align-items: center;
+	padding: 10px;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+}
+
+.groupchat-mention-item:hover {
+	background-color: #D6E6F2;
+}
+
+.groupchat-mention-avatar {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	margin-right: 10px;
+	object-fit: cover;
+}
+
+.groupchat-mention-details {
+	display: flex;
+	flex-direction: column;
+}
+
+.groupchat-mention-name {
+	font-weight: 500;
+	color: #2665AC;
+	font-size: 14px;
+}
+
+.groupchat-mention-role {
+	font-size: 12px;
+	color: #769FCD;
+}
+
+.groupchat-mention-list::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+.groupchat-mention-list::-webkit-scrollbar-track {
+	background: #B9D7EA;
+	border-radius: 3px;
+}
+
+.groupchat-mention-list::-webkit-scrollbar-thumb {
+	background: #2665AC;
+	border-radius: 3px;
+}
+
+.groupchat-mention-list::-webkit-scrollbar-thumb:hover {
+	background: #769FCD;
+}
+
+.groupchat-message-input-container {
+	position: relative;
+}
+

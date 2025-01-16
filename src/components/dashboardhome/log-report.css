@@ -1,0 +1,188 @@
+.log-record-container {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+    margin-top: 30px;
+    width:295%;
+    height: 1100px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    max-width: 1260px; /* Add a max-width */
+  }
+  
+  .log-record-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  .log-record-header h1 {
+    color: #2665AC;
+    font-size: 24px;
+    font-weight: bold;
+  }
+
+
+  
+.log-record-search-box-projectname {
+    position: relative;
+    align-items: center;
+    top: 15px;
+    left:40px;
+    color:#2665AC;
+  
+  }
+  
+  .log-record-searchprojectname::placeholder{
+    font-size: 12px;
+    color:#2665AC;
+  
+  }
+  
+  
+  .log-record-search-box-projectname .log-record-searchprojectname {
+    position: relative;
+    border: 1px solid #d1d9e6;
+    border-radius: 10px;
+    padding: 4px 10px;
+    font-size: 14px;
+    outline: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  
+  .log-record-search-box-projectname .magnifyingglass-log-record {
+    position: relative;
+    left: -24px;
+    top:4px;
+    width:20px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+
+
+  .log-record-entries {
+    margin-top: 60px;
+    max-height: 600px; /* Adjust based on your design */
+    overflow-y: auto; /* Adds a vertical scrollbar */
+    padding-right: 10px; /* Space for scrollbar */
+    color: #2665AC;
+}
+
+
+/* Optional: Add a custom scrollbar */
+.log-record-entries::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+.log-record-entries::-webkit-scrollbar-thumb {
+  background-color: #769FCD; /* Scrollbar thumb color */
+  border-radius: 10px; /* Rounded edges for the scrollbar */
+}
+
+.log-record-entries::-webkit-scrollbar-thumb:hover {
+  background-color: #1d4f8b; /* Darker color on hover */
+}
+
+.log-record-entries::-webkit-scrollbar-track {
+  background: #F3F9FB; /* Background of the scrollbar track */
+}
+
+
+.log-record-entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    place-self: center;
+    width:1100px;
+    padding: 20px ;
+    border-radius: 10px;
+    margin-bottom:10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    color: #2665AC;
+}
+
+.log-record-entry-left {
+    flex: 1;
+    font-size: 16px;
+    
+}
+
+.log-record-entry-divider {
+    position: relative;
+    margin: 0 10px;
+   font-size: 30px;
+}
+
+.log-record-entry-right {
+    font-size: 14px;
+ 
+    text-align: right;
+}
+
+.log-record-entry:last-child {
+    border-bottom: none;
+}
+
+.taskIcon{
+    position: relative;
+    top:3px;
+    width: 16px;
+    height: 16px;
+}
+
+.logrecordProjectName{
+font-weight: 400;
+}
+
+.logrecordstatus{
+    font-weight: 400;
+}
+
+
+
+.sortduedatelogrec{
+  position: relative;
+  font-size: 12px;
+  color:#2665AC;
+  top:-10px;
+  left:260px;
+}
+
+
+
+.sort-dropdown-btn-logrec {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 14px;
+  color: #2665AC;
+}
+
+.sort-dropdown-menu-logrec {
+  position: absolute;
+  top: 20px;
+  left:50px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+  z-index: 1;
+}
+
+.sort-dropdown-menu-logrec button {
+  padding: 10px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: #2665AC;
+}
+
+.sort-dropdown-menu-logrec button:hover {
+  background-color: #D6E6F2;
+}
+  
