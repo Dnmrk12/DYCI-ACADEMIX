@@ -553,7 +553,7 @@ const KanbanBoard = () => {
       // Disable the button to prevent multiple submissions
       setIsSubmitting(true);
 
-      let updatedProjectPictureUrl = projectPictureUrl;
+      let updatedProjectPictureUrl = projectPictureUrl || "https://firebasestorage.googleapis.com/v0/b/dyci-academix.appspot.com/o/wagdelete%2Facademixlogo.png?alt=media&token=8f83d11b-3604-41e5-9a46-d1df0d44aed5";
 
       try {
         if (epicFormData.projectPicture) {
