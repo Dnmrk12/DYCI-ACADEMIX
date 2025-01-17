@@ -4015,34 +4015,44 @@ const handleAddColumn = (columnTitle) => {
 
               {/* Moved the cards container here, outside of the menu */}
               <div className="column-content">
-                {tasks
-                  .filter((task) => {
-                    const statusMatch = task.status === columnTitle;
-                    const assigneeMatch = !selectedFilters.onlyMyIssue || (task.assignee && task.assignee.id === userId);
-                    const typeFiltersSelected = Object.values(selectedTypeFilters).some((value) => value);
-                    const typeMatch = !typeFiltersSelected || selectedTypeFilters[task.type.toLowerCase()] === true;
+  {tasks
+    .filter((task) => {
+      const statusMatch = task.status === columnTitle;
+      const assigneeMatch = !selectedFilters.onlyMyIssue || 
+        (task.assignee && task.assignee.id === userId);
+      const typeFiltersSelected = Object.values(selectedTypeFilters)
+        .some((value) => value);
+      const typeMatch = !typeFiltersSelected || 
+        selectedTypeFilters[task.type.toLowerCase()] === true;
 
-                    return statusMatch && assigneeMatch && typeMatch;
-                  })
-                  .sort((a, b) => {
-                    if (a.favorite && !b.favorite) return -1;
-                    if (!a.favorite && b.favorite) return 1;
+      return statusMatch && assigneeMatch && typeMatch;
+    })
+    .sort((a, b) => {
+      // First sort by favorite status
+      const aFavorites = Array.isArray(a.favorite) ? a.favorite : [];
+      const bFavorites = Array.isArray(b.favorite) ? b.favorite : [];
+      
+      if (aFavorites.length > 0 && bFavorites.length === 0) return -1;
+      if (aFavorites.length === 0 && bFavorites.length > 0) return 1;
 
-                    const priorityOrder = { high: 1, medium: 2, low: 3 };
-                    return priorityOrder[a.priority] - priorityOrder[b.priority];
-                  })
-                  .map((task) => (
-                    <div
-                      key={task.id}
-                      data-task-id={task.id}
-                      className={`kanban-card ${activeCard === task.id ? "active" : ""} ${task.favorite ? "favorite" : ""} ${(!isAdmin || projectStatus === "Complete") ? "non-draggable" : ""}`}
-                      onMouseEnter={() => handleCardHover(task)}
-                      onMouseLeave={() => setHoveredTask(null)}
-                      onClick={() => handleCardClick(task)}
-                      draggable={true}
-                      onDragStart={(e) => handleDragStart(e, task)}
-                      onDragEnd={handleDragEnd}
-                    >
+      // If favorite status is the same, sort by priority
+      const priorityOrder = { high: 1, medium: 2, low: 3 };
+      return priorityOrder[a.priority] - priorityOrder[b.priority];
+    })
+    .map((task) => (
+      <div
+        key={task.id}
+        data-task-id={task.id}
+        className={`kanban-card ${activeCard === task.id ? "active" : ""} 
+          ${Array.isArray(task.favorite) && task.favorite.length > 0 ? "favorite" : ""} 
+          ${(!isAdmin || projectStatus === "Complete") ? "non-draggable" : ""}`}
+        onMouseEnter={() => handleCardHover(task)}
+        onMouseLeave={() => setHoveredTask(null)}
+        onClick={() => handleCardClick(task)}
+        draggable={true}
+        onDragStart={(e) => handleDragStart(e, task)}
+        onDragEnd={handleDragEnd}
+      >
                       <div className="card-header">
             <h4
             ref={(el) => (cardRefs.current[task.id] = el)}
