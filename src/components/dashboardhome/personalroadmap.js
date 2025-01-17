@@ -156,30 +156,33 @@ const handleFileUpload = (e) => {
       reader.readAsDataURL(file);
     }
   };
+
+
+
   
    // Handle form submission
    const handleCreateRow = async (e) => {
     e.preventDefault();
 
-    if (isCreating) return; // Pigilan ang pag-execute kung may ongoing creation
+    if (isCreating) return;
     setIsCreating(true);
-  
-    // Check if the user is authenticated
+
     const auth = getAuth();
     const user = auth.currentUser;
-  
+
     if (!user) {
-      console.error("User is not authenticated. Please log in.");
-      setIsCreating(false); // Ibalik sa false kung may error
-      return; // Stop the function if the user is not authenticated
+        console.error("User is not authenticated. Please log in.");
+        setIsCreating(false);
+        return;
     }
   
-    const uid = user.uid; // Access user uid only after the null check
-  
-    const formatDate = (date) => (date ? date.toISOString().split('T')[0] : null);
-    const formattedStartDate = formatDate(startDate);
+    const uid = user.uid;
+
+    const formatDate = (date) => (date ? date.toISOString().split("T")[0] : null);
+    const formattedStartDate = formatDate(startDate || new Date()); // Default to today's date
     const formattedEndDate = formatDate(endDate);
-  const defaultImageUrl = "https://firebasestorage.googleapis.com/v0/b/dyci-academix.appspot.com/o/wagdelete%2Facademixlogo.png?alt=media&token=8f83d11b-3604-41e5-9a46-d1df0d44aed5";
+
+    const defaultImageUrl = "https://firebasestorage.googleapis.com/v0/b/dyci-academix.appspot.com/o/wagdelete%2Facademixlogo.png?alt=media&token=8f83d11b-3604-41e5-9a46-d1df0d44aed5";
     let iconUrl = defaultImageUrl;
     if (epicFormData.icon) {
       const timestamp = new Date().getTime();
@@ -211,7 +214,7 @@ const handleFileUpload = (e) => {
   
       const newRow = {
         id: newId,
-        icon: iconUrl || "https://firebasestorage.googleapis.com/v0/b/dyci-academix.appspot.com/o/wagdelete%2Facademixlogo.png?alt=media&token=8f83d11b-3604-41e5-9a46-d1df0d44aed5",
+        icon: iconUrl || null,
         projectName,
         startDate: formattedStartDate || "No Start Date Selected",
         endDate: formattedEndDate || "No End Date Selected",
@@ -281,19 +284,19 @@ const handleFileUpload = (e) => {
 
   // Open popup for editing an existing row
   const handleEditRow = (rowId) => {
-    const row = rows.find(r => r.id === rowId);
+    const row = rows.find((r) => r.id === rowId);
     if (row) {
-        setProjectName(row.projectName);
-        setStartDate(new Date(row.startDate)); // Convert string to Date object
-        setEndDate(new Date(row.endDate)); // Convert string to Date object
-        setStartTime(row.startTime || null); // Set start time from row
-        setEndTime(row.endTime || null); // Set end time from row
-        setSelectedImage(row.icon);
-        setEditRowId(rowId);
-        setIsEditing(true);
-        setShowEpicPopupPersonalRoadmap(true);
+      setProjectName(row.projectName);
+      setStartDate(row.startDate ? new Date(row.startDate) : new Date()); // Default to today's date
+      setEndDate(row.endDate ? new Date(row.endDate) : null);
+      setStartTime(row.startTime || null);
+      setEndTime(row.endTime || null);
+      setSelectedImage(row.icon); // Default image if none
+      setEditRowId(rowId);
+      setIsEditing(true);
+      setShowEpicPopupPersonalRoadmap(true);
     }
-};
+  };
 
 
   
@@ -308,7 +311,7 @@ const handleFileUpload = (e) => {
     const formattedStartDate = formatDate(startDate);
     const formattedEndDate = formatDate(endDate);
   
-    let iconUrl = selectedImage; // Default to the selected image if no new image is uploaded
+    let iconUrl ; // Default to the selected image if no new image is uploaded
   
     // If a new icon is selected, upload it to Firebase Storage
     if (epicFormData.icon) {
@@ -2686,9 +2689,15 @@ const DateTimePicker = ({ label, date, time, onDateChange, onTimeChange }) => {
                                 style={{ display: 'none' }}
                             />
                             <div className="create-epic-upload-content">
-                                <p className="create-epic-upload-text">
-                                    {selectedImage ? 'File Selected' : 'No File Selected'}
-                                </p>
+                            <p className="create-epic-upload-text">
+      {isEditing
+        ? selectedImage
+          ? "Current Image"
+          : "No Image Found"
+        : selectedImage
+        ? "File Selected"
+        : "No File Selected"}
+    </p>
                                 <label htmlFor="file-upload" className="create-epic-upload-button">
                                     Upload File
                                 </label>
@@ -2709,12 +2718,12 @@ const DateTimePicker = ({ label, date, time, onDateChange, onTimeChange }) => {
                 
                     <DateTimePicker
   label="Start Date"
-  date={startDate ? startDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0]} // Default to today's date if no start date
+  date={startDate ? startDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0]} // Default to today's date
   time={startTime} // Pass the start time to display
   onDateChange={(dateString) => {
     const date = new Date(dateString); // Convert string to Date object
     const today = new Date();
-    
+
     // Allow selecting the current date or any future date
     if (date >= today) {
       setStartDate(date);
