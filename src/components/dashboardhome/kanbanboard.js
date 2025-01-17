@@ -562,9 +562,6 @@ const KanbanBoard = () => {
           const storageRef = ref(storage, `Kanban/${timestamp}/${epicFormData.projectName}/${epicFormData.projectPicture.name}`);
           await uploadBytes(storageRef, epicFormData.projectPicture);
           updatedProjectPictureUrl = await getDownloadURL(storageRef);
-        } else {
-          updatedProjectPictureUrl =
-            "https://firebasestorage.googleapis.com/v0/b/dyci-academix.appspot.com/o/wagdelete%2Facademixlogo.png?alt=media&token=8f83d11b-3604-41e5-9a46-d1df0d44aed5&fbclid=IwY2xjawH3M5pleHRuA2FlbQIxMAABHV-7VCfz-B4c81TktXJ6z-7iFVr79mzbxDeYxS_dbAMibvCt2BNI4RzJ9Q_aem_cwTmRpSbvuFvzCPXTy6aFA";
         }
 
         const db = getFirestore();
@@ -697,7 +694,7 @@ const KanbanBoard = () => {
                   </div>
                   <div className="epic-upload-content">
                     <p className="epic-upload-text">
-                      {epicFormData.projectPicture ? "File Selected" : projectPictureUrl ? "Current Image" : isEditMode ? "No Image Found" : "No File Selected"}
+                      {epicFormData.projectPicture ? "File Selected" : projectPictureName ? "Current Image" : isEditMode ? "No Image Found" : "No File Selected"}
                     </p>
                     <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} id="epic-file-upload" />
                     <label htmlFor="epic-file-upload" className="epic-upload-button">
@@ -1192,7 +1189,7 @@ const KanbanBoard = () => {
                     >
                       <div className="card-header flex justify-between items-center">
                         <div className="flex items-center gap-2">
-                          <img src={task.projectPicture || "https://firebasestorage.googleapis.com/v0/b/dyci-academix.appspot.com/o/wagdelete%2Facademixlogo.png?alt=media&token=8f83d11b-3604-41e5-9a46-d1df0d44aed5"} alt="notification icon" className="project-name-icon" />
+                          <img src={task.projectPicture || img18} alt="notification icon" className="project-name-icon" />
                           <div className="title-container">
                             <h4
                               ref={(el) => (cardRefs.current[task.id] = el)}
