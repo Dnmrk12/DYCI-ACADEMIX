@@ -5,7 +5,7 @@
     position: relative;
     margin-top: 30px;
     width:295%;
-    height: 1100px;
+    height: auto;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     max-width: 1260px; /* Add a max-width */
   }
