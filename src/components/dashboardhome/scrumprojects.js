@@ -1418,6 +1418,9 @@ const CreateEpicPopup = ({ onClose, isEditMode = false, initialData = null, onUp
 
   const [selectedImage, setSelectedImage] = useState(initialData?.icon || null);
   let iconUrl = selectedImage; // Default to the selected image if no new image is uploaded
+
+  const [hasNewFileUpload, setHasNewFileUpload] = useState(false);
+
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -1426,6 +1429,7 @@ const CreateEpicPopup = ({ onClose, isEditMode = false, initialData = null, onUp
         ...prev,
         icon: file,
       }));
+      setHasNewFileUpload(true); // Set this to true when a new file is uploaded
     }
   };
 
@@ -1490,7 +1494,13 @@ const CreateEpicPopup = ({ onClose, isEditMode = false, initialData = null, onUp
                   )}
                 </div>
                 <div className="scrum-epic-upload-content">
-                  <p className="scrum-epic-upload-text">{selectedImage || initialData?.icon ? "Current Image" : "No File Selected"}</p>
+                <p className="scrum-epic-upload-text">
+                  {hasNewFileUpload ? "File Selected" : 
+                   (isEditMode && initialData?.icon) ? 
+                     "Current Image" : 
+                     "No File Selected"
+                  }
+                </p>
                   <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: "none" }} id="file-upload" />
                   <label htmlFor="file-upload" className="scrum-epic-upload-button">
                     Upload File
