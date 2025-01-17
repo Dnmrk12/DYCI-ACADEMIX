@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
 import "./performance-report.css";
 import RocketIcon from './iconshomepage/Rocket.png';
 import LikeIcon from './iconshomepage/Good.png';
 import HurryUpIcon from './iconshomepage/hurryUp.png';
+import { ChevronDown} from "lucide-react";
 import {  getFirestore,  collection, limit, addDoc,doc,getDocs,getDoc, increment, deleteDoc, setDoc, query,orderBy,onSnapshot,where,updateDoc, arrayRemove,arrayUnion,serverTimestamp,
 } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL, uploadString } from "firebase/storage";
@@ -695,19 +696,74 @@ return (
       },
     };
   
+
+    const [isOpenWorkProg, setIsOpenWorkProg] = useState(false);
+    const [showFilterWorkProg, setShowFilterWorkProg] = useState(false);
+  
+    // Reference to the dropdown container
+    const WorkProgdropdownRef = useRef(null);
+  
+    // Toggle dropdown visibility
+    const handleToggleDropdownWorkProg = () => {
+      setIsOpenWorkProg(!isOpenWorkProg);
+      setShowFilterWorkProg(!showFilterWorkProg);
+    };
+  
+    // Handle selection of category and update state as if it were a select element
+    const handleSelectCategoryWorkProg = (category) => {
+      setSelectedWorkType(category);
+      setIsOpenWorkProg(false); // Close dropdown after selection
+      setShowFilterWorkProg(false);
+    };
+  
+    // Handle click outside the dropdown to close it
+    const handleClickOutsideWorkProg = (event) => {
+      if (WorkProgdropdownRef.current && !WorkProgdropdownRef.current.contains(event.target)) {
+        setIsOpenWorkProg(false); // Close dropdown if click is outside
+        setShowFilterWorkProg(false);
+      }
+    };
+  
+    // Set up event listener to detect clicks outside of the dropdown
+    useEffect(() => {
+      document.addEventListener('mousedown', handleClickOutsideWorkProg);
+  
+      // Clean up the event listener
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutsideWorkProg);
+      };
+    }, []);
+
+
+
     return (
       <div className="work-progress-container">
         <h2>Work Progress</h2>
-        <div className="work-progress-dropdown">
-          <select
-            className="work-progress-select"
-            value={selectedWorkType}
-            onChange={(e) => setSelectedWorkType(e.target.value)}
+        <div className="work-progress-dropdown" ref={WorkProgdropdownRef}>
+      <div 
+        className="work-progress-selected" 
+        onClick={handleToggleDropdownWorkProg}
+      >
+        {selectedWorkType}
+        <ChevronDown size={16} className={`workprog-chevron-icon ${showFilterWorkProg ? "rotate" : ""}`} />
+      </div>
+      {isOpenWorkProg && (
+        <div className="work-progress-options">
+          <div 
+            className="work-progress-option" 
+            onClick={() => handleSelectCategoryWorkProg('Project')}
           >
-            <option value="Project">Project</option>
-            <option value="Task">Task</option>
-          </select>
+            Project
+          </div>
+          <div 
+            className="work-progress-option" 
+            onClick={() => handleSelectCategoryWorkProg('Task')}
+          >
+            Task
+          </div>
         </div>
+      )}
+    </div>
         <div style={{ width: '220px', height: '220px', margin: '0 auto', position: 'relative', top: '30px' }}>
           <Doughnut
             data={generateWorkProgressData()}
@@ -720,6 +776,67 @@ return (
   };
 
 
+  
+  
+  const [showFilter, setShowFilter] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown kapag nag-click sa labas
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowFilter(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleSelect = (period) => {
+    setSelectedPeriod(period);
+    setShowFilter(false); // Isara ang dropdown pagkatapos piliin
+  };
+  
+
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [showFilterProtask, setShowFilterProtask] = useState(false);
+
+  const handleToggleDropdown = () => {
+    setIsOpen(!isOpen);
+    setShowFilterProtask(!showFilterProtask);
+  };
+
+  const handleSelectCategory = (category) => {
+    setSelectedCategory(category);
+    setIsOpen(false);  // Close dropdown after selection
+    setShowFilterProtask(false);
+  };
+
+// Reference to the dropdown container
+const ProtaskdropdownRef = useRef(null);
+  // Close dropdown if click happens outside
+  const handleClickOutsideProtask = (event) => {
+    if (ProtaskdropdownRef.current && !ProtaskdropdownRef.current.contains(event.target)) {
+      setIsOpen(false);  // Close dropdown if click is outside
+      setShowFilterProtask(false);
+    }
+  };
+
+  // Set up event listener when component is mounted
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutsideProtask);
+    
+    // Clean up event listener when component is unmounted
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutsideProtask);
+    };
+  }, []);
+
+
   return (
     <div className="performance-report-container">
       <div className="Performance-report-header">
@@ -730,22 +847,54 @@ return (
              <div className="Performance-chart-container">
              <label className="Performance-chart-title-label">Performance Overview</label>
              <div className="Performance-filter-dropdown-chart">
-               <select
-                 className="Performance-filter-select-lastYMW"
-                 value={selectedPeriod}
-                 onChange={(e) => setSelectedPeriod(e.target.value)}
-               >
-                 <option value="Last Year">Last Year</option>
-                 <option value="Last Month">Last Month</option>
-               </select>
-               <select
-                 className="Performance-filter-select-protask"
-                 value={selectedCategory}
-                 onChange={(e) => setSelectedCategory(e.target.value)}
-               >
-                 <option value="Project">Project</option>
-                 <option value="Task">Task</option>
-               </select>
+             <div className="performance-filter-container" ref={dropdownRef}>
+      <div
+        className={`performance-filter-select ${
+          showFilter ? "active" : ""
+        }`}
+        onClick={() => setShowFilter((prev) => !prev)}
+      >
+        {selectedPeriod}
+        <ChevronDown
+          size={16}
+          className={`performance-chevron-icon ${showFilter ? "rotate" : ""}`}
+        />
+      </div>
+      {showFilter && (
+        <div className="performance-filter-dropdown">
+          <div
+            className="performance-filter-option"
+            onClick={() => handleSelect("Last Year")}
+          >
+            Last Year
+          </div>
+          <div
+            className="performance-filter-option"
+            onClick={() => handleSelect("Last Month")}
+          >
+            Last Month
+          </div>
+        </div>
+      )}
+    </div>
+    <div className={`Performance-filter-select-protask ${
+          showFilterProtask ? "active" : ""
+        }`} onClick={handleToggleDropdown} ref={ProtaskdropdownRef}>
+      <div  className="Performance-filter-selected">
+        {selectedCategory}
+        <ChevronDown size={16} className={`protask-chevron-icon ${showFilterProtask ? "rotate" : ""}`} />
+      </div>
+      {isOpen && (
+        <div className="Performance-filter-options">
+          <div className="Performance-filter-option" onClick={() => handleSelectCategory('Project')}>
+            Project
+          </div>
+          <div className="Performance-filter-option" onClick={() => handleSelectCategory('Task')}>
+            Task
+          </div>
+        </div>
+      )}
+    </div>
              </div>
              <Bar data={generateChartData()} options={options} /></div>
 
