@@ -351,63 +351,102 @@ const [popupMessage, setPopupMessage] = useState("");
     }
   }, [uid, db]);
   // Fetch the issue content
-  const [cards, setCards] = useState(() => {
-    const sprintIssues = location.state?.sprintIssues || 
-                         JSON.parse(localStorage.getItem('sprintIssues')) || 
-                         [];
-    
-    return sprintIssues.map((issue) => ({
-      issueStatus: issue.issueStatus,
-      id: issue.id,
-      title: issue.title,
-      type: issue.type,
-      description: issue.description,
-      icon: issue.icon,
-      code: issue.code,
-      priority: issue.priority,
-      status: issue.status,
-      subtasks: issue.subtasks || [],
-      stats: issue.stats || {
-        comments: 0,
-        subtasks: 0,
-        points: 0,
-        effort: 0,
-      },
-      assignee: issue.assignee || null,
-      isPinned: false,
-    }));
-  });
+  const [cards, setCards] = useState([]); // State for holding all cards
+
+  useEffect(() => {
+    const fetchIssues = async () => {
+      try {
+        const issuesFromState = location.state?.sprintIssues || 
+                                JSON.parse(localStorage.getItem('sprintIssues')) || 
+                                [];
+        const dbIssues = [];
+        
+        const issuesRef = collection(db, `Scrum/${scrumId}/backlog`);
+        const querySnapshot = await getDocs(issuesRef);
+  
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const isPinned = data.isPinned?.includes(uid) || false;
+  
+          dbIssues.push({
+            issueStatus: data.issueStatus,
+            id: doc.id,
+            title: data.title,
+            type: data.type,
+            description: data.description,
+            icon: data.icon,
+            code: data.code,
+            priority: data.priority,
+            status: data.status,
+            subtasks: data.subtasks || [],
+            stats: data.stats || {
+              comments: 0,
+              subtasks: 0,
+              points: 0,
+              effort: 0,
+            },
+            assignee: data.assignee || null,
+            isPinned, // Include the fetched pin status
+          });
+  
+          // Log the isPinned value for each issue
+          console.log(`Issue ID: ${doc.id}, isPinned: ${isPinned}`);
+        });
+  
+        const mergedIssues = issuesFromState.map((stateIssue) => {
+          const dbIssue = dbIssues.find((dbIssue) => dbIssue.id === stateIssue.id);
+          return dbIssue || stateIssue;
+        });
+  
+        setCards(mergedIssues); // Set cards to the state after merging
+      } catch (error) {
+        console.error('Error fetching issues:', error);
+      }
+    };
+  
+    fetchIssues();
+  }, [scrumId, uid, location.state]);
 
   const handleStatusSelect = async (status) => {
+    // Check if assigneeId (assignId) exists
+    const assigneeId = selectedIssue?.assignee?.assignId;
+  
+    if (!assigneeId) {
+      // If assignId doesn't exist, set the error message to show in the popup
+      setPopupMessage("Please assign an assignee before changing the status.");
+      setShowErrorPopup(true);
+      return; // Exit the function early to prevent status update
+    }
+  
     if (selectedIssue) {
       // Update the status of the specific card in the local state
       const updatedCards = cards.map((card) =>
         card.id === selectedIssue.id ? { ...card, status: status } : card
       );
-    
+  
       // Update the cards state
       setCards(updatedCards);
-    
+  
       // Update the popup issue status
       setPopupIssueStatus(status);
-    
+  
       // Update the selected issue status in local state
       setSelectedIssue((prevIssue) => ({
         ...prevIssue,
         status: status,
       }));
-    
+  
       // Update localStorage with the new sprintIssues data
       const updatedSprintIssues = updatedCards.map((issue) =>
         issue.id === selectedIssue.id ? { ...issue, status: status } : issue
       );
       localStorage.setItem('sprintIssues', JSON.stringify(updatedSprintIssues));
-      
+  
       try {
         // Get the Scrum document reference and the project details
         const scrumDocRef = doc(db, `Scrum/${scrumId}`);
         const scrumDoc = await getDoc(scrumDocRef);
-        
+  
         if (scrumDoc.exists()) {
           const scrumData = scrumDoc.data();
           const projectName = scrumData.projectName; // Get the project name
@@ -421,11 +460,9 @@ const [popupMessage, setPopupMessage] = useState("");
             const title = issueData.title || 'Unnamed Issue'; // Get the issue title (fallback to 'Unnamed Issue')
             const type = issueData.type || 'Unknown'; // Get the issue type (fallback to 'Unknown')
   
-            // Get Scrum Master and assignee details
             const scrumMasterId = scrumData.scrumMaster;
-            const assigneeId =  issueData.assignee.assignId;
+            const assigneeId = issueData.assignee.assignId;
   
-            // Format the current date and time as MM/DD/YYYY hh:mm AM/PM
             const currentDateTime = new Date();
             const dateDone = currentDateTime.toLocaleString('en-US', {
               year: 'numeric',
@@ -436,13 +473,11 @@ const [popupMessage, setPopupMessage] = useState("");
               hour12: true,
             }).replace(',', ''); // Removes the comma after the day
   
-            // Prepare data to update in Firestore for the issue status and dateDone
             const updateData = {
               status: status,
               dateDone: dateDone,
             };
   
-            // Update Firestore with the data for the issue
             await updateDoc(issueRef, updateData);
             console.log(`Issue ${selectedIssue.id} status updated to ${status} in Firestore.`);
   
@@ -450,12 +485,11 @@ const [popupMessage, setPopupMessage] = useState("");
             const logRefForScrumMaster = doc(db, 'users', scrumMasterId, 'logReport', Date.now().toString());
             await setDoc(logRefForScrumMaster, {
               status: status,
-              dateTime: dateDone,  // Current date and time in the requested format
-              projectName: projectName,  // Project name from Scrum document
-              issue: title,  // Issue title
-              type: type,  // Issue type (e.g., story, task, bug)
-              admin: scrumMasterId,  // Scrum Master ID
-            
+              dateTime: dateDone, 
+              projectName: projectName, 
+              issue: title,  
+              type: type, 
+              admin: scrumMasterId,  
             });
   
             console.log('Log report entry created for Scrum Master successfully');
@@ -465,12 +499,11 @@ const [popupMessage, setPopupMessage] = useState("");
               const logRefForAssignee = doc(db, 'users', assigneeId, 'logReport', Date.now().toString());
               await setDoc(logRefForAssignee, {
                 status: status,
-                dateTime: dateDone,  // Current date and time in the requested format
-                projectName: projectName,  // Project name from Scrum document
-                issue: title,  // Issue title
-                type: type,  // Issue type (e.g., story, task, bug)
-                admin: scrumMasterId,  // Assignee ID
-                
+                dateTime: dateDone, 
+                projectName: projectName, 
+                issue: title,  
+                type: type, 
+                admin: scrumMasterId,  
               });
   
               console.log('Log report entry created for assignee successfully');
@@ -483,14 +516,14 @@ const [popupMessage, setPopupMessage] = useState("");
         }
       } catch (error) {
         console.error("Error updating issue status in Firestore:", error);
-        setShowErrorPopup(true);
-        setPopupMessage("Failed to update the issue status. Please try again.");
+        alert("Failed to update the issue status. Please try again.");
       }
     }
-    
+  
     // Close the status dropdown
     setIsStatusDropdownOpen(false);
   };
+  
 const [isPinned, setIsPinned] = useState(false);
 
 
@@ -537,24 +570,50 @@ const handlePinCard = async () => {
     console.error("Error updating pin status:", error);
   }
 };
+const [selectedPriority, setSelectedPriority] = useState(null);
 
+// Define a priority order object (if needed)
+const priorityOrder = {
+  high: 1,
+  medium: 2,
+  low: 3,
+};
 
-  // Modify the filteredCards to consider pinned status
-  const filteredCards = cards.filter((card) => {
-    // Ensure the issueStatus is 'sprint'
-    const matchesIssueStatus = card.issueStatus === "sprint";
-    
-    // Previous filtering logic
-    const matchesSearch = card.title.toLowerCase().includes(searchQuery.toLowerCase()); // Assuming search is based on card.id
-    const matchesType =
-      !Object.values(checkedTypes).some(Boolean) || // If no types selected, show all
-      checkedTypes[card.type.toLowerCase()];
-    
-    // Check if the card is assigned to the current user
-    const matchesMyIssue = !onlyMyIssueChecked || card.assignee?.assignId === uid; // Match if onlyMyIssueChecked is true and the user is the assignee
-    
-    return matchesIssueStatus && matchesSearch && matchesType && matchesMyIssue;
-  });
+// Modify the filteredCards to consider pinned status and priority
+const filteredCards = cards.filter((card) => {
+  // Ensure the issueStatus is 'sprint'
+  const matchesIssueStatus = card.issueStatus === "sprint";
+
+  // Previous filtering logic
+  const matchesSearch = card.title.toLowerCase().includes(searchQuery.toLowerCase()); // Assuming search is based on card.id
+  const matchesType =
+    !Object.values(checkedTypes).some(Boolean) || // If no types selected, show all
+    checkedTypes[card.type.toLowerCase()];
+
+  // Check if the card is assigned to the current user
+  const matchesMyIssue = !onlyMyIssueChecked || card.assignee?.assignId === uid; // Match if onlyMyIssueChecked is true and the user is the assignee
+
+  // Add priority filtering logic if needed
+  const matchesPriority = !selectedPriority || card.priority === selectedPriority; // Assuming selectedPriority is set based on user choice (e.g., "high", "medium", "low")
+
+  return matchesIssueStatus && matchesSearch && matchesType && matchesMyIssue && matchesPriority;
+});
+
+// Optionally, you can sort by priority after filtering
+const sortedFilteredCards = filteredCards.sort((a, b) => {
+  // Check if isPinned is an array and if the current user is in that array
+  const isPinnedA = Array.isArray(a.isPinned) ? a.isPinned.includes(uid) : a.isPinned;
+  const isPinnedB = Array.isArray(b.isPinned) ? b.isPinned.includes(uid) : b.isPinned;
+
+  // First, sort by isPinned (true first, then false)
+  if (isPinnedA !== isPinnedB) {
+    return isPinnedB - isPinnedA; // true (1) comes before false (0)
+  }
+
+  // Then, sort by priority (if needed)
+  return priorityOrder[a.priority] - priorityOrder[b.priority];
+});
+
   
   
   const handleSearch = (e) => {
@@ -2117,20 +2176,7 @@ const [isDeletingComment, setIsDeletingComment] = useState(false);
   
 
   const handleFinalSprintCompletion = async () => {
-    const {
-      projectName,
-      key,
-      startDate,
-      startTime,
-      endDate,
-      endTime,
-      icon,
-      scrumMaster,
-      masterIcon,
-      members,
-    } = location.state || {};
-  
-    // Get the current user's UID
+      // Get the current user's UID
     const auth = getAuth();
     const uid = auth.currentUser?.uid;
   
@@ -2151,7 +2197,7 @@ const [isDeletingComment, setIsDeletingComment] = useState(false);
       // Update each member's access in Firestore
       if (members && members.length > 0) {
         const memberUpdates = members.map(async (memberUid) => {
-          const memberDocRef = doc(db, `Scrum/${scrumId}/member/${memberUid}`);
+          const memberDocRef = doc(db, `Scrum/${scrumId}/member/${uid}`);
           await updateDoc(memberDocRef, { access: false });
           console.log(`Access set to false for member: ${memberUid}`);
         });
@@ -2169,22 +2215,6 @@ const [isDeletingComment, setIsDeletingComment] = useState(false);
   
       // Navigate back to Scrum Projects and pass the project completion data
       navigate("/scrumprojects", {
-        state: {
-          completedProject: {
-            name: projectName,
-            key: key,
-            startDate: startDate,
-            startTime: startTime,
-            endDate: endDate,
-            endTime: endTime,
-            icon: icon,
-            scrumMaster: scrumMaster,
-            masterIcon: masterIcon,
-            members: members,
-            progress: 100,
-            isDone: true,
-          },
-        },
       });
   
       console.log("Sprint completed successfully!");
@@ -3136,15 +3166,47 @@ useEffect(() => {
                       />
                     </button>
 
-                    {isStatusDropdownOpen && (
-                      <div className="active-sprint-presentation-popup__dropdown-menu" ref={statusChangeRef}>
-                        {statusOptions.map((status) => (
-                          <button key={status} className="active-sprint-presentation-popup__dropdown-item" onClick={() => handleStatusSelect(status)}>
-                            {status}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                    {showSuccessPopup && (
+  <div className="sprint-invite-popup-overlay">
+    <div className="sprint-invite-popup-modal">
+      <img src={successPopup} alt="Success" className="sprint-invite-popup-icon" />
+      <p className="sprint-invite-popup-message">
+        {popupMessage}
+      </p>
+      <button 
+        className="sprint-invite-popup-button" 
+        onClick={() => setShowSuccessPopup(false)}
+      >
+        OK
+      </button>
+    </div>
+  </div>
+)}
+
+{showErrorPopup && (
+  <div className="sprint-invite-popup-overlay">
+    <div className="sprint-invite-popup-modal">
+      <img src={errorPopup} alt="Error" className="sprint-invite-popup-icon" />
+      <p className="sprint-invite-popup-error-message">{popupMessage}</p>
+      <button 
+        className="sprint-invite-popup-error-button" 
+        onClick={() => setShowErrorPopup(false)}
+      >
+        OK
+      </button>
+    </div>
+  </div>
+)}
+
+{isStatusDropdownOpen && (
+  <div className="active-sprint-presentation-popup__dropdown-menu" ref={statusChangeRef}>
+    {statusOptions.map((status) => (
+      <button key={status} className="active-sprint-presentation-popup__dropdown-item" onClick={() => handleStatusSelect(status)}>
+        {status}
+      </button>
+    ))}
+  </div>
+)}
                   </div>
                 </div>
               </div>
