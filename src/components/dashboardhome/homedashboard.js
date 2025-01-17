@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import Calendar from 'react-calendar';
+import { ChevronDown} from "lucide-react";
 import 'react-calendar/dist/Calendar.css'; 
 import { enUS } from 'date-fns/locale'; 
 import bug from "./iconshomepage/bugfixicon.png";
@@ -1916,6 +1917,69 @@ useEffect(() => {
   });
 }, [projects]);
 
+
+
+const [showFilter, setShowFilter] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown kapag nag-click sa labas
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowFilter(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleSelect = (period) => {
+    setSelectedPeriod(period);
+    setShowFilter(false); // Isara ang dropdown pagkatapos piliin
+  };
+
+
+
+  
+    const [isOpen, setIsOpen] = useState(false);
+    const [showFilterProtask, setShowFilterProtask] = useState(false);
+  
+    const handleToggleDropdown = () => {
+      setIsOpen(!isOpen);
+      setShowFilterProtask(!showFilterProtask);
+    };
+  
+    const handleSelectCategory = (category) => {
+      setSelectedCategory(category);
+      setIsOpen(false);  // Close dropdown after selection
+      setShowFilterProtask(false);
+    };
+  
+  // Reference to the dropdown container
+  const ProtaskdropdownRef = useRef(null);
+    // Close dropdown if click happens outside
+    const handleClickOutsideProtask = (event) => {
+      if (ProtaskdropdownRef.current && !ProtaskdropdownRef.current.contains(event.target)) {
+        setIsOpen(false);  // Close dropdown if click is outside
+        setShowFilterProtask(false);
+      }
+    };
+  
+    // Set up event listener when component is mounted
+    useEffect(() => {
+      document.addEventListener('mousedown', handleClickOutsideProtask);
+      
+      // Clean up event listener when component is unmounted
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutsideProtask);
+      };
+    }, []);
+
+    
+
   return (
     
     <main className="main-container">
@@ -2404,22 +2468,54 @@ useEffect(() => {
       <div className="chart-container visible-content" id="chartcontainer" draggable>
       <label className="chart-title-label">Performance Overview</label>
       <div className="filter-dropdown-chart">
-        <select
-          className="filter-select-lastYMW"
-          value={selectedPeriod}
-          onChange={(e) => setSelectedPeriod(e.target.value)}
-        >
-          <option value="Last Year">Last Year</option>
-          <option value="Last Month">Last Month</option>
-        </select>
-        <select
-          className="filter-select-protask"
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-        >
-          <option value="Project">Project</option>
-          <option value="Task">Task</option>
-        </select>
+         <div className="filter-select-lastYMW-container" ref={dropdownRef}>
+      <div
+        className={`filter-select-lastYMW ${
+          showFilter ? "active" : ""
+        }`}
+        onClick={() => setShowFilter((prev) => !prev)}
+      >
+        {selectedPeriod}
+        <ChevronDown
+          size={16}
+          className={`filter-select-lastYMW-chevron-icon ${showFilter ? "rotate" : ""}`}
+        />
+      </div>
+      {showFilter && (
+        <div className="filter-select-lastYMW-dropdown">
+          <div
+            className="filter-select-lastYMW-option"
+            onClick={() => handleSelect("Last Year")}
+          >
+            Last Year
+          </div>
+          <div
+            className="filter-select-lastYMW-option"
+            onClick={() => handleSelect("Last Month")}
+          >
+            Last Month
+          </div>
+        </div>
+      )}
+    </div>
+        <div className={`filter-select-protask ${
+                  showFilterProtask ? "active" : ""
+                }`} onClick={handleToggleDropdown} ref={ProtaskdropdownRef}>
+              <div  className="filter-select-protask-selected">
+                {selectedCategory}
+                <ChevronDown size={16} className={`filter-select-protask-chevron-icon ${showFilterProtask ? "rotate" : ""}`} />
+              </div>
+              {isOpen && (
+                <div className="filter-select-protask-options">
+                  <div className="filter-select-protask-option" onClick={() => handleSelectCategory('Project')}>
+                    Project
+                  </div>
+                  <div className="filter-select-protask-option" onClick={() => handleSelectCategory('Task')}>
+                    Task
+                  </div>
+                </div>
+              )}
+            </div>
       </div>
       <div className="menu-dots" onClick={() => toggleRemoveMenu('chart')}>. . .</div>
       <Bar data={generateChartData()} options={options} />
