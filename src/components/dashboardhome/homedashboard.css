@@ -1882,7 +1882,7 @@ z-index: 100;
    border: none;
    cursor:pointer;
   background-color: #F3F9FB;
-  box-shadow: 1px 1px 8px grey;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .nav-buttons {
@@ -1919,26 +1919,140 @@ z-index: 100;
   padding: 5px;
   font-size: 13px;
    border-radius: 5px;
-   box-shadow: 2px 2px 8px grey;
+   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
    color:#2665AC;
    border: none;
   background-color: #F3F9FB;
 cursor:pointer;
+width: 110px; /* Pwede mong i-adjust */
+}
+.filter-select-lastYMW-container {
+  position: relative;
+  display: inline-block;
+  width:200px;
 }
 
+
+.filter-select-lastYMW.active {
+  background-color: #e0f2f5; /* Hover effect */
+  text-decoration: none;
+}
+
+.filter-select-lastYMW:hover {
+  background-color: #eaf4f8; /* Hover effect */
+}
+
+.filter-select-lastYMW-chevron-icon {
+  position: relative;
+  left: 10px;
+  top:2px;
+  transition: transform 0.2s ease;
+}
+
+.filter-select-lastYMW-chevron-icon.rotate {
+  transform: rotate(180deg);
+}
+
+.filter-select-lastYMW-dropdown {
+  position: absolute;
+  top: 115%;
+  left: 0;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  width: 54%;
+}
+
+.filter-select-lastYMW-option {
+  padding: 10px;
+  font-size: 13px;
+  color: #2665ac;
+  cursor: pointer;
+}
+
+.filter-select-lastYMW-option:hover {
+  background-color: #f3f9fb;
+}
 
 
 .filter-select-protask{
   padding: 5px;
   font-size: 13px;
    border-radius: 5px;
-   box-shadow: 2px 2px 8px grey;
+   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
    color:#2665AC;
    border: none;
   background-color: #F3F9FB;
   margin-left:15px;
   cursor:pointer;
 }
+
+
+.filter-select-protask {
+  position: relative;
+  cursor: pointer;
+  padding: 8px;
+  padding-top:6.5px;
+  font-size: 13px;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  color: #2665AC;
+  background-color: #F3F9FB;
+  right: 90px;
+  width: 90px; 
+  height:29px;
+}
+.filter-select-protask.active {
+  background-color: #e0f2f5; /* Hover effect */
+  text-decoration: none;
+}
+
+.filter-select-protask:hover {
+  background-color: #eaf4f8; /* Hover effect */
+}
+
+.filter-select-protask-selected {
+  display: flex;
+  align-items: center;
+}
+
+.filter-select-protask-chevron-icon {
+  position: relative;
+  left: 10px;
+  transition: transform 0.3s;
+}
+
+.filter-select-protask-chevron-icon.rotate {
+  transform: rotate(180deg);
+}
+
+.filter-select-protask-options {
+  position: absolute;
+  top: 108%;
+  left: 0;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  width: 100%;
+  flex-direction: column;
+}
+
+
+
+.filter-select-protask-option {
+  padding: 10px;
+  font-size: 13px;
+  color: #2665ac;
+  cursor: pointer;
+}
+
+.filter-select-protask-option:hover {
+  background-color: #F3F9FB;
+}
+
+
 
 
 .chartcomparedlabel{
