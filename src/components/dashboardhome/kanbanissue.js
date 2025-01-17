@@ -1862,7 +1862,7 @@ const [showPopupTitleTooltip, setShowPopupTitleTooltip] = useState(false);
           <div className="presentation-popup__header">
             <div className="presentation-popup__title-group">
               <div className="presentation-popup__title-wrapper">
-                <img src={projectPicture || img18} alt="Presentation icon" className="presentation-popup__icon" />
+                <img src={projectPicture || "https://firebasestorage.googleapis.com/v0/b/dyci-academix.appspot.com/o/wagdelete%2Facademixlogo.png?alt=media&token=8f83d11b-3604-41e5-9a46-d1df0d44aed5"} alt="Presentation icon" className="presentation-popup__icon" />
                 <div className="presentation-popup__title-container" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   {isEditingTitle && projectStatus !== "Complete" && isAdmin ? (
                     <input
