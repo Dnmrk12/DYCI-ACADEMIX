@@ -5,7 +5,7 @@
     position: relative;
     margin-top: 30px;
     width:295%;
-    height: 1100px;
+    height: auto;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     max-width: 1260px; /* Add a max-width */
   }
@@ -27,6 +27,8 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-gap: 24px;
+    height: 100%;
+    max-height: 987px;
   }
   
   .Performance-report-content > * {
@@ -75,31 +77,132 @@
     bottom:760px;
     left:470px;
   }
-  .Performance-filter-select-lastYMW{
-    padding: 5px;
-    font-size: 13px;
-     border-radius: 5px;
-     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-     color:#2665AC;
-     border: none;
-    background-color: #F3F9FB;
-  
-  }
-  
-  
-  
-  .Performance-filter-select-protask{
-    padding: 5px;
-    font-size: 13px;
-     border-radius: 5px;
-     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-     color:#2665AC;
-     border: none;
-    background-color: #F3F9FB;
-    margin-left:15px;
+  .performance-filter-container {
     position: relative;
-    
+    display: inline-block;
   }
+  
+  .performance-filter-select {
+    padding: 7.5px;
+    white-space: nowrap;
+    font-size: 13px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    color: #2665ac;
+    background-color: #f3f9fb;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 110px; /* Pwede mong i-adjust */
+  }
+  
+  .performance-filter-select.active {
+    background-color: #e0f2f5; /* Hover effect */
+    text-decoration: none;
+  }
+  
+  .performance-filter-select:hover {
+    background-color: #eaf4f8; /* Hover effect */
+  }
+  
+  .performance-chevron-icon {
+    position: relative;
+    left: 1px;
+    transition: transform 0.2s ease;
+  }
+  
+  .performance-chevron-icon.rotate {
+    transform: rotate(180deg);
+  }
+  
+  .performance-filter-dropdown {
+    position: absolute;
+    top: 115%;
+    left: 0;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    width: 100%;
+  }
+  
+  .performance-filter-option {
+    padding: 10px;
+    font-size: 13px;
+    color: #2665ac;
+    cursor: pointer;
+  }
+  
+  .performance-filter-option:hover {
+    background-color: #f3f9fb;
+  }
+  
+  
+  
+  .Performance-filter-select-protask {
+    position: relative;
+    cursor: pointer;
+    padding: 8px;
+    padding-top:6.5px;
+    font-size: 13px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    color: #2665AC;
+    background-color: #F3F9FB;
+    margin-left: 15px;
+    width: 90px; 
+    height:30.6px;
+  }
+  .Performance-filter-select-protask.active {
+    background-color: #e0f2f5; /* Hover effect */
+    text-decoration: none;
+  }
+  
+  .Performance-filter-select-protask:hover {
+    background-color: #eaf4f8; /* Hover effect */
+  }
+  
+  .Performance-filter-selected {
+    display: flex;
+    align-items: center;
+  }
+  
+  .protask-chevron-icon {
+    position: relative;
+    left: 10px;
+    transition: transform 0.3s;
+  }
+  
+  .protask-chevron-icon.rotate {
+    transform: rotate(180deg);
+  }
+  
+  .Performance-filter-options {
+    position: absolute;
+    top: 108%;
+    left: 0;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    width: 100%;
+    flex-direction: column;
+  }
+
+
+  
+  .Performance-filter-option {
+    padding: 10px;
+    font-size: 13px;
+    color: #2665ac;
+    cursor: pointer;
+  }
+  
+  .Performance-filter-option:hover {
+    background-color: #F3F9FB;
+  }
+  
   
 
   .productivity-rate-container {
@@ -195,6 +298,61 @@
      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
      color:#2665AC;
      border: none;
+    background-color: #F3F9FB;
+    cursor:pointer;
+  }
+  
+
+  .work-progress-dropdown {
+    position: relative;
+    cursor: pointer;
+    padding: 5px;
+    font-size: 13px;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    color: #2665AC;
+    background-color: #F3F9FB;
+    margin-left: 15px;
+    width:80px;
+  }
+  
+  .work-progress-selected {
+    display: flex;
+    align-items: center;
+  }
+  
+  .workprog-chevron-icon {
+    margin-left: 5px;
+    transition: transform 0.3s;
+  }
+  
+  .workprog-chevron-icon.rotate {
+    transform: rotate(180deg);
+  }
+  
+  .work-progress-options {
+    position: absolute;
+    top: 90%;
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+    margin-top: 5px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .work-progress-option {
+    padding: 5px;
+    font-size: 13px;
+    color: #2665ac;
+    cursor: pointer;
+  }
+  
+  .work-progress-option:hover {
     background-color: #F3F9FB;
   }
   
