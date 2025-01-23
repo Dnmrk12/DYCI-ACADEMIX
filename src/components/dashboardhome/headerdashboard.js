@@ -337,8 +337,8 @@ const getFilteredNotifications = () => {
   switch (activeTab) {
     case 'Assigned Tasks':
       return notifications.filter(notif => notif.type === 'assigned');
-    case 'Deadlines':
-      return notifications.filter(notif => notif.type === 'deadline');
+    //case 'Deadlines':
+     // return notifications.filter(notif => notif.type === 'deadline');
     case 'Socials':
       return notifications.filter(notif => notif.type === 'social');
     default:
@@ -351,8 +351,8 @@ const getNotificationCount = (tabName) => {
   switch (tabName) {
     case 'Assigned Tasks':
       return notifications.filter(notif => notif.type === 'assigned').length;
-    case 'Deadlines':
-      return notifications.filter(notif => notif.type === 'deadline').length;
+   // case 'Deadlines':
+    //  return notifications.filter(notif => notif.type === 'deadline').length;
     case 'Socials':
       return notifications.filter(notif => notif.type === 'social').length;
     default:
@@ -591,7 +591,7 @@ const getNotificationCount = (tabName) => {
       </div>
 
       <div className="notification-tabs">
-        {['All', 'Assigned Tasks', 'Deadlines', 'Socials'].map((tab) => (
+        {['All', 'Assigned Tasks', 'Socials'].map((tab) => (
           <button
             key={tab}
             className={`tab ${activeTab === tab ? 'active' : ''}`}
