@@ -958,30 +958,46 @@ const [removalSuccessMessage, setRemovalSuccessMessage] = useState("");
           const uid = getAuth().currentUser.uid; // Get the current user's UID
 
           // Create log entry for the current user (under users/${uid}/logReport)
-          const logRefForUser = doc(db, "users", assignId, "logReport", Date.now().toString()); // Unique ID for the document
-          await setDoc(logRefForUser, {
-            status: status,
-            dateTime: currentDate, // Current date and time in the requested format
-            projectName: epicName, // Epic name
-            issue: issueName, // Issue name
-            type: issueType, // Issue type (e.g., story, task, bug)
-            admin: admin, // Admin UID (creator of the epic)
-          });
+       // Create log entry for the user (assignee)
+const logRefForUser = doc(db, "users", assignId, "logReport", Date.now().toString()); // Unique ID for the document
 
-          console.log("Log report entry created for user successfully");
+// Count the existing documents in the user's logReport collection
+const userLogCollectionRef = collection(db, "users", assignId, "logReport");
+const userLogDocs = await getDocs(userLogCollectionRef);
+const userLogCount = userLogDocs.size; // Number of existing documents
 
-          // Create log entry for the admin (under users/${admin}/log)
-          const logRefForAdmin = doc(db, "users", admin, "logReport", Date.now().toString()); // Unique ID for the document
-          await setDoc(logRefForAdmin, {
-            status: status,
-            dateTime: currentDate, // Current date and time in the requested format
-            projectName: epicName, // Epic name
-            issue: issueName, // Issue name
-            type: issueType, // Issue type (e.g., story, task, bug)
-            admin: admin, // Admin UID (creator of the epic)
-          });
+await setDoc(logRefForUser, {
+  status: status,
+  dateTime: currentDate, // Current date and time in the requested format
+  projectName: epicName, // Epic name
+  issue: issueName, // Issue name
+  type: issueType, // Issue type (e.g., story, task, bug)
+  assignee: admin, // Admin UID (creator of the epic)
+  row: userLogCount + 1, // Add 1 to the count for the new entry
+});
 
-          console.log("Log report entry created for admin successfully");
+console.log("Log report entry created for user successfully");
+
+// Create log entry for the admin (under users/${admin}/logReport)
+const logRefForAdmin = doc(db, "users", admin, "logReport", Date.now().toString()); // Unique ID for the document
+
+// Count the existing documents in the admin's logReport collection
+const adminLogCollectionRef = collection(db, "users", admin, "logReport");
+const adminLogDocs = await getDocs(adminLogCollectionRef);
+const adminLogCount = adminLogDocs.size; // Number of existing documents
+
+await setDoc(logRefForAdmin, {
+  status: status,
+  dateTime: currentDate, // Current date and time in the requested format
+  projectName: epicName, // Epic name
+  issue: issueName, // Issue name
+  type: issueType, // Issue type (e.g., story, task, bug)
+  admin: admin, // Admin UID (creator of the epic)
+  row: adminLogCount + 1, // Add 1 to the count for the new entry
+});
+
+console.log("Log report entry created for admin successfully");
+
         } else {
           console.log("Epic or Issue document not found");
         }
@@ -1012,33 +1028,39 @@ const [removalSuccessMessage, setRemovalSuccessMessage] = useState("");
   
     const handlePinClick = async () => {
       try {
-        const userUid = getAuth().currentUser.uid;  // Get the current user's UID
+        const userUid = getAuth().currentUser.uid;
         const issueRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`);
-  
-        // Get current favorite list from Firestore
+    
         const issueDoc = await getDoc(issueRef);
         const currentFavorites = issueDoc.data()?.favorite || [];
-  
-        // Check if the userUid is in the favorite list
         const isFavorite = currentFavorites.includes(userUid);
-  
-        // Update local favorite state immediately (this changes the pin color instantly)
+    
         const updatedFavorites = isFavorite
-          ? currentFavorites.filter(uid => uid !== userUid) // Remove the userUid
-          : [...currentFavorites, userUid]; // Add the userUid
-  
+          ? currentFavorites.filter(uid => uid !== userUid)
+          : [...currentFavorites, userUid];
+    
+        // Always update lastModified, whether pinning or unpinning
+        const now = Date.now();
+        const originalPosition = issueDoc.data()?.originalPosition || now; // Preserve original position
+    
+        await updateDoc(issueRef, { 
+          favorite: updatedFavorites,
+          lastModified: now,
+          // Store the original position if it doesn't exist yet
+          originalPosition: issueDoc.data()?.originalPosition || now
+        });
+    
         setIsFavorite(updatedFavorites.includes(userUid));
-  
-        // Update Firestore with the new favorite list
-        await updateDoc(issueRef, { favorite: updatedFavorites });
-  
+    
         // Update local state
         setTasks((prevTasks) =>
           prevTasks.map((task) => {
             if (task.id === issueId) {
               return {
                 ...task,
-                favorite: updatedFavorites,  // Update the favorite field with the new array
+                favorite: updatedFavorites,
+                lastModified: now,
+                originalPosition: task.originalPosition || now
               };
             }
             return task;
@@ -1048,7 +1070,6 @@ const [removalSuccessMessage, setRemovalSuccessMessage] = useState("");
         console.error("Error updating favorite status:", error);
       }
     };
-  
     
 
     // Function to handle description edit
@@ -2965,6 +2986,8 @@ const [showPopupTitleTooltip, setShowPopupTitleTooltip] = useState(false);
             assignId: data?.assignId, // Add the assignee ID to the task data
             assignee: assigneeData, // Add the assignee data
             favorite: data?.favorite,
+            originalPosition: data?.originalPosition || Date.now(),
+            lastModified: data?.lastModified || Date.now(),
             originalData: data,
             issuedescription: data?.description,
           };
@@ -2983,7 +3006,7 @@ const [showPopupTitleTooltip, setShowPopupTitleTooltip] = useState(false);
     if (selectedEpicId) {
       fetchTasks();
     }
-  }, [selectedEpicId]);
+  }, [selectedEpicId, draggedTask]);
 
   const [isAddingColumn, setIsAddingColumn] = useState(false);
 
@@ -3619,31 +3642,48 @@ const handleAddColumn = (columnTitle) => {
           const taskId = draggedTask.id;
 
           const assignId = draggedTask.assignId;
-          const logRefForUser = doc(db, "users", assignId, "logReport", Date.now().toString());
-          await setDoc(logRefForUser, {
-            status: columnTitle,
-            dateTime: formattedDateTime,
-            projectName: epicName,
-            issue: issueName,
-            type: issueType,
-            admin: admin,
-            taskId: taskId,
-          });
+        // Create log entry for the user (assignee)
+const logRefForUser = doc(db, "users", assignId, "logReport", Date.now().toString());
 
-          console.log("Log report entry created for user successfully");
+// Count the existing documents in the user's logReport collection
+const userLogCollectionRef = collection(db, "users", assignId, "logReport");
+const userLogDocs = await getDocs(userLogCollectionRef);
+const userLogCount = userLogDocs.size; // Number of existing documents
 
-          const logRefForAdmin = doc(db, "users", admin, "logReport", Date.now().toString());
-          await setDoc(logRefForAdmin, {
-            status: columnTitle,
-            dateTime: formattedDateTime,
-            projectName: epicName,
-            issue: issueName,
-            type: issueType,
-            admin: admin,
-            taskId: taskId,
-          });
+await setDoc(logRefForUser, {
+  status: columnTitle,
+  dateTime: formattedDateTime, // Formatted date and time
+  projectName: epicName, // Epic name
+  issue: issueName, // Issue name
+  type: issueType, // Issue type (e.g., story, task, bug)
+  assignee: admin, // Admin UID (creator of the epic)
+  taskId: taskId, // Task ID
+  row: userLogCount + 1, // Add 1 to the count for the new entry
+});
 
-          console.log("Log report entry created for admin successfully");
+console.log("Log report entry created for user successfully");
+
+// Create log entry for the admin
+const logRefForAdmin = doc(db, "users", admin, "logReport", Date.now().toString());
+
+// Count the existing documents in the admin's logReport collection
+const adminLogCollectionRef = collection(db, "users", admin, "logReport");
+const adminLogDocs = await getDocs(adminLogCollectionRef);
+const adminLogCount = adminLogDocs.size; // Number of existing documents
+
+await setDoc(logRefForAdmin, {
+  status: columnTitle,
+  dateTime: formattedDateTime, // Formatted date and time
+  projectName: epicName, // Epic name
+  issue: issueName, // Issue name
+  type: issueType, // Issue type (e.g., story, task, bug)
+  admin: admin, // Admin UID (creator of the epic)
+  taskId: taskId, // Task ID
+  row: adminLogCount + 1, // Add 1 to the count for the new entry
+});
+
+console.log("Log report entry created for admin successfully");
+
         } else {
           console.error("Task document not found in Firestore:", draggedTask.id);
         }
@@ -4015,31 +4055,53 @@ const handleAddColumn = (columnTitle) => {
 
               {/* Moved the cards container here, outside of the menu */}
               <div className="column-content">
-  {tasks
-    .filter((task) => {
-      const statusMatch = task.status === columnTitle;
-      const assigneeMatch = !selectedFilters.onlyMyIssue || 
-        (task.assignee && task.assignee.id === userId);
-      const typeFiltersSelected = Object.values(selectedTypeFilters)
-        .some((value) => value);
-      const typeMatch = !typeFiltersSelected || 
-        selectedTypeFilters[task.type.toLowerCase()] === true;
+              {tasks
+  .filter((task) => {
+    const statusMatch = task.status === columnTitle;
+    const assigneeMatch = !selectedFilters.onlyMyIssue || 
+      (task.assignee && task.assignee.id === userId);
+    const typeFiltersSelected = Object.values(selectedTypeFilters)
+      .some((value) => value);
+    const typeMatch = !typeFiltersSelected || 
+      selectedTypeFilters[task.type.toLowerCase()] === true;
 
-      return statusMatch && assigneeMatch && typeMatch;
-    })
-    .sort((a, b) => {
-      // First sort by favorite status
-      const aFavorites = Array.isArray(a.favorite) ? a.favorite : [];
-      const bFavorites = Array.isArray(b.favorite) ? b.favorite : [];
-      
-      if (aFavorites.length > 0 && bFavorites.length === 0) return -1;
-      if (aFavorites.length === 0 && bFavorites.length > 0) return 1;
+    return statusMatch && assigneeMatch && typeMatch;
+  })
+  .sort((a, b) => {
+    const currentUserUid = auth.currentUser?.uid;
+    
+    // Convert favorite arrays to booleans for current user
+    const aIsFavorited = Array.isArray(a.favorite) && a.favorite.includes(currentUserUid);
+    const bIsFavorited = Array.isArray(b.favorite) && b.favorite.includes(currentUserUid);
 
-      // If favorite status is the same, sort by priority
-      const priorityOrder = { high: 1, medium: 2, low: 3 };
-      return priorityOrder[a.priority] - priorityOrder[b.priority];
-    })
-    .map((task) => (
+    // First sort by favorite status
+    if (aIsFavorited !== bIsFavorited) {
+      return aIsFavorited ? -1 : 1;
+    }
+
+    // Priority order mapping (high = 1, medium = 2, low = 3)
+    const priorityOrder = { high: 1, medium: 2, low: 3 };
+
+    // If neither are favorited, sort by priority
+    if (!aIsFavorited && !bIsFavorited) {
+      // First compare by priority
+      const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
+      if (priorityDiff !== 0) {
+        return priorityDiff;
+      }
+      // If priorities are equal, use originalPosition as tiebreaker
+      return (a.originalPosition || 0) - (b.originalPosition || 0);
+    }
+
+    // If both are favorited, use lastModified
+    if (aIsFavorited && bIsFavorited) {
+      return b.lastModified - a.lastModified;
+    }
+
+    // This line should never be reached but is included for completeness
+    return 0;
+  })
+  .map((task) => (
       <div
         key={task.id}
         data-task-id={task.id}
