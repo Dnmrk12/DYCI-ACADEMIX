@@ -25,6 +25,8 @@ import img15 from './iconshomepage/versionupdate.png';
 import img16 from './iconshomepage/overdue.png';
 import img17 from './iconshomepage/excelexporticon.png';
 import profilePic from './iconshomepage/personalRMpic.png'; 
+import successPopup from "./iconshomepage/successPopup.png";
+import errorPopup from "./iconshomepage/errorPopup.png";
 import { getFirestore, collection,limit, addDoc,doc , getDocs,getDoc,increment, deleteDoc ,setDoc, query,orderBy, onSnapshot, where,updateDoc, arrayRemove ,arrayUnion, serverTimestamp} from 'firebase/firestore';
 
 import { getStorage, ref, uploadBytes,  getDownloadURL ,uploadString} from 'firebase/storage';
@@ -113,6 +115,9 @@ useEffect(() => {
       const activeRowsData = rowsData.filter(row => row.status !== 'Done');
 
       // Set the states for rows accordingly
+
+
+      
       setDoneRows(doneRowsData); // Set state with the "Done" rows
       setRows(activeRowsData);    // Set state with active rows
     } catch (error) {
@@ -163,6 +168,13 @@ const handleFileUpload = (e) => {
    // Handle form submission
    const handleCreateRow = async (e) => {
     e.preventDefault();
+
+    if (!projectName || !startTime || !endDate || !endTime) {
+      setPopupMessage("Please fill in all required fields.");
+      setShowErrorPopup(true);
+      return;
+    }
+
 
     if (isCreating) return;
     setIsCreating(true);
@@ -247,6 +259,8 @@ const handleFileUpload = (e) => {
       // Update state and UI
       setRows((prevRows) => [...prevRows, { ...newRow }]);
       resetForm();
+      setShowSuccessPopup(true);
+    setPopupMessage(`${projectName} has been successfully created!`);
       setShowEpicPopupPersonalRoadmap(false);
     } catch (error) {
       console.error("Error adding epic to Firestore:", error);
@@ -258,7 +272,39 @@ const handleFileUpload = (e) => {
     
   
   
-
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+ 
+  
+  const SuccessPopup = ({ message }) => (
+    <div className="roadmap-popup-overlay">
+      <div className="roadmap-popup-modal">
+        <img src={successPopup} alt="Success" className="roadmap-popup-icon" />
+        <p className="roadmap-popup-message">{message}</p>
+        <button
+          className="roadmap-popup-button"
+          onClick={() => setShowSuccessPopup(false)}
+        >
+          OK
+        </button>
+      </div>
+    </div>
+  );
+  
+  const ErrorPopup = ({ message }) => (
+    <div className="roadmap-popup-overlay">
+      <div className="roadmap-popup-modal">
+        <img src={errorPopup} alt="Error" className="roadmap-popup-icon" />
+        <p className="roadmap-popup-error-message">{message}</p>
+        <button
+          className="roadmap-popup-error-button"
+          onClick={() => setShowErrorPopup(false)}
+        >
+          OK
+        </button>
+      </div>
+    </div>
+  );
   
   
   
@@ -291,7 +337,7 @@ const handleFileUpload = (e) => {
       setEndDate(row.endDate ? new Date(row.endDate) : null);
       setStartTime(row.startTime || null);
       setEndTime(row.endTime || null);
-      setSelectedImage(row.icon); // Default image if none
+      setSelectedImage(row.icon || null); // Default image if none
       setEditRowId(rowId);
       setIsEditing(true);
       setShowEpicPopupPersonalRoadmap(true);
@@ -303,6 +349,14 @@ const handleFileUpload = (e) => {
    // Save edited row
    const handleSaveEdit = async (e) => {
     e.preventDefault();
+
+
+    if (!projectName || !endDate) {
+      setPopupMessage("Please fill in all required fields.");
+      setShowErrorPopup(true);
+      return;
+    }
+
   
     const formatDate = (date) => {
       return date ? date.toISOString().split('T')[0] : null; // Format date as a string
@@ -330,7 +384,7 @@ const handleFileUpload = (e) => {
       projectName,
       startDate: formattedStartDate || "No Start Date Selected",
       endDate: formattedEndDate || "No End Date Selected",
-      icon: iconUrl, // Use the new icon URL or the existing one if no new image
+      icon: iconUrl || selectedImage, // Use the new icon URL or the existing one if no new image
       startTime: startTime || "No Start Time Selected",
       endTime: endTime || "No End Time Selected",
     };
@@ -352,6 +406,8 @@ const handleFileUpload = (e) => {
   
       try {
         await updateDoc(docRef, updatedRow); // Update the document in Firestore
+        setShowSuccessPopup(true);
+        setPopupMessage(`${projectName} has been successfully updated!`);
       } catch (error) {
         console.error('Error updating epic in Firestore:', error);
       }
@@ -413,6 +469,12 @@ const handleFileUpload = (e) => {
       const parentDocRef = doc(db, `users/${uid}/Roadmap/${rowToDelete}`);
       await deleteDoc(parentDocRef);
       console.log("Deleted parent Roadmap document.");
+
+ // Delete locally from doneRows
+ setDoneRows((prevDoneRows) =>
+  prevDoneRows.filter((row) => row.id !== rowToDelete)
+);
+
   
       // Update local state
       setRows(rows.filter(row => row.id !== rowToDelete));
@@ -1519,6 +1581,12 @@ const handleCreateSubtask = async (epicId) => {
         };
         return updatedSubtasks;
       });
+
+
+
+ // Close the popup immediately
+ handleCloseSubtaskPopup();
+
   
       // Update Firestore asynchronously
       await updateDoc(subtaskRef, {
@@ -1526,10 +1594,10 @@ const handleCreateSubtask = async (epicId) => {
       });
   
       console.log("Subtask updated in Firestore successfully.");
-      handleCloseSubtaskPopup(); // Close the popup after saving
-    } catch (error) {
-      console.error("Error updating subtask in Firestore:", error.message);
-    }
+      handleCloseSubtaskPopup(); 
+  } catch (error) {
+    console.error("Error updating subtask in Firestore:", error.message);
+  }
   };
   
   
@@ -2461,7 +2529,7 @@ const DateTimePicker = ({ label, date, time, onDateChange, onTimeChange }) => {
 
                   {dropdownVisibleRow === row.id && (
                     <div className="dropdown-menu" style={{ top: -4}}>
-                      <button
+                     {/*  <button
                         className="editepicactionbtn"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -2471,9 +2539,9 @@ const DateTimePicker = ({ label, date, time, onDateChange, onTimeChange }) => {
                         style={{ width: 120}}
                       >
                         Edit
-                      </button>
+                      </button>*/}
                       <button
-                        className="deleteEpicactionbtn"
+                        className="deleteDoneEpicactionbtn"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDeleteRow(row.id);
@@ -2724,8 +2792,10 @@ const DateTimePicker = ({ label, date, time, onDateChange, onTimeChange }) => {
     const date = new Date(dateString); // Convert string to Date object
     const today = new Date();
 
-    // Allow selecting the current date or any future date
-    if (date >= today) {
+    // Remove time part from today's date for comparison
+    today.setHours(0, 0, 0, 0);
+
+    if (date >= today || date.toISOString().split('T')[0] === today.toISOString().split('T')[0]) {
       setStartDate(date);
       console.log("Start Date Selected:", dateString);
     } else {
@@ -2745,9 +2815,16 @@ const DateTimePicker = ({ label, date, time, onDateChange, onTimeChange }) => {
   time={endTime} // Pass the end time to display
   onDateChange={(dateString) => {
     const date = new Date(dateString); // Convert string to Date object
+    const today = new Date();
+
+    // Remove time part from today's date for comparison
+    today.setHours(0, 0, 0, 0);
+
     if (!isNaN(date)) {
-      // Ensure the end date is not before the start date
-      if (date >= startDate) {
+      if (
+        date >= startDate || 
+        date.toISOString().split('T')[0] === today.toISOString().split('T')[0]
+      ) {
         setEndDate(date);
         console.log("End Date Selected:", dateString);
       } else {
@@ -2778,6 +2855,15 @@ const DateTimePicker = ({ label, date, time, onDateChange, onTimeChange }) => {
         </div>
     </div>
 )}
+
+
+
+
+<div>
+    {showSuccessPopup && <SuccessPopup message={popupMessage} />}
+    {showErrorPopup && <ErrorPopup message={popupMessage} />}
+    {/* Rest of your component code */}
+  </div>
 
 
 
