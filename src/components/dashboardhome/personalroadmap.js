@@ -167,110 +167,91 @@ const handleFileUpload = (e) => {
   
    // Handle form submission
    const handleCreateRow = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!projectName || !startTime || !endDate || !endTime) {
-      setPopupMessage("Please fill in all required fields.");
-      setShowErrorPopup(true);
-      return;
-    }
+  if (!projectName || !startTime || !endDate || !endTime) {
+    setPopupMessage("Please fill in all required fields.");
+    setShowErrorPopup(true);
+    return;
+  }
 
+  if (isCreating) return;
+  setIsCreating(true);
 
-    if (isCreating) return;
-    setIsCreating(true);
+  const auth = getAuth();
+  const user = auth.currentUser;
 
-    const auth = getAuth();
-    const user = auth.currentUser;
+  if (!user) {
+    console.error("User is not authenticated. Please log in.");
+    setIsCreating(false);
+    return;
+  }
 
-    if (!user) {
-        console.error("User is not authenticated. Please log in.");
-        setIsCreating(false);
-        return;
-    }
-  
-    const uid = user.uid;
+  const uid = user.uid;
 
-    const formatDate = (date) => (date ? date.toISOString().split("T")[0] : null);
-    const formattedStartDate = formatDate(startDate || new Date()); // Default to today's date
-    const formattedEndDate = formatDate(endDate);
+  const formatDate = (date) => (date ? date.toISOString().split("T")[0] : null);
+  const formattedStartDate = formatDate(startDate || new Date()); // Default to today's date
+  const formattedEndDate = formatDate(endDate);
 
-    const defaultImageUrl = "https://firebasestorage.googleapis.com/v0/b/dyci-academix.appspot.com/o/wagdelete%2Facademixlogo.png?alt=media&token=8f83d11b-3604-41e5-9a46-d1df0d44aed5";
-    let iconUrl = defaultImageUrl;
-    if (epicFormData.icon) {
-      const timestamp = new Date().getTime();
-      const storage = getStorage();
-      const storageRef = ref(storage, `Roadmap/${timestamp}/${epicFormData.icon.name}`);
-      try {
-        const snapshot = await uploadBytes(storageRef, epicFormData.icon);
-        iconUrl = await getDownloadURL(snapshot.ref);
-      } catch (error) {
-        console.error("Error uploading image to Firebase Storage:", error);
-      }
-    }
-  
-    const db = getFirestore();
-    const userRoadmapRef = collection(db, `users/${uid}/Roadmap`);
-  
+  const defaultImageUrl = "https://firebasestorage.googleapis.com/v0/b/dyci-academix.appspot.com/o/wagdelete%2Facademixlogo.png?alt=media&token=8f83d11b-3604-41e5-9a46-d1df0d44aed5";
+  let iconUrl = defaultImageUrl;
+  if (epicFormData.icon) {
+    const timestamp = new Date().getTime();
+    const storage = getStorage();
+    const storageRef = ref(storage, `Roadmap/${timestamp}/${epicFormData.icon.name}`);
     try {
-      // Get all documents in the user's Roadmap collection
-      const querySnapshot = await getDocs(userRoadmapRef);
-  
-      // Find the maximum id in the current documents
-      const maxId = querySnapshot.docs.reduce((max, doc) => {
-        const data = doc.data();
-        return Math.max(max, data.id || 0);
-      }, 0);
-  
-      // Increment the maxId for the new document
-      const newId = maxId + 1;
-  
-      const newRow = {
-        id: newId,
-        icon: iconUrl || null,
-        projectName,
-        startDate: formattedStartDate || "No Start Date Selected",
-        endDate: formattedEndDate || "No End Date Selected",
-        startTime: startTime || "No Start Time Selected",
-        endTime: endTime || "No End Time Selected",
-        projectProgress: "",
-        isPinned: false,
-      };
-  
-      const userRef = doc(db, `users/${uid}/Roadmap/${newId}`); // Use the newId as the custom doc ID
-  
-      await setDoc(userRef, newRow); // Save the document with the specified ID
-  
-      // Create the notification document reference
-      const notifRef = doc(collection(db, `users/${uid}/roadmapNotif`)); // Auto-generate an ID in the roadmapNotif collection
-      
-      // Now we can access the generated notifRef.id
-      const timestamp = new Date().toISOString();
-      const notification = {
-        context: newId,
-        id: notifRef.id, // Correctly use the generated notification document ID
-        receiver: [uid], // Notifications for the user
-        timeAgo: timestamp,
-        type: "deadline",
-        unread: false,
-      };
-  
-      await setDoc(notifRef, notification); // Save the notification document
-  
-      // Update state and UI
-      setRows((prevRows) => [...prevRows, { ...newRow }]);
-      resetForm();
-      setShowSuccessPopup(true);
-    setPopupMessage(`${projectName} has been successfully created!`);
-      setShowEpicPopupPersonalRoadmap(false);
+      const snapshot = await uploadBytes(storageRef, epicFormData.icon);
+      iconUrl = await getDownloadURL(snapshot.ref);
     } catch (error) {
-      console.error("Error adding epic to Firestore:", error);
+      console.error("Error uploading image to Firebase Storage:", error);
     }
-   finally {
-    setIsCreating(false); // Ibalik sa default state pagkatapos ng proseso
-}
-  };
-    
-  
+  }
+
+  const db = getFirestore();
+  const userRoadmapRef = collection(db, `users/${uid}/Roadmap`);
+
+  try {
+    // Get all documents in the user's Roadmap collection
+    const querySnapshot = await getDocs(userRoadmapRef);
+
+    // Find the maximum id in the current documents
+    const maxId = querySnapshot.docs.reduce((max, doc) => {
+      const data = doc.data();
+      return Math.max(max, data.id || 0);
+    }, 0);
+
+    // Increment the maxId for the new document
+    const newId = maxId + 1;
+
+    const newRow = {
+      id: newId,
+      icon: iconUrl || null,
+      projectName,
+      startDate: formattedStartDate || "No Start Date Selected",
+      endDate: formattedEndDate || "No End Date Selected",
+      startTime: startTime || "No Start Time Selected",
+      endTime: endTime || "No End Time Selected",
+      projectProgress: "",
+      isPinned: false,
+    };
+
+    const userRef = doc(db, `users/${uid}/Roadmap/${newId}`); // Use the newId as the custom doc ID
+
+    await setDoc(userRef, newRow); // Save the document with the specified ID
+
+    // Update state and UI
+    setRows((prevRows) => [...prevRows, { ...newRow }]);
+    resetForm();
+    setShowSuccessPopup(true);
+    setPopupMessage(`${projectName} has been successfully created!`);
+    setShowEpicPopupPersonalRoadmap(false);
+  } catch (error) {
+    console.error("Error adding epic to Firestore:", error);
+  } finally {
+    setIsCreating(false); // Reset to default state after the process
+  }
+};
+
   
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [showErrorPopup, setShowErrorPopup] = useState(false);
