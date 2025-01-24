@@ -381,7 +381,7 @@ const [removalSuccessMessage, setRemovalSuccessMessage] = useState("");
     const displayedMembers = members.slice(0, 2);
     const memberCount = members.length;
 
-      const handleInvite = async () => {
+        const handleInvite = async () => {
       const emailInput = document.querySelector(".member-email-input").value.trim();
       if (!emailInput) {
         setErrorInviteMessage("Please enter a valid email.");
