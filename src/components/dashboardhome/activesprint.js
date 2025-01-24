@@ -2313,16 +2313,7 @@ const [isDeletingComment, setIsDeletingComment] = useState(false);
           return;
         }
   
-        const notifId = currentUserBacklogDoc.data().notifId;
-        const notifRef = doc(db, `Scrum/${scrumId}/scrumNotif/${notifId}`);
-        await setDoc(
-          notifRef,
-          {
-            receiver: arrayUnion(memberUid),
-          },
-          { merge: true }
-        );
-  
+       
         // Create a new notification for the invited member
         const notifCollectionRef = collection(db, `Scrum/${scrumId}/scrumNotif`);
         const notifDocRef = await addDoc(notifCollectionRef, {
@@ -2336,17 +2327,9 @@ const [isDeletingComment, setIsDeletingComment] = useState(false);
           unread: true,
         });
   
-        const notifDocId = notifDocRef.id;
   
         // Update the notification document with its own ID
-        await setDoc(
-          doc(db, `Scrum/${scrumId}/scrumNotif/${notifDocId}`),
-          {
-            id: notifDocId,
-          },
-          { merge: true }
-        );
-  
+    
         console.log("Member invited successfully!");
         setPopupMessage("Member has been successfully invited!");
         setShowSuccessPopup(true);
