@@ -541,108 +541,97 @@ const KanbanBoard = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false); // State to track form submission
 
-    const handleFormSubmit = async (e) => {
-      e.preventDefault();
+  const handleFormSubmit = async (e) => {
+  e.preventDefault();
 
-      if (!isFormValid()) {
-        setShowErrorPopup(true);
-        setErrorMessage("Please fill in all required fields.");
-        return;
-      }
+  if (!isFormValid()) {
+    setShowErrorPopup(true);
+    setErrorMessage("Please fill in all required fields.");
+    return;
+  }
 
-      // Disable the button to prevent multiple submissions
-      setIsSubmitting(true);
+  // Disable the button to prevent multiple submissions
+  setIsSubmitting(true);
 
-      let updatedProjectPictureUrl = projectPictureUrl || "https://firebasestorage.googleapis.com/v0/b/dyci-academix.appspot.com/o/wagdelete%2Facademixlogo.png?alt=media&token=8f83d11b-3604-41e5-9a46-d1df0d44aed5";
+  let updatedProjectPictureUrl = projectPictureUrl || "https://firebasestorage.googleapis.com/v0/b/dyci-academix.appspot.com/o/wagdelete%2Facademixlogo.png?alt=media&token=8f83d11b-3604-41e5-9a46-d1df0d44aed5";
 
-      try {
-        if (epicFormData.projectPicture) {
-          const storage = getStorage();
-          const timestamp = Date.now();
-          const storageRef = ref(storage, `Kanban/${timestamp}/${epicFormData.projectName}/${epicFormData.projectPicture.name}`);
-          await uploadBytes(storageRef, epicFormData.projectPicture);
-          updatedProjectPictureUrl = await getDownloadURL(storageRef);
-        }
+  try {
+    if (epicFormData.projectPicture) {
+      const storage = getStorage();
+      const timestamp = Date.now();
+      const storageRef = ref(storage, `Kanban/${timestamp}/${epicFormData.projectName}/${epicFormData.projectPicture.name}`);
+      await uploadBytes(storageRef, epicFormData.projectPicture);
+      updatedProjectPictureUrl = await getDownloadURL(storageRef);
+    }
 
-        const db = getFirestore();
-        let epicId = projectId;
+    const db = getFirestore();
+    let epicId = projectId;
 
-        if (!isEditMode) {
-          epicId = doc(collection(db, "Kanban")).id;
-        }
+    if (!isEditMode) {
+      epicId = doc(collection(db, "Kanban")).id;
+    }
 
-        const epicCode = generateEpicCode(epicFormData.projectName);
+    const epicCode = generateEpicCode(epicFormData.projectName);
 
-        const notifRef = doc(collection(db, `Kanban/${epicId}/kanbanNotif`));
-        const notification = {
-          context: epicId,
-          id: notifRef.id,
-          receiver: [uid],
-          timeAgo: new Date().toISOString(),
-          type: "deadline",
-          unread: true,
-        };
-        await setDoc(notifRef, notification);
+    if (isEditMode) {
+      await updateDoc(doc(db, `Kanban/${projectId}`), {
+        epicName: epicFormData.projectName,
+        startDate: epicFormData.startDate,
+        endDate: epicFormData.endDate,
+        startTime: epicFormData.startTime,
+        endTime: epicFormData.endTime,
+        favorite: epicFormData.favorite,
+        projectPicture: updatedProjectPictureUrl,
+        projectPictureName: projectPictureName,
+      });
+    } else {
+      await setDoc(doc(db, `users/${uid}/Kanban/${epicId}`), {
+        createdAt: new Date(),
+        epicId: epicId,
+      });
 
-        if (isEditMode) {
-          await updateDoc(doc(db, `Kanban/${projectId}`), {
-            epicName: epicFormData.projectName,
-            startDate: epicFormData.startDate,
-            endDate: epicFormData.endDate,
-            startTime: epicFormData.startTime,
-            endTime: epicFormData.endTime,
-            favorite: epicFormData.favorite,
-            projectPicture: updatedProjectPictureUrl,
-            projectPictureName: projectPictureName,
-          });
-        } else {
-          await setDoc(doc(db, `users/${uid}/Kanban/${epicId}`), {
-            createdAt: new Date(),
-            epicId: epicId,
-            notifId: notifRef.id,
-          });
+      await setDoc(doc(db, `Kanban/${epicId}`), {
+        projectId: epicId,
+        epicName: epicFormData.projectName,
+        startDate: epicFormData.startDate,
+        endDate: epicFormData.endDate,
+        startTime: epicFormData.startTime,
+        endTime: epicFormData.endTime,
+        dateDone: null,
+        admin: uid,
+        favorite: epicFormData.favorite,
+        projectPicture: updatedProjectPictureUrl,
+        projectPictureName: projectPictureName,
+        projectStatus: "To-do",
+        epicCode: epicCode,
+      });
 
-          await setDoc(doc(db, `Kanban/${epicId}`), {
-            projectId: epicId,
-            epicName: epicFormData.projectName,
-            startDate: epicFormData.startDate,
-            endDate: epicFormData.endDate,
-            startTime: epicFormData.startTime,
-            endTime: epicFormData.endTime,
-            dateDone: null,
-            admin: uid,
-            favorite: epicFormData.favorite,
-            projectPicture: updatedProjectPictureUrl,
-            projectPictureName: projectPictureName,
-            projectStatus: "To-do",
-            epicCode: epicCode,
-          });
+      await setDoc(doc(db, `Kanban/${epicId}/Member`, uid), {
+        MemberUid: uid,
+        Type: "Kanban Owner",
+        Access: true,
+      });
 
-          await setDoc(doc(db, `Kanban/${epicId}/Member`, uid), {
-            MemberUid: uid,
-            Type: "Kanban Owner",
-            Access: true,
-          });
+      await setDoc(doc(db, `Kanban/${epicId}/EpicColumn/p9Gdxwc3hs3tzZIdFDVi`), {
+        createdAt: new Date(),
+        issueColumn: ["To-do", "In Progress", "Complete"],
+      });
+    }
 
-          await setDoc(doc(db, `Kanban/${epicId}/EpicColumn/p9Gdxwc3hs3tzZIdFDVi`), {
-            createdAt: new Date(),
-            issueColumn: ["To-do", "In Progress", "Complete"],
-          });
-        }
+    setPopupProjectName(epicFormData.projectName);
+    setShowSuccessPopup(true);
 
-        setPopupProjectName(epicFormData.projectName);
-        setShowSuccessPopup(true);
+    console.log(`Project ${isEditMode ? "updated" : "saved"} successfully`);
+  } catch (error) {
+    console.error(`Error ${isEditMode ? "updating" : "saving"} project:`, error);
+    setShowErrorPopup(true);
+    setErrorMessage(`Failed to ${isEditMode ? "update" : "save"} project. Please try again.`);
+  } finally {
+    // Re-enable the button after the operation
+    setIsSubmitting(false);
+  }
+};
 
-        console.log(`Project ${isEditMode ? "updated" : "saved"} successfully`);
-      } catch (error) {
-        console.error(`Error ${isEditMode ? "updating" : "saving"} project:`, error);
-        setShowErrorPopup(true);
-        setErrorMessage(`Failed to ${isEditMode ? "update" : "save"} project. Please try again.`);
-      } finally {
-        // Re-enable the button after the operation
-        setIsSubmitting(false);
-      }
-    };
 
     const handleInputChange = (e) => {
       const { name, value } = e.target;
