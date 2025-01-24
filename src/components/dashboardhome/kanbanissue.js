@@ -381,7 +381,7 @@ const [removalSuccessMessage, setRemovalSuccessMessage] = useState("");
     const displayedMembers = members.slice(0, 2);
     const memberCount = members.length;
 
-        const handleInvite = async () => {
+    const handleInvite = async () => {
       const emailInput = document.querySelector(".member-email-input").value.trim();
       if (!emailInput) {
         setErrorInviteMessage("Please enter a valid email.");
@@ -477,6 +477,8 @@ const [removalSuccessMessage, setRemovalSuccessMessage] = useState("");
         setShowInviteErrorPopup(true);
       }
     };
+    
+
     const MemberDetailsPopup = ({ onBack }) => {
       return (
         <div className="member-modal-overlay">
@@ -1030,39 +1032,33 @@ console.log("Log report entry created for admin successfully");
   
     const handlePinClick = async () => {
       try {
-        const userUid = getAuth().currentUser.uid;
+        const userUid = getAuth().currentUser.uid;  // Get the current user's UID
         const issueRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`);
-    
+  
+        // Get current favorite list from Firestore
         const issueDoc = await getDoc(issueRef);
         const currentFavorites = issueDoc.data()?.favorite || [];
+  
+        // Check if the userUid is in the favorite list
         const isFavorite = currentFavorites.includes(userUid);
-    
+  
+        // Update local favorite state immediately (this changes the pin color instantly)
         const updatedFavorites = isFavorite
-          ? currentFavorites.filter(uid => uid !== userUid)
-          : [...currentFavorites, userUid];
-    
-        // Always update lastModified, whether pinning or unpinning
-        const now = Date.now();
-        const originalPosition = issueDoc.data()?.originalPosition || now; // Preserve original position
-    
-        await updateDoc(issueRef, { 
-          favorite: updatedFavorites,
-          lastModified: now,
-          // Store the original position if it doesn't exist yet
-          originalPosition: issueDoc.data()?.originalPosition || now
-        });
-    
+          ? currentFavorites.filter(uid => uid !== userUid) // Remove the userUid
+          : [...currentFavorites, userUid]; // Add the userUid
+  
         setIsFavorite(updatedFavorites.includes(userUid));
-    
+  
+        // Update Firestore with the new favorite list
+        await updateDoc(issueRef, { favorite: updatedFavorites });
+  
         // Update local state
         setTasks((prevTasks) =>
           prevTasks.map((task) => {
             if (task.id === issueId) {
               return {
                 ...task,
-                favorite: updatedFavorites,
-                lastModified: now,
-                originalPosition: task.originalPosition || now
+                favorite: updatedFavorites,  // Update the favorite field with the new array
               };
             }
             return task;
@@ -1072,6 +1068,7 @@ console.log("Log report entry created for admin successfully");
         console.error("Error updating favorite status:", error);
       }
     };
+  
     
 
     // Function to handle description edit
@@ -2988,8 +2985,6 @@ const [showPopupTitleTooltip, setShowPopupTitleTooltip] = useState(false);
             assignId: data?.assignId, // Add the assignee ID to the task data
             assignee: assigneeData, // Add the assignee data
             favorite: data?.favorite,
-            originalPosition: data?.originalPosition || Date.now(),
-            lastModified: data?.lastModified || Date.now(),
             originalData: data,
             issuedescription: data?.description,
           };
@@ -3008,7 +3003,7 @@ const [showPopupTitleTooltip, setShowPopupTitleTooltip] = useState(false);
     if (selectedEpicId) {
       fetchTasks();
     }
-  }, [selectedEpicId, draggedTask]);
+  }, [selectedEpicId]);
 
   const [isAddingColumn, setIsAddingColumn] = useState(false);
 
@@ -4057,53 +4052,31 @@ console.log("Log report entry created for admin successfully");
 
               {/* Moved the cards container here, outside of the menu */}
               <div className="column-content">
-              {tasks
-  .filter((task) => {
-    const statusMatch = task.status === columnTitle;
-    const assigneeMatch = !selectedFilters.onlyMyIssue || 
-      (task.assignee && task.assignee.id === userId);
-    const typeFiltersSelected = Object.values(selectedTypeFilters)
-      .some((value) => value);
-    const typeMatch = !typeFiltersSelected || 
-      selectedTypeFilters[task.type.toLowerCase()] === true;
+  {tasks
+    .filter((task) => {
+      const statusMatch = task.status === columnTitle;
+      const assigneeMatch = !selectedFilters.onlyMyIssue || 
+        (task.assignee && task.assignee.id === userId);
+      const typeFiltersSelected = Object.values(selectedTypeFilters)
+        .some((value) => value);
+      const typeMatch = !typeFiltersSelected || 
+        selectedTypeFilters[task.type.toLowerCase()] === true;
 
-    return statusMatch && assigneeMatch && typeMatch;
-  })
-  .sort((a, b) => {
-    const currentUserUid = auth.currentUser?.uid;
-    
-    // Convert favorite arrays to booleans for current user
-    const aIsFavorited = Array.isArray(a.favorite) && a.favorite.includes(currentUserUid);
-    const bIsFavorited = Array.isArray(b.favorite) && b.favorite.includes(currentUserUid);
+      return statusMatch && assigneeMatch && typeMatch;
+    })
+    .sort((a, b) => {
+      // First sort by favorite status
+      const aFavorites = Array.isArray(a.favorite) ? a.favorite : [];
+      const bFavorites = Array.isArray(b.favorite) ? b.favorite : [];
+      
+      if (aFavorites.length > 0 && bFavorites.length === 0) return -1;
+      if (aFavorites.length === 0 && bFavorites.length > 0) return 1;
 
-    // First sort by favorite status
-    if (aIsFavorited !== bIsFavorited) {
-      return aIsFavorited ? -1 : 1;
-    }
-
-    // Priority order mapping (high = 1, medium = 2, low = 3)
-    const priorityOrder = { high: 1, medium: 2, low: 3 };
-
-    // If neither are favorited, sort by priority
-    if (!aIsFavorited && !bIsFavorited) {
-      // First compare by priority
-      const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
-      if (priorityDiff !== 0) {
-        return priorityDiff;
-      }
-      // If priorities are equal, use originalPosition as tiebreaker
-      return (a.originalPosition || 0) - (b.originalPosition || 0);
-    }
-
-    // If both are favorited, use lastModified
-    if (aIsFavorited && bIsFavorited) {
-      return b.lastModified - a.lastModified;
-    }
-
-    // This line should never be reached but is included for completeness
-    return 0;
-  })
-  .map((task) => (
+      // If favorite status is the same, sort by priority
+      const priorityOrder = { high: 1, medium: 2, low: 3 };
+      return priorityOrder[a.priority] - priorityOrder[b.priority];
+    })
+    .map((task) => (
       <div
         key={task.id}
         data-task-id={task.id}
