@@ -382,102 +382,117 @@ const [removalSuccessMessage, setRemovalSuccessMessage] = useState("");
     const memberCount = members.length;
 
     const handleInvite = async () => {
-      const emailInput = document.querySelector(".member-email-input").value.trim();
-      if (!emailInput) {
-        setErrorInviteMessage("Please enter a valid email.");
-        setShowInviteErrorPopup(true);
-        return;
-      }
-    
-      try {
-        const auth = getAuth();
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-          setErrorInviteMessage("You must be signed in to perform this action.");
-          setShowInviteErrorPopup(true);
-          return;
-        }
-        const currentUserId = currentUser.uid;
-    
-        const userKanbanRef = doc(db, `users/${currentUserId}/Kanban/${currentEpicId}`);
-        const userKanbanDoc = await getDoc(userKanbanRef);
-    
-        if (!userKanbanDoc.exists()) {
-          setErrorInviteMessage("Notification ID not found. Please ensure your Kanban setup is complete.");
-          setShowInviteErrorPopup(true);
-          return;
-        }
-    
-        const notifId = userKanbanDoc.data().notifId;
-        if (!notifId) {
-          setErrorInviteMessage("Notification ID is missing in the user's Kanban document.");
-          setShowInviteErrorPopup(true);
-          return;
-        }
-    
-        const usersRef = collection(db, "users");
-        const emailQuery = query(usersRef, where("email", "==", emailInput));
-        const querySnapshot = await getDocs(emailQuery);
-    
-        if (querySnapshot.empty) {
-          setErrorInviteMessage("No user found with this email.");
-          setShowInviteErrorPopup(true);
-          return;
-        }
-    
-        const userDoc = querySnapshot.docs[0];
-        const userId = userDoc.id;
-    
-        const memberRef = doc(db, `Kanban/${currentEpicId}/Member/${userId}`);
-        const memberSnapshot = await getDoc(memberRef);
-    
-        if (memberSnapshot.exists()) {
-          setErrorInviteMessage("This user has already been invited to the epic.");
-          setShowInviteErrorPopup(true);
-          return;
-        }
-    
-        await setDoc(memberRef, {
-          MemberUid: userId,
-          Access: false,
-          createdAt: serverTimestamp(),
-          Type: "Team Member",
-        });
-    
-        await setDoc(doc(db, `users/${userId}/Kanban/${currentEpicId}`), {
-          EpicId: currentEpicId,
-          createdAt: serverTimestamp(),
-        });
-    
-        // Add notification logic here
-        const notifRef = collection(db, `Kanban/${currentEpicId}/kanbanNotif`);
-    
-        const notificationData = {
-          sender: currentUserId,
-          receiver: [userId],
-          context: currentEpicId,
-          action: "has invited you to join the Kanban",
-          timeAgo: new Date().toISOString(),
-          subType: "workload",
-          type: "assigned",
-          unread: true,
-        };
-    
-        const notificationDocRef = await addDoc(notifRef, notificationData);
-        await updateDoc(notificationDocRef, {
-          id: notificationDocRef.id,
-        });
-    
-        setShowInviteSuccessPopup(true);
-        onClose();
-        fetchMembers();
-      } catch (error) {
-        console.error("Error inviting user:", error);
-        setErrorInviteMessage("There was an error inviting the user.");
-        setShowInviteErrorPopup(true);
-      }
+  const emailInput = document.querySelector(".member-email-input").value.trim();
+  if (!emailInput) {
+    setErrorInviteMessage("Please enter a valid email.");
+    setShowInviteErrorPopup(true);
+    return;
+  }
+
+  try {
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      setErrorInviteMessage("You must be signed in to perform this action.");
+      setShowInviteErrorPopup(true);
+      return;
+    }
+    const currentUserId = currentUser.uid;
+
+    const userKanbanRef = doc(db, `users/${currentUserId}/Kanban/${currentEpicId}`);
+    const userKanbanDoc = await getDoc(userKanbanRef);
+
+    if (!userKanbanDoc.exists()) {
+      setErrorInviteMessage("Notification ID not found. Please ensure your Kanban setup is complete.");
+      setShowInviteErrorPopup(true);
+      return;
+    }
+
+    let notifId = userKanbanDoc.data().notifId;
+
+    // If Notification ID is missing, create and assign a new one
+    if (!notifId) {
+      const notifRef = doc(collection(db, `Kanban/${currentEpicId}/kanbanNotif`));
+      const notification = {
+        context: currentEpicId,
+        id: notifRef.id,
+        receiver: [currentUserId],
+        timeAgo: new Date().toISOString(),
+        type: "general",
+        unread: true,
+      };
+      await setDoc(notifRef, notification);
+
+      // Update the user's Kanban document with the new notifId
+      await updateDoc(userKanbanRef, {
+        notifId: notifRef.id,
+      });
+
+      notifId = notifRef.id; // Assign the new Notification ID
+    }
+
+    const usersRef = collection(db, "users");
+    const emailQuery = query(usersRef, where("email", "==", emailInput));
+    const querySnapshot = await getDocs(emailQuery);
+
+    if (querySnapshot.empty) {
+      setErrorInviteMessage("No user found with this email.");
+      setShowInviteErrorPopup(true);
+      return;
+    }
+
+    const userDoc = querySnapshot.docs[0];
+    const userId = userDoc.id;
+
+    const memberRef = doc(db, `Kanban/${currentEpicId}/Member/${userId}`);
+    const memberSnapshot = await getDoc(memberRef);
+
+    if (memberSnapshot.exists()) {
+      setErrorInviteMessage("This user has already been invited to the epic.");
+      setShowInviteErrorPopup(true);
+      return;
+    }
+
+    await setDoc(memberRef, {
+      MemberUid: userId,
+      Access: false,
+      createdAt: serverTimestamp(),
+      Type: "Team Member",
+    });
+
+    await setDoc(doc(db, `users/${userId}/Kanban/${currentEpicId}`), {
+      EpicId: currentEpicId,
+      createdAt: serverTimestamp(),
+    });
+
+    // Add notification logic
+    const notifRef = collection(db, `Kanban/${currentEpicId}/kanbanNotif`);
+
+    const notificationData = {
+      sender: currentUserId,
+      receiver: [userId],
+      context: currentEpicId,
+      action: "has invited you to join the Kanban",
+      timeAgo: new Date().toISOString(),
+      subType: "workload",
+      type: "assigned",
+      unread: true,
     };
-    
+
+    const notificationDocRef = await addDoc(notifRef, notificationData);
+    await updateDoc(notificationDocRef, {
+      id: notificationDocRef.id,
+    });
+
+    setShowInviteSuccessPopup(true);
+    onClose();
+    fetchMembers();
+  } catch (error) {
+    console.error("Error inviting user:", error);
+    setErrorInviteMessage("There was an error inviting the user.");
+    setShowInviteErrorPopup(true);
+  }
+};
 
     const MemberDetailsPopup = ({ onBack }) => {
       return (
@@ -1032,33 +1047,39 @@ console.log("Log report entry created for admin successfully");
   
     const handlePinClick = async () => {
       try {
-        const userUid = getAuth().currentUser.uid;  // Get the current user's UID
+        const userUid = getAuth().currentUser.uid;
         const issueRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`);
-  
-        // Get current favorite list from Firestore
+    
         const issueDoc = await getDoc(issueRef);
         const currentFavorites = issueDoc.data()?.favorite || [];
-  
-        // Check if the userUid is in the favorite list
         const isFavorite = currentFavorites.includes(userUid);
-  
-        // Update local favorite state immediately (this changes the pin color instantly)
+    
         const updatedFavorites = isFavorite
-          ? currentFavorites.filter(uid => uid !== userUid) // Remove the userUid
-          : [...currentFavorites, userUid]; // Add the userUid
-  
+          ? currentFavorites.filter(uid => uid !== userUid)
+          : [...currentFavorites, userUid];
+    
+        // Always update lastModified, whether pinning or unpinning
+        const now = Date.now();
+        const originalPosition = issueDoc.data()?.originalPosition || now; // Preserve original position
+    
+        await updateDoc(issueRef, { 
+          favorite: updatedFavorites,
+          lastModified: now,
+          // Store the original position if it doesn't exist yet
+          originalPosition: issueDoc.data()?.originalPosition || now
+        });
+    
         setIsFavorite(updatedFavorites.includes(userUid));
-  
-        // Update Firestore with the new favorite list
-        await updateDoc(issueRef, { favorite: updatedFavorites });
-  
+    
         // Update local state
         setTasks((prevTasks) =>
           prevTasks.map((task) => {
             if (task.id === issueId) {
               return {
                 ...task,
-                favorite: updatedFavorites,  // Update the favorite field with the new array
+                favorite: updatedFavorites,
+                lastModified: now,
+                originalPosition: task.originalPosition || now
               };
             }
             return task;
@@ -1068,7 +1089,6 @@ console.log("Log report entry created for admin successfully");
         console.error("Error updating favorite status:", error);
       }
     };
-  
     
 
     // Function to handle description edit
@@ -2985,6 +3005,8 @@ const [showPopupTitleTooltip, setShowPopupTitleTooltip] = useState(false);
             assignId: data?.assignId, // Add the assignee ID to the task data
             assignee: assigneeData, // Add the assignee data
             favorite: data?.favorite,
+            originalPosition: data?.originalPosition || Date.now(),
+            lastModified: data?.lastModified || Date.now(),
             originalData: data,
             issuedescription: data?.description,
           };
@@ -3003,7 +3025,7 @@ const [showPopupTitleTooltip, setShowPopupTitleTooltip] = useState(false);
     if (selectedEpicId) {
       fetchTasks();
     }
-  }, [selectedEpicId]);
+  }, [selectedEpicId, draggedTask]);
 
   const [isAddingColumn, setIsAddingColumn] = useState(false);
 
@@ -4052,31 +4074,53 @@ console.log("Log report entry created for admin successfully");
 
               {/* Moved the cards container here, outside of the menu */}
               <div className="column-content">
-  {tasks
-    .filter((task) => {
-      const statusMatch = task.status === columnTitle;
-      const assigneeMatch = !selectedFilters.onlyMyIssue || 
-        (task.assignee && task.assignee.id === userId);
-      const typeFiltersSelected = Object.values(selectedTypeFilters)
-        .some((value) => value);
-      const typeMatch = !typeFiltersSelected || 
-        selectedTypeFilters[task.type.toLowerCase()] === true;
+              {tasks
+  .filter((task) => {
+    const statusMatch = task.status === columnTitle;
+    const assigneeMatch = !selectedFilters.onlyMyIssue || 
+      (task.assignee && task.assignee.id === userId);
+    const typeFiltersSelected = Object.values(selectedTypeFilters)
+      .some((value) => value);
+    const typeMatch = !typeFiltersSelected || 
+      selectedTypeFilters[task.type.toLowerCase()] === true;
 
-      return statusMatch && assigneeMatch && typeMatch;
-    })
-    .sort((a, b) => {
-      // First sort by favorite status
-      const aFavorites = Array.isArray(a.favorite) ? a.favorite : [];
-      const bFavorites = Array.isArray(b.favorite) ? b.favorite : [];
-      
-      if (aFavorites.length > 0 && bFavorites.length === 0) return -1;
-      if (aFavorites.length === 0 && bFavorites.length > 0) return 1;
+    return statusMatch && assigneeMatch && typeMatch;
+  })
+  .sort((a, b) => {
+    const currentUserUid = auth.currentUser?.uid;
+    
+    // Convert favorite arrays to booleans for current user
+    const aIsFavorited = Array.isArray(a.favorite) && a.favorite.includes(currentUserUid);
+    const bIsFavorited = Array.isArray(b.favorite) && b.favorite.includes(currentUserUid);
 
-      // If favorite status is the same, sort by priority
-      const priorityOrder = { high: 1, medium: 2, low: 3 };
-      return priorityOrder[a.priority] - priorityOrder[b.priority];
-    })
-    .map((task) => (
+    // First sort by favorite status
+    if (aIsFavorited !== bIsFavorited) {
+      return aIsFavorited ? -1 : 1;
+    }
+
+    // Priority order mapping (high = 1, medium = 2, low = 3)
+    const priorityOrder = { high: 1, medium: 2, low: 3 };
+
+    // If neither are favorited, sort by priority
+    if (!aIsFavorited && !bIsFavorited) {
+      // First compare by priority
+      const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
+      if (priorityDiff !== 0) {
+        return priorityDiff;
+      }
+      // If priorities are equal, use originalPosition as tiebreaker
+      return (a.originalPosition || 0) - (b.originalPosition || 0);
+    }
+
+    // If both are favorited, use lastModified
+    if (aIsFavorited && bIsFavorited) {
+      return b.lastModified - a.lastModified;
+    }
+
+    // This line should never be reached but is included for completeness
+    return 0;
+  })
+  .map((task) => (
       <div
         key={task.id}
         data-task-id={task.id}
