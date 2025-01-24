@@ -381,14 +381,14 @@ const [removalSuccessMessage, setRemovalSuccessMessage] = useState("");
     const displayedMembers = members.slice(0, 2);
     const memberCount = members.length;
 
-    const handleInvite = async () => {
+      const handleInvite = async () => {
       const emailInput = document.querySelector(".member-email-input").value.trim();
       if (!emailInput) {
         setErrorInviteMessage("Please enter a valid email.");
         setShowInviteErrorPopup(true);
         return;
       }
-
+    
       try {
         const auth = getAuth();
         const currentUser = auth.currentUser;
@@ -398,73 +398,76 @@ const [removalSuccessMessage, setRemovalSuccessMessage] = useState("");
           return;
         }
         const currentUserId = currentUser.uid;
-
+    
         const userKanbanRef = doc(db, `users/${currentUserId}/Kanban/${currentEpicId}`);
         const userKanbanDoc = await getDoc(userKanbanRef);
-
+    
         if (!userKanbanDoc.exists()) {
           setErrorInviteMessage("Notification ID not found. Please ensure your Kanban setup is complete.");
           setShowInviteErrorPopup(true);
           return;
         }
-
+    
         const notifId = userKanbanDoc.data().notifId;
         if (!notifId) {
           setErrorInviteMessage("Notification ID is missing in the user's Kanban document.");
           setShowInviteErrorPopup(true);
           return;
         }
-
+    
         const usersRef = collection(db, "users");
         const emailQuery = query(usersRef, where("email", "==", emailInput));
         const querySnapshot = await getDocs(emailQuery);
-
+    
         if (querySnapshot.empty) {
           setErrorInviteMessage("No user found with this email.");
           setShowInviteErrorPopup(true);
           return;
         }
-
+    
         const userDoc = querySnapshot.docs[0];
         const userId = userDoc.id;
-
+    
         const memberRef = doc(db, `Kanban/${currentEpicId}/Member/${userId}`);
         const memberSnapshot = await getDoc(memberRef);
-
+    
         if (memberSnapshot.exists()) {
           setErrorInviteMessage("This user has already been invited to the epic.");
           setShowInviteErrorPopup(true);
           return;
         }
-
+    
         await setDoc(memberRef, {
           MemberUid: userId,
           Access: false,
           createdAt: serverTimestamp(),
           Type: "Team Member",
         });
-
+    
         await setDoc(doc(db, `users/${userId}/Kanban/${currentEpicId}`), {
           EpicId: currentEpicId,
           createdAt: serverTimestamp(),
         });
-
-        const notifRef = doc(db, `Kanban/${currentEpicId}/kanbanNotif/${notifId}`);
-        const notifDoc = await getDoc(notifRef);
-
-        if (!notifDoc.exists()) {
-          await setDoc(notifRef, {
-            receiver: [userId],
-          });
-        } else {
-          const notifData = notifDoc.data();
-          if (!notifData.receiver.includes(userId)) {
-            await updateDoc(notifRef, {
-              receiver: [...notifData.receiver, userId],
-            });
-          }
-        }
-
+    
+        // Add notification logic here
+        const notifRef = collection(db, `Kanban/${currentEpicId}/kanbanNotif`);
+    
+        const notificationData = {
+          sender: currentUserId,
+          receiver: [userId],
+          context: currentEpicId,
+          action: "has invited you to join the Kanban",
+          timeAgo: new Date().toISOString(),
+          subType: "workload",
+          type: "assigned",
+          unread: true,
+        };
+    
+        const notificationDocRef = await addDoc(notifRef, notificationData);
+        await updateDoc(notificationDocRef, {
+          id: notificationDocRef.id,
+        });
+    
         setShowInviteSuccessPopup(true);
         onClose();
         fetchMembers();
@@ -474,7 +477,6 @@ const [removalSuccessMessage, setRemovalSuccessMessage] = useState("");
         setShowInviteErrorPopup(true);
       }
     };
-
     const MemberDetailsPopup = ({ onBack }) => {
       return (
         <div className="member-modal-overlay">
