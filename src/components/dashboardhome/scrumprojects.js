@@ -1372,16 +1372,7 @@ const CreateEpicPopup = ({ onClose, isEditMode = false, initialData = null, onUp
       };
       await setDoc(doc(firestore, userScrumPath), userScrumData);
 
-      // Create Scrum notification
-      const scrumNotifData = {
-        context: scrumId,
-        id: notifId,
-        receiver: [uid],
-        timeAgo: timestamp,
-        type: "deadline",
-        unread: true,
-      };
-      await setDoc(scrumNotifRef, scrumNotifData);
+      // Create Scrum notificatio
 
       // Update local state
       setProjects((prevProjects) => [...prevProjects, newEpicData]);
