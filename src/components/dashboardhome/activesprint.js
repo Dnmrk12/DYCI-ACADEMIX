@@ -483,31 +483,46 @@ const [popupMessage, setPopupMessage] = useState("");
   
             // Create log entries for the Scrum Master and assignee
             const logRefForScrumMaster = doc(db, 'users', scrumMasterId, 'logReport', Date.now().toString());
+
+            // Count the existing documents in the Scrum Master's logReport collection
+            const scrumMasterLogCollectionRef = collection(db, 'users', scrumMasterId, 'logReport');
+            const scrumMasterLogDocs = await getDocs(scrumMasterLogCollectionRef);
+            const scrumMasterLogCount = scrumMasterLogDocs.size;
+            
             await setDoc(logRefForScrumMaster, {
               status: status,
-              dateTime: dateDone, 
-              projectName: projectName, 
-              issue: title,  
-              type: type, 
-              admin: scrumMasterId,  
+              dateTime: dateDone,
+              projectName: projectName,
+              issue: title,
+              type: type,
+              admin: scrumMasterId,
+              row: scrumMasterLogCount + 1, // Add 1 for the new entry
             });
-  
+            
             console.log('Log report entry created for Scrum Master successfully');
-  
+            
             // Log entry for the assignee if available
             if (assigneeId) {
               const logRefForAssignee = doc(db, 'users', assigneeId, 'logReport', Date.now().toString());
+              
+              // Count the existing documents in the assignee's logReport collection
+              const assigneeLogCollectionRef = collection(db, 'users', assigneeId, 'logReport');
+              const assigneeLogDocs = await getDocs(assigneeLogCollectionRef);
+              const assigneeLogCount = assigneeLogDocs.size;
+            
               await setDoc(logRefForAssignee, {
                 status: status,
-                dateTime: dateDone, 
-                projectName: projectName, 
-                issue: title,  
-                type: type, 
-                admin: scrumMasterId,  
+                dateTime: dateDone,
+                projectName: projectName,
+                issue: title,
+                type: type,
+                assignee: scrumMasterId, 
+                row: assigneeLogCount + 1, // Add 1 for the new entry
               });
-  
+            
               console.log('Log report entry created for assignee successfully');
             }
+            
           } else {
             console.error('Issue document not found in Firestore:', selectedIssue.id);
           }
@@ -2313,7 +2328,16 @@ const [isDeletingComment, setIsDeletingComment] = useState(false);
           return;
         }
   
-       
+        const notifId = currentUserBacklogDoc.data().notifId;
+        const notifRef = doc(db, `Scrum/${scrumId}/scrumNotif/${notifId}`);
+        await setDoc(
+          notifRef,
+          {
+            receiver: arrayUnion(memberUid),
+          },
+          { merge: true }
+        );
+  
         // Create a new notification for the invited member
         const notifCollectionRef = collection(db, `Scrum/${scrumId}/scrumNotif`);
         const notifDocRef = await addDoc(notifCollectionRef, {
@@ -2325,11 +2349,9 @@ const [isDeletingComment, setIsDeletingComment] = useState(false);
           subType: "workload",
           type: "assigned",
           unread: true,
-        });
-  
-  
+        });  
         // Update the notification document with its own ID
-    
+  
         console.log("Member invited successfully!");
         setPopupMessage("Member has been successfully invited!");
         setShowSuccessPopup(true);
