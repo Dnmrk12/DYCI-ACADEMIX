@@ -1,251 +1,2683 @@
-import React, { useState, useRef, useEffect, memo } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { getFirestore, orderBy, onSnapshot, limit, increment, addDoc, collection, getDocs, arrayUnion, doc, getDoc, deleteDoc, updateDoc, arrayRemove, setDoc, query, where, serverTimestamp } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-import { ArrowLeft, Trash2, Pencil, X, Users, Check, Plus, ChevronDown, UserCircle2, Pin, Search } from "lucide-react";
-import RemoveMemberIcon from "./iconshomepage/RemoveMember.png";
-import successPopup from "./iconshomepage/successPopup.png";
-import errorPopup from "./iconshomepage/errorPopup.png";
-import img6 from "./iconshomepage/softwaredataicon.png";
-import img7 from "./iconshomepage/versionupdate.png";
-import img12 from "./iconshomepage/researchicon.png";
-import img13 from "./iconshomepage/bugfixicon.png";
-import img18 from "./iconshomepage/notifprofile4.png";
-import img19 from "./iconshomepage/memberIcon1.png";
-import img22 from "./iconshomepage/subtaskIcon.png";
-import img23 from "./iconshomepage/issueComment.png";
-import img24 from "./iconshomepage/effortIcon.png";
+import React, { useState, useEffect ,useRef} from "react";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { Users, MoreHorizontal, Clock, Plus, ChevronDown, Copy, Calendar, X, Link, Pencil, ArrowLeft, UserCircle2, Search, Trash2 } from "lucide-react";
+import searchIcon from "./iconshomepage/magnifyingglass.png";
+import img1 from "./iconshomepage/memberIcon1.png";
+import img2 from "./iconshomepage/memberIcon2.png";
+import img3 from "./iconshomepage/memberIcon3.png";
+import img4 from "./iconshomepage/francoProfile.png";
+import story from "./iconshomepage/researchicon.png";
+import task from "./iconshomepage/ppticon.png";
+import subtask from "./iconshomepage/subtaskIcon.png";
+import bug from "./iconshomepage/bugfixicon.png";
+import comment from "./iconshomepage/issueComment.png";
+import effort from "./iconshomepage/backlogsEffort.png";
+import points from "./iconshomepage/backlogsPoints.png";
 import low from "./iconshomepage/backlogsLow.png";
 import medium from "./iconshomepage/backlogsMedium.png";
 import high from "./iconshomepage/backlogsHigh.png";
-import "./kanbanboard.css";
-import "./kanbanissue.css";
-
-const KanbanIssue = () => {
-  const location = useLocation();
+import days from "./iconshomepage/daysRemaining.png";
+import inputSubtaskIcon from "./iconshomepage/versionupdate.png";
+import successPopup from "./iconshomepage/successPopup.png";
+import RemoveMemberIcon from './iconshomepage/RemoveMember.png'; 
+import errorPopup from "./iconshomepage/errorPopup.png";
+import "./backlogs.css";
+import {
+  getFirestore,
+  collection,
+  limit,
+  addDoc,
+  doc,
+  getDocs,
+  getDoc,
+  increment,
+  deleteDoc,
+  setDoc,
+  query,
+  orderBy,
+  onSnapshot,
+  where,
+  updateDoc,
+  arrayRemove,
+  arrayUnion,
+  serverTimestamp,
+} from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL, uploadString } from "firebase/storage";
+import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
+import { db } from "./firebase/firebaseConfig";
+const Backlogs = () => {
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const navigate = useNavigate();
-  const filterRef = useRef(null);
-  const typeRef = useRef(null);
-  const priorityRef = useRef(null);
-  const typeIssueRef = useRef(null);
-  const columnRef = useRef(null);
-  const cardRef = useRef(null);
-  const createIssueRef = useRef(null);
-  const createIssueButtonRef = useRef(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [checkingAdmin, setCheckingAdmin] = useState(true);
-  const { epicId } = useParams();
-  const [epicName, setEpicName] = useState("");
+  const { memberId } = useParams(); // Get memberId from URL
+  const { projectId } = useParams();
+  const location = useLocation();
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [activeMoreOptions, setActiveMoreOptions] = useState(null);
+  const [draggedItem, setDraggedItem] = useState(null);
+  const [draggedSource, setDraggedSource] = useState(null);
+  const [showMemberInviteModal, setShowMemberInviteModal] = useState(false);
+  const [showMemberDetails, setShowMemberDetails] = useState(false);
   const [showMembersPopup, setShowMembersPopup] = useState(false);
-  const [members, setMembers] = useState([]);
-  const [showInviteMemberPopup, setShowInviteMemberPopup] = useState(false);
-  const [showInviteSuccessPopup, setShowInviteSuccessPopup] = useState(false);
-  const [showInviteErrorPopup, setShowInviteErrorPopup] = useState(false);
-  const [errorInviteMessage, setErrorInviteMessage] = useState("");
-  const [hasAccess, setHasAccess] = useState(false);
-  const [editingColumn, setEditingColumn] = useState(null);
-  const [toDoColumnName, setToDoColumnName] = useState("To-do");
-  const [columns, setColumns] = useState(["To-do", "In Progress", "Complete"]);
-  const [tasks, setTasks] = useState([]);
-  const [columnToDelete, setColumnToDelete] = useState(null);
-  const [showColumnDeleteConfirmation, setShowColumnDeleteConfirmation] = useState(false);
-  const [activeColumnMenu, setActiveColumnMenu] = useState(null);
-  const [showColumnInput, setShowColumnInput] = useState(false);
-  const [insertAfterColumn, setInsertAfterColumn] = useState(null);
-  const [newColumnName, setNewColumnName] = useState("");
-  const [dragOverColumn, setDragOverColumn] = useState(null);
-  const [showAddColumnTooltip, setShowAddColumnTooltip] = useState(false);
-  const [hoveredColumn, setHoveredColumn] = useState(null);
-  const [selectedEpicId, setSelectedEpicId] = useState(null);
-  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const [userName, setUserName] = useState("");
-  const [userId, setUserId] = useState("");
-  const [hoveredTask, setHoveredTask] = useState(null);
-  const [subtaskCount, setSubtaskCount] = useState("");
-  const [activeCard, setActiveCard] = useState(null);
-  const [issueId, setIssueID] = useState("");
-  const [issueName, setIssueName] = useState("");
-  const [issueStatus, setIssueStatus] = useState("");
-  const [issueType, setIssueType] = useState("");
-  const [issueEpicCode, setIssueEpicCode] = useState("");
-  const [issueCount, setIssueCount] = useState("");
-  const [issuepriority, setIssuePriority] = useState("");
-  const [projectPicture, setProjectPicture] = useState("");
-  const [issueEffort, setissueEffort] = useState("");
-  const [userFirstName, setUserFirstName] = useState("");
-  const [userLastName, setUserLastName] = useState("");
-  const [userPictureComment, setUserPictureComment] = useState("");
-  const [commentCount, setCommentCount] = useState("");
-  const [assignId, setAssignId] = useState("");
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [issueCode, setIssueCode] = useState("");
-  const [selectedTask, setSelectedTask] = useState(null);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [issuedescription, setIssueDescription] = useState("");
-  const [draggedTask, setDraggedTask] = useState(null);
-  const [showCreateIssueContainer, setShowCreateIssueContainer] = useState(false);
-  const [newIssueDescription, setNewIssueDescription] = useState("");
-  const [showTypeDropdown, setShowTypeDropdown] = useState(false);
-  const [showPriorityDropdown, setShowPriorityDropdown] = useState(false);
-  const [showPresentationPopup, setShowPresentationPopup] = useState(false);
-  const [userPicture, setUserPicture] = useState(null);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [selectedType, setSelectedType] = useState("Story");
-  const [showTypeFilterDropdown, setShowTypeFilterDropdown] = useState(false);
-  const [projectStatus, setProjectStatus] = useState("");
-  const [selectedFilters, setSelectedFilters] = useState({ onlyMyIssue: false });
-  const [selectedTypeFilters, setSelectedTypeFilters] = useState({ story: false, task: false, bug: false });
+  const [showCopyTooltip, setShowCopyTooltip] = useState(false);
+  const [subtasksByIssue, setSubtasksByIssue] = useState({});
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [selectedIssue, setSelectedIssue] = useState(null);
+  const [description, setDescription] = useState("");
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [isCreatingSubtask, setIsCreatingSubtask] = useState(false);
+  const [newSubtask, setNewSubtask] = useState("");
+  const [subtasks, setSubtasks] = useState([]);
+  const [subtasksCount, setSubtasksCount] = useState("0");
+  const [commentCount, setCommentCount] = useState("0");
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+  const [issueComments, setIssueComments] = useState({});
+  const [showSubtaskDeleteConfirmation, setShowSubtaskDeleteConfirmation] = useState(false);
+  const [subtaskToDelete, setSubtaskToDelete] = useState(null);
+  const [editingSubtaskId, setEditingSubtaskId] = useState(null);
+  const [editingSubtaskTitle, setEditingSubtaskTitle] = useState("");
+  const [selectedRole, setSelectedRole] = useState("Select Role");
+  const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
+  const roles = ["Team Member"];
+  const [effortCount, setEffortCount] = useState("0");
+  const [pointsCount, setPointsCount] = useState("0");
+  const [priority, setPriority] = useState("low");
+  const [showPopupPriorityDropdown, setPopupShowPriorityDropdown] = useState(false);
+  const [showNoIssuesPopup, setShowNoIssuesPopup] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState("");
+  // Add new state for delete confirmation
   const auth = getAuth();
+  const uid = auth.currentUser ? auth.currentUser.uid : null; // safely check for null if user is not logged in
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [isSprintIssue, setIsSprintIssue] = useState(false);
+  // Get initial data from location state
+  const gen = (name) => {
+    if (!name) return ""; // Add safeguard to check for undefined or null name
+    return name
+      .split(" ") // Split the name into words
+      .map((word) => word.charAt(0).toUpperCase()) // Take the first letter of each word and capitalize it
+      .join("") // Join the letters together
+      .substring(0, 3); // Take the first 3 characters
+  };
+  const storedProjectDetails = JSON.parse(localStorage.getItem('selectedProject')) || {};
+
+  // Prioritize location state, then fall back to localStorage
+  const projectName = location.state?.projectName || storedProjectDetails.projectName || "";
+  const key = location.state?.key || storedProjectDetails.key || "";
+  const startDate = location.state?.startDate || storedProjectDetails.startDate || "";
+  const startTime = location.state?.startTime || storedProjectDetails.startTime || "";
+  const endDate = location.state?.endDate || storedProjectDetails.endDate || "";
+  const endTime = location.state?.endTime || storedProjectDetails.endTime || "";
+  const icon = location.state?.icon || storedProjectDetails.icon || "";
+  const scrumMaster = location.state?.scrumMaster || storedProjectDetails.scrumMaster || "";
+  const masterIcon = location.state?.masterIcon || storedProjectDetails.masterIcon || "";
+
+  const scrumId = location.state?.id || storedProjectDetails.id;
+  const issueId = selectedIssue?.id; // Get the selected issue ID safely
+  const dropdownRef = useRef(null);
+  const iconRef = useRef(null);
+
+  const [allow, setAllow] = useState(false);
+// Add these state variables to your existing state declarations
+const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
+  const [showCommentDeleteConfirmation, setShowCommentDeleteConfirmation] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState(null);
+
+  const [showInviteSuccessPopup, setShowInviteSuccessPopup] = useState(false);
+const [showInviteErrorPopup, setShowInviteErrorPopup] = useState(false);
+const [errorInviteMessage, setErrorInviteMessage] = useState('');
+
+  const [timeRemaining, setTimeRemaining] = useState("");
+
+
+  const [userPicture, setUserPicture] = useState(null);
+  const [loading, setLoading] = useState(true);
+
   const db = getFirestore();
 
-  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
-  const [showErrorPopup, setShowErrorPopup] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [members, setMembers] = useState(() => {
+    const storedProject = JSON.parse(localStorage.getItem('selectedProject')) || {};
+    return storedProject.members || [];
+  });
 
-  const [showRemovalSuccessPopup, setShowRemovalSuccessPopup] = useState(false);
-const [showRemovalErrorPopup, setShowRemovalErrorPopup] = useState(false);
-const [removalErrorMessage, setRemovalErrorMessage] = useState("");
-const [removalSuccessMessage, setRemovalSuccessMessage] = useState("");
-
-  // Separate useEffect for epicName
   useEffect(() => {
-    if (location.state?.epicName) {
-      setEpicName(location.state.epicName);
-    }
-  }, [location.state]);
+    const checkAccess = async () => {
+      if (!uid || !scrumId) return;
 
-  // Separate useEffect for access check
-  useEffect(() => {
-    const currentEpicId = epicId || location.state?.epicId;
-    if (currentEpicId) {
-      checkUserAccess();
-    }
-  }, [epicId, location.state?.epicId, auth.currentUser]); // Add dependencies
+      try {
+        const accessDocRef = doc(db, `Scrum/${scrumId}/member/${uid}`);
+        const accessDoc = await getDoc(accessDocRef);
 
-  // Separate useEffect for fetching members
-  useEffect(() => {
-    const currentEpicId = epicId || location.state?.epicId;
-    if (currentEpicId) {
-      fetchMembers();
-    }
-  }, [epicId, location.state?.epicId]);
-
-  const checkUserAccess = async () => {
-    try {
-      const currentUser = auth.currentUser;
-      if (!currentUser) return;
-
-      const currentEpicId = epicId || location.state?.epicId;
-      if (!currentEpicId) return;
-
-      const memberRef = doc(db, `Kanban/${currentEpicId}/Member/${currentUser.uid}`);
-      const memberDoc = await getDoc(memberRef);
-
-      if (memberDoc.exists()) {
-        const memberData = memberDoc.data();
-        setHasAccess(memberData.Access === true);
-        console.log("User access status:", memberData.Access); // Debug log
-      } else {
-        console.log("Member document doesn't exist"); // Debug log
-      }
-    } catch (error) {
-      console.error("Error checking user access:", error);
-    }
-  };
-
-  const checkIfUserIsAdmin = async () => {
-    try {
-      const auth = getAuth();
-      const currentUser = auth.currentUser;
-      if (!currentUser) {
-        console.error("No user logged in");
-        setCheckingAdmin(false);
-        return;
-      }
-
-      const uid = currentUser.uid;
-      const currentEpicId = epicId || location.state?.epicId;
-
-      const epicRef = doc(db, `Kanban/${currentEpicId}`);
-      const epicSnapshot = await getDoc(epicRef);
-
-      if (epicSnapshot.exists()) {
-        const epicData = epicSnapshot.data();
-        setIsAdmin(epicData.admin === uid);
-      }
-      setCheckingAdmin(false);
-    } catch (error) {
-      console.error("Error checking admin status:", error);
-      setCheckingAdmin(false);
-    }
-  };
-
-  // Modify your existing auth useEffect or add this new one
-  useEffect(() => {
-    const auth = getAuth();
-
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        await checkIfUserIsAdmin();
-      } else {
-        setIsAdmin(false);
-        setCheckingAdmin(false);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [epicId, location.state?.epicId]);
-
-  const fetchMembers = async () => {
-    if (!epicId && !location.state?.epicId) return;
-
-    const currentEpicId = epicId || location.state?.epicId;
-
-    try {
-      const membersRef = collection(db, `Kanban/${currentEpicId}/Member`);
-      const membersSnapshot = await getDocs(membersRef);
-      const membersData = [];
-
-      for (const memberDoc of membersSnapshot.docs) {
-        const memberUid = memberDoc.id;
-        const memberRole = memberDoc.data().Type;
-
-        const userDoc = await getDoc(doc(db, `users/${memberUid}`));
-
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          membersData.push({
-            memberId: memberUid,
-            firstName: userData.firstName || "",
-            lastName: userData.lastName || "",
-            userPicture: userData.userPicture || "",
-            role: memberRole,
-          });
+        if (accessDoc.exists() && accessDoc.data().access === true) {
+          setAllow(true); // Grant access
+        } else {
+          setAllow(false); // Deny access
         }
+      } catch (error) {
+        console.error("Error checking access:", error);
+        setAllow(false); // Deny access in case of error
+      }
+    };
+
+    checkAccess();
+  }, [uid, scrumId, db]);
+
+const [users, setUsers] = useState(
+    members.map((member) => ({
+      id: member.memberId,
+      name: member.name,
+      avatar: member.img,
+    }))
+  );
+  useEffect(() => {
+    if (uid) {
+      const fetchUserPicture = async () => {
+        try {
+          const userRef = doc(db, 'users', uid);
+          const docSnap = await getDoc(userRef);
+
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setUserPicture(data.userPicture); // Assuming the field is 'userPicture'
+          } else {
+            console.log('No such document!');
+          }
+        } catch (error) {
+          console.error('Error fetching user picture:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchUserPicture();
+    }
+  }, [uid, db]);
+  const sortOptions = ["Newest First", "Oldest First"];
+  const [selectedSort, setSelectedSort] = useState(sortOptions[0]);
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+  const [showStartSprintPopup, setShowStartSprintPopup] = useState(false);
+  const [sprintFormData, setSprintFormData] = useState({
+    projectName: projectName,
+    startDate: startDate,
+    startTime: startTime,
+    endDate: endDate,
+    endTime: endTime,
+  });
+
+
+  useEffect(() => {
+    if (scrumId) {
+      console.log("Received Scrum ID:", scrumId);
+      // Use scrumId for API calls or state updates
+    }
+  }, [scrumId]);
+  const DateTimePicker = ({ label, date, time, onDateChange, onTimeChange }) => {
+    const [showTimePicker, setShowTimePicker] = useState(false);
+    const timePickerRef = useRef(null);
+    
+    // Close time picker when clicking outside
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (timePickerRef.current && !timePickerRef.current.contains(event.target)) {
+          setShowTimePicker(false);
+        }
+      };
+  
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+  
+    const timeOptions = [];
+    for (let hour = 0; hour < 24; hour++) {
+      for (let minute of ["00", "30"]) {
+        const time24 = `${hour.toString().padStart(2, "0")}:${minute}`;
+        timeOptions.push(time24);
+      }
+    }
+  
+    const formatTimeToAMPM = (time24) => {
+      if (!time24) return "";
+      const [hours24, minutes] = time24.split(":");
+      const hours = parseInt(hours24);
+      const period = hours >= 12 ? "PM" : "AM";
+      const hours12 = hours % 12 || 12;
+      return `${hours12}:${minutes} ${period}`;
+    };
+  
+    return (
+      <div className="start-sprint-date-group">
+        <p className="start-sprint-date-label">{label}</p>
+        <div className="start-sprint-date-row">
+          <div className="start-sprint-date-input-container">
+            <input 
+              type="date" 
+              value={date} 
+              onChange={(e) => onDateChange(e.target.value)} 
+              className="start-sprint-date-input"
+            />
+            <Calendar className="start-sprint-calendar-icon" size={16} />
+          </div>
+          <div ref={timePickerRef} className="time-picker-container">
+            <button 
+              type="button" 
+              className="start-sprint-time-button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowTimePicker(!showTimePicker);
+              }}
+            >
+              {time ? formatTimeToAMPM(time) : "Set Time"}
+            </button>
+  
+            {showTimePicker && (
+              <div 
+                className="start-sprint-time-dropdown"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {timeOptions.map((time24) => (
+                  <button
+                    key={time24}
+                    type="button"
+                    onClick={() => {
+                      onTimeChange(time24);
+                      setShowTimePicker(false);
+                    }}
+                    className="start-sprint-time-dropdown-option"
+                  >
+                    {formatTimeToAMPM(time24)}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+ const handleStartSprintClick = async () => {
+  // Get the document reference for the current scrum
+  const scrumDocRef = doc(getFirestore(), `Scrum/${scrumId}`);
+
+  try {
+    // Fetch the document data
+    const scrumDocSnapshot = await getDoc(scrumDocRef);
+
+    if (scrumDocSnapshot.exists()) {
+      const scrumData = scrumDocSnapshot.data();
+      
+      // Check if startSprintDate is false
+      if (scrumData.startSprint === false) {
+        console.log("Start Sprint Date is false. Popup won't open.");
+        return; // Prevent popup from opening
       }
 
-      setMembers(membersData);
-      console.log("Fetched members:", membersData);
+      console.log("Filtered Sprint Issues Length:", filteredSprintIssues.length);
+
+      if (filteredSprintIssues.length === 0) {
+        // If no issues, show the no issues popup
+        setShowNoIssuesPopup(true);
+      } else {
+        // If issues exist, open the start sprint popup
+        setShowStartSprintPopup(true);
+      }
+    } else {
+      console.log("Scrum document does not exist.");
+    }
+  } catch (error) {
+    console.error("Error fetching scrum document:", error);
+  }
+};
+  // Handle start sprint submission
+  const handleStartSprintSubmit = async (e) => {
+    e.preventDefault();
+  
+    const db = getFirestore();  // Make sure you're initializing Firestore
+    const now = new Date();  // Define 'now' to get the current date and time
+  
+    try {
+      // Loop over filteredSprintIssues to retrieve the issueStatus for each issue
+      const updatedIssues = await Promise.all(
+        filteredSprintIssues.map(async (issue) => {
+          const issueDocRef = doc(db, `Scrum/${scrumId}/backlog/${issue.code}`);
+  
+          // Fetch the document to get the issueStatus
+          const issueDocSnapshot = await getDoc(issueDocRef);
+  
+          if (issueDocSnapshot.exists()) {
+            const issueData = issueDocSnapshot.data();
+            const issueStatus = issueData.issueStatus;
+            const status = issueData.status;
+  
+            // Add issueStatus and status to the issue object
+            return {
+              ...issue,
+              issueStatus,
+              status,
+            };
+          } else {
+            console.log(`Issue with code ${issue.code} not found.`);
+            return issue; // Return the issue without modification if not found
+          }
+        })
+      );
+  
+      // Firestore document reference for Scrum
+      const scrumDocRef = doc(db, "Scrum", scrumId);
+  
+      // Format current date and time for startsprintDate
+      const startSprintDate = now.toLocaleString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true, // For AM/PM format
+      }).replace(',', ''); // Removes the comma after the day
+
+      // Store in localStorage
+    localStorage.setItem('startsprintDate', startSprintDate);
+  
+      // Update Firestore with the new sprint dates and times
+      await updateDoc(scrumDocRef, {
+        startDate: sprintFormData.startDate,
+        startTime: sprintFormData.startTime,
+        endDate: sprintFormData.endDate,
+        endTime: sprintFormData.endTime,
+        startSprint: false,
+        startsprintDate: startSprintDate,
+      });
+  
+      console.log("Sprint dates, times, and issue statuses updated successfully!");
+  
+      // Log the retrieved issueStatus (from the first issue, or any issue)
+      console.log("Issue Status for first issue:", updatedIssues[0]?.issueStatus);
+      console.log("Issue Status for second issue:", updatedIssues[0]?.status);
+  
+      // Navigate to ActiveSprint and pass the necessary details
+      navigate("/activesprint", {
+        state: {
+          projectName: projectName,
+          members: members,
+          masterIcon: masterIcon,
+          scrumMaster: scrumMaster,
+          key: key,
+          icon: icon,
+          startDate: sprintFormData.startDate,
+          startTime: sprintFormData.startTime,
+          endDate: sprintFormData.endDate,
+          issueStatus: sprintFormData.issueStatus,
+          status: sprintFormData.status, // Pass the issueStatus value from the form (if needed)
+          endTime: sprintFormData.endTime,
+          scrumId: location.state?.id,
+          sprintIssues: updatedIssues.map((issue) => ({
+            id: issue.id,
+            description: issue.description,
+            title: issue.title,
+            type: issue.type,
+            icon: issue.icon,
+            code: issue.code,
+            priority: issue.priority,
+            subtasks: issue.subtasks || [], // Include subtasks
+            stats: issue.stats || {
+              comments: 0,
+              subtasks: 0,
+              points: 0,
+              effort: 0,
+            },
+            assignee: issue.assignee || null,
+            issueStatus: issue.issueStatus || "Unknown", // Add issueStatus to the issue object
+            status: issue.status,
+          })),
+        },
+      });
+  
+      setShowStartSprintPopup(false); // Close the start sprint popup
+  
     } catch (error) {
-      console.error("Error fetching members:", error);
+      console.error("Error updating sprint details in Firestore:", error);
+      setShowErrorPopup(true);
+      setErrorMessage("Failed to update sprint details. Please try again.");
     }
   };
 
-  useEffect(() => {
-    fetchMembers();
-  }, [epicId, location.state]);
-  const [id, setId] = useState(null);
+ 
+  // Function to generate a unique ID
+  const generateUniqueId = () => {
+    return Date.now() + Math.random().toString(36).substr(2, 9);
+  };
 
-  const handleBack = () => {
-    setId(null); // Set id to null
-    navigate('/kanbanboard'); // Navigate to /kanbanboard
+  // Function to handle comment input change
+  const handleCommentChange = (e) => {
+    setNewComment(e.target.value);
+  };
+
+  // Function to handle comment submission
+  const fetchAuthorDetails = async (authorId) => {
+    try {
+      const authorRef = doc(db, "users", authorId);
+      const authorSnap = await getDoc(authorRef);
+
+      if (authorSnap.exists()) {
+        const authorData = authorSnap.data();
+        return {
+          firstName: authorData.firstName || "",
+          lastName: authorData.lastName || "",
+          avatar: authorData.userPicture || "",
+          fullName: `${authorData.firstName} ${authorData.lastName}`.trim(),
+        };
+      }
+      return {
+        firstName: "",
+        lastName: "",
+        avatar: "",
+        fullName: "",
+      };
+    } catch (error) {
+      console.error("Error fetching author details:", error);
+      return {
+        firstName: "",
+        lastName: "",
+        avatar: "",
+        fullName: "",
+      };
+    }
+  };
+
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+const [isDeletingComment, setIsDeletingComment] = useState(false);
+
+// Updated handleCommentSubmit function with submission prevention
+const handleCommentSubmit = async (e) => {
+    const auth = getAuth();
+    const uid = auth.currentUser?.uid;
+
+    if ((e.type === "keypress" && e.key === "Enter") || e.type === "click") {
+        if (newComment.trim() && selectedIssue && !isSubmittingComment) {
+            setIsSubmittingComment(true);
+            const commentId = generateUniqueId();
+            const issueId = selectedIssue.id;
+
+            try {
+                const issueDocRef = doc(db, `Scrum/${scrumId}/backlog/${issueId}`);
+                const issueSnap = await getDoc(issueDocRef);
+                const issueData = issueSnap.data();
+                const currentCommentCount = issueData?.stats?.comments || 0;
+
+                const assigneeId = issueData?.assignee?.assignId;
+                const scrumMasterId = issueData?.scrumMaster;
+                let receiverId = [];
+
+                if (uid === scrumMasterId) {
+                    receiverId = [assigneeId];
+                } else if (uid === assigneeId) {
+                    receiverId = [scrumMasterId];
+                } else {
+                    receiverId = [scrumMasterId, assigneeId];
+                }
+
+                const newCommentCount = currentCommentCount + 1;
+
+                const commentToAdd = {
+                    id: commentId,
+                    authorId: uid,
+                    content: newComment.trim(),
+                    dateCreated: new Date(),
+                    timestamp: formatTimestamp(new Date()),
+                    commentCount: newCommentCount,
+                };
+
+                // Add comment to Firestore
+                const commentDocRef = doc(db, `Scrum/${scrumId}/backlog/${issueId}/comments/${commentId}`);
+                await setDoc(commentDocRef, commentToAdd);
+
+                // Update issue stats in Firestore
+                await updateDoc(issueDocRef, {
+                    "stats.comments": newCommentCount,
+                });
+
+                // Update local states
+                setCommentCount(newCommentCount.toString());
+                
+                // Update backlogIssues and sprintIssues states
+                const updateIssuesState = (prevIssues) =>
+                    prevIssues.map((issue) =>
+                        issue.id === issueId
+                            ? {
+                                ...issue,
+                                stats: {
+                                    ...issue.stats,
+                                    comments: newCommentCount,
+                                },
+                            }
+                            : issue
+                    );
+
+                setBacklogIssues((prev) => updateIssuesState(prev));
+                setSprintIssues((prev) => updateIssuesState(prev));
+
+                // Update issue comments
+                setIssueComments((prevComments) => {
+                    const updatedComments = {
+                        ...prevComments,
+                        [issueId]: [...(prevComments[issueId] || []), commentToAdd],
+                    };
+                    updatedComments[issueId] = updatedComments[issueId].sort(
+                        (a, b) => b.commentCount - a.commentCount
+                    );
+                    return updatedComments;
+                });
+
+                // Update selected issue
+                setSelectedIssue((prev) => ({
+                    ...prev,
+                    stats: {
+                        ...prev.stats,
+                        comments: newCommentCount,
+                    },
+                }));
+
+                setNewComment("");
+
+                // Create notification
+                const notifRef = doc(collection(db, `Scrum/${scrumId}/scrumNotif`));
+                const notificationObj = {
+                    id: notifRef.id,
+                    type: "social",
+                    subType: "comment",
+                    action: "commented on your work in",
+                    context: scrumId,
+                    timeAgo: new Date().toISOString(),
+                    unread: true,
+                    receiver: receiverId,
+                    sender: uid,
+                };
+
+                await setDoc(notifRef, notificationObj);
+
+            } catch (error) {
+                console.error("Error adding comment to Firestore:", error);
+            } finally {
+                setIsSubmittingComment(false);
+            }
+        }
+    }
+};
+
+
+
+
+
+  const fetchIssueComments = () => {
+    if (!scrumId || !issueId) return;
+  
+    try {
+      // Reference to comments subcollection
+      const commentsRef = collection(db, `Scrum/${scrumId}/backlog/${issueId}/comments`);
+  
+      // Create a query to order comments if needed (e.g., by dateCreated)
+      const commentsQuery = query(commentsRef, orderBy("dateCreated", "asc"));
+  
+      // Real-time listener for comments
+      const unsubscribe = onSnapshot(commentsQuery, async (querySnapshot) => {
+        const commentsPromises = querySnapshot.docs.map(async (docSnap) => {
+          const commentData = docSnap.data();
+  
+          // Fetch author details from users collection
+          const authorRef = doc(db, `users/${commentData.authorId}`);
+          const authorSnap = await getDoc(authorRef);
+  
+          if (!authorSnap.exists()) {
+            console.warn(`Author details not found for ID: ${commentData.authorId}`);
+            return {
+              id: docSnap.id,
+              ...commentData,
+              author: "Unknown Author",
+              avatar: null,
+              timestamp: formatTimestamp(commentData.dateCreated?.toDate()),
+            };
+          }
+  
+          const authorData = authorSnap.data();
+  
+          return {
+            id: docSnap.id,
+            ...commentData,
+            author: `${authorData.firstName} ${authorData.lastName}`, // Combine first and last name
+            avatar: authorData.userPicture, // Get user picture
+            timestamp: formatTimestamp(commentData.dateCreated?.toDate()),
+          };
+        });
+  
+        const comments = await Promise.all(commentsPromises);
+  
+        // Sort comments by commentCount in descending order to show the highest comment count first
+        const sortedComments = comments.sort((a, b) => b.commentCount - a.commentCount);
+  
+        // Log sorted comments to the console
+        console.log(sortedComments);
+  
+        // Update comments in local state
+        setIssueComments((prevComments) => ({
+          ...prevComments,
+          [issueId]: sortedComments,
+        }));
+      });
+  
+      // Return the unsubscribe function to clean up the listener when no longer needed
+      return unsubscribe;
+    } catch (error) {
+      console.error("Error fetching issue comments in real-time:", error);
+    }
   };
   
 
+
+
+
+
+  // Handle comment deletion
+const handleDeleteComment = (commentId) => {
+  if (!isDeletingComment) {
+  setCommentToDelete(commentId);
+  setShowCommentDeleteConfirmation(true);
+  }
+};
+
+// Confirm deletion of the comment
+const confirmDeleteComment = async () => {
+  if (selectedIssue && commentToDelete && !isDeletingComment) {
+      setIsDeletingComment(true);
+      try {
+          // Delete the comment from Firestore
+          const commentRef = doc(db, `Scrum/${scrumId}/backlog/${selectedIssue.id}/comments`, commentToDelete);
+          await deleteDoc(commentRef);
+
+          // Update local state by filtering out the deleted comment
+          setIssueComments((prevComments) => ({
+              ...prevComments,
+              [selectedIssue.id]: prevComments[selectedIssue.id].filter((comment) => comment.id !== commentToDelete),
+          }));
+
+          // Get the current comment count from Firestore
+          const issueRef = doc(db, `Scrum/${scrumId}/backlog/${selectedIssue.id}`);
+          const issueSnap = await getDoc(issueRef);
+          const currentStats = issueSnap.data()?.stats || {};
+          const updatedCount = Math.max(0, (currentStats.comments || 1) - 1);
+
+          // Update comment count locally
+          setCommentCount(updatedCount.toString());
+
+          // Update the selected issue with the new comment count
+          const updatedIssue = {
+              ...selectedIssue,
+              stats: {
+                  ...selectedIssue.stats,
+                  comments: updatedCount,
+              },
+          };
+          setSelectedIssue(updatedIssue);
+
+          // Update Firestore with the new comment count
+          await updateDoc(issueRef, {
+              "stats.comments": updatedCount,
+          });
+
+          // Update the issue list (sprint or backlog)
+          const updateIssuesList = (prevIssues) =>
+              prevIssues.map((issue) =>
+                  issue.id === selectedIssue.id ? updatedIssue : issue
+              );
+
+          setSprintIssues((prev) => updateIssuesList(prev));
+          setBacklogIssues((prev) => updateIssuesList(prev));
+
+          // Reset states
+          setShowCommentDeleteConfirmation(false);
+          setCommentToDelete(null);
+      } catch (error) {
+          console.error("Error deleting comment:", error);
+      } finally {
+          setIsDeletingComment(false);
+      }
+  }
+};
+
+// Cancel deletion and close the confirmation popup
+const cancelDeleteComment = () => {
+  setShowCommentDeleteConfirmation(false);
+  setCommentToDelete(null);
+};
+
+// Fetch comments when issue changes
+useEffect(() => {
+  if (selectedIssue) {
+    fetchIssueComments();
+  }
+}, [scrumId, issueId, selectedIssue]);
+
+  // Function to format the timestamp
+  const formatTimestamp = (timestamp) => {
+    if (!timestamp) return "Unknown time";
+  
+    // Check if timestamp is a Firestore Timestamp or a regular Date
+    const commentDate = timestamp.seconds 
+      ? new Date(timestamp.seconds * 1000) 
+      : new Date(timestamp);
+  
+    const now = new Date();
+    const timeDiff = now - commentDate;
+  
+    const seconds = Math.floor(timeDiff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    const years = Math.floor(days / 365);
+  
+    if (seconds < 60) return "Just now";
+    if (years > 0) return `${years} year${years > 1 ? "s" : ""} ago`;
+    if (days > 0) return `${days} day${days > 1 ? "s" : ""} ago`;
+    if (hours > 0) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+    if (minutes > 0) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+    return `${seconds} second${seconds > 1 ? "s" : ""} ago`;
+  };
+
+  // Sorting comments function
+  const sortComments = (commentsToSort, sortType) => {
+    return [...commentsToSort].sort((a, b) => {
+      if (sortType === "Newest First") {
+        return b.dateCreated - a.dateCreated;
+      } else {
+        return a.dateCreated - b.dateCreated;
+      }
+    });
+  };
+
+  // Handle sort selection
+  const handleSortSelect = (sort) => {
+    setSelectedSort(sort);
+
+    // Update the comments for the selected issue with sorted comments
+    if (selectedIssue) {
+      setIssueComments((prevComments) => {
+        const currentIssueComments = prevComments[selectedIssue.id] || [];
+        const sortedComments = sortComments(currentIssueComments, sort);
+
+        return {
+          ...prevComments,
+          [selectedIssue.id]: sortedComments,
+        };
+      });
+    }
+
+    setIsSortDropdownOpen(false);
+  };
+
+  // Periodic timestamp update effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIssueComments((prevIssueComments) => {
+        const updatedComments = { ...prevIssueComments };
+        Object.keys(updatedComments).forEach((issueId) => {
+          updatedComments[issueId] = updatedComments[issueId].map((comment) => ({
+            ...comment,
+            timestamp: formatTimestamp(comment.dateCreated),
+          }));
+        });
+        return updatedComments;
+      });
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handlePointsBlur = async () => {
+    const numValue = parseInt(pointsCount);
+    const validPoints = isNaN(numValue) || numValue < 0 ? "0" : numValue.toString();
+    setPointsCount(validPoints);
+
+    // Update the selected issue's points in Firestore
+    if (selectedIssue) {
+      const updatedIssue = {
+        ...selectedIssue,
+        stats: {
+          ...selectedIssue.stats,
+          points: parseInt(validPoints),
+        },
+      };
+
+      setSelectedIssue(updatedIssue);
+
+      // Update the corresponding list (sprint or backlog) with the updated points value
+      if (isSprintIssue) {
+        setSprintIssues((prevSprintIssues) => prevSprintIssues.map((issue) => (issue.id === selectedIssue.id ? updatedIssue : issue)));
+      } else {
+        setBacklogIssues((prevBacklogIssues) => prevBacklogIssues.map((issue) => (issue.id === selectedIssue.id ? updatedIssue : issue)));
+      }
+
+      // Update points in Firestore
+     
+      const issueId = selectedIssue.id; // Get the selected issue's ID
+      const issueDocRef = doc(db, `Scrum/${scrumId}/backlog/${issueId}`);
+
+      try {
+        // Update the points in the issue document
+        await updateDoc(issueDocRef, {
+          "stats.points": parseInt(validPoints),
+        });
+        console.log("Points updated successfully in Firestore!");
+      } catch (error) {
+        console.error("Error updating points in Firestore:", error);
+      }
+    }
+  };
+  const fetchIssuePoints = async (scrumId, issueId) => {
+    try {
+      const issueDocRef = doc(db, `Scrum/${scrumId}/backlog/${issueId}`);
+      const issueSnap = await getDoc(issueDocRef);
+
+      if (issueSnap.exists()) {
+        const issueData = issueSnap.data();
+        const points = issueData?.stats?.points || 0; // Get points or default to 0
+        setPointsCount(points.toString()); // Update local state with the fetched points
+      } else {
+        console.log("Issue not found!");
+      }
+    } catch (error) {
+      console.error("Error fetching issue points from Firestore:", error);
+    }
+  };
+  useEffect(() => {// Get the scrumId from location state
+    const issueId = selectedIssue?.id; // Get the issueId from selected issue
+
+    if (scrumId && issueId) {
+      fetchIssuePoints(scrumId, issueId); // Fetch the points when the component mounts or issue changes
+    }
+  }, [selectedIssue]); // Runs every time the selectedIssue changes
+
+  const handleEffortBlur = async () => {
+    const numValue = parseInt(effortCount);
+    const validEffort = isNaN(numValue) || numValue < 0 ? "0" : numValue.toString();
+    setEffortCount(validEffort);
+
+    if (selectedIssue) {
+      // Create updated issue with new effort value
+      const updatedIssue = {
+        ...selectedIssue,
+        stats: {
+          ...selectedIssue.stats,
+          effort: parseInt(validEffort),
+        },
+      };
+
+      setSelectedIssue(updatedIssue); // Update the local state with the new effort
+
+      // Update the corresponding list based on where the issue is located
+      if (isSprintIssue) {
+        setSprintIssues((prevSprintIssues) => prevSprintIssues.map((issue) => (issue.id === selectedIssue.id ? updatedIssue : issue)));
+      } else {
+        setBacklogIssues((prevBacklogIssues) => prevBacklogIssues.map((issue) => (issue.id === selectedIssue.id ? updatedIssue : issue)));
+      }
+
+      // Get the scrumId and issueId for Firestore update
+     
+      const issueId = selectedIssue.id; // Get the selected issue's ID
+      const issueDocRef = doc(db, `Scrum/${scrumId}/backlog/${issueId}`); // Reference to the issue document in Firestore
+
+      try {
+        // Update the effort in the Firestore document
+        await updateDoc(issueDocRef, {
+          "stats.effort": parseInt(validEffort),
+        });
+        console.log("Effort updated successfully in Firestore!");
+      } catch (error) {
+        console.error("Error updating effort in Firestore:", error);
+      }
+    }
+  };
+  const fetchIssueEffort = async (scrumId, issueId) => {
+    try {
+      const issueDocRef = doc(db, `Scrum/${scrumId}/backlog/${issueId}`);
+      const issueSnap = await getDoc(issueDocRef);
+
+      if (issueSnap.exists()) {
+        const issueData = issueSnap.data();
+        const effort = issueData?.stats?.effort || 0; // Get effort or default to 0
+        setEffortCount(effort.toString()); // Update local state with the fetched effort value
+      } else {
+        console.log("Issue not found!");
+      }
+    } catch (error) {
+      console.error("Error fetching issue effort from Firestore:", error);
+    }
+  };
+  useEffect(() => {
+   
+    const issueId = selectedIssue?.id; // Get the issueId from selected issue
+
+    if (scrumId && issueId) {
+      fetchIssueEffort(scrumId, issueId); // Fetch the effort value when the component mounts or issue changes
+    }
+  }, [selectedIssue]); // Runs every time the selectedIssue changes
+
+  const handlePriorityChange = async (newPriority) => {
+    setPriority(newPriority); // Update the local state with the new priority
+    setPopupShowPriorityDropdown(false); // Close the dropdown
+
+    if (selectedIssue) {
+      // Create an updated issue with the new priority value
+      const updatedIssue = {
+        ...selectedIssue,
+        priority: newPriority,
+        stats: {
+          ...selectedIssue.stats,
+        },
+      };
+
+      setSelectedIssue(updatedIssue); // Update the selected issue in local state
+
+      // Update the corresponding list (sprint or backlog) based on where the issue is located
+      if (isSprintIssue) {
+        setSprintIssues((prevSprintIssues) => prevSprintIssues.map((issue) => (issue.id === selectedIssue.id ? updatedIssue : issue)));
+      } else {
+        setBacklogIssues((prevBacklogIssues) => prevBacklogIssues.map((issue) => (issue.id === selectedIssue.id ? updatedIssue : issue)));
+      }
+
+      // Get the scrumId and issueId for Firestore update
+  
+      const issueId = selectedIssue.id; // Get the selected issue ID
+      const issueDocRef = doc(db, `Scrum/${scrumId}/backlog/${issueId}`); // Firestore reference to the issue document
+
+      try {
+        // Update the priority in the Firestore document
+        await updateDoc(issueDocRef, {
+          priority: newPriority, // Update priority in Firestore
+        });
+        console.log("Priority updated successfully in Firestore!");
+      } catch (error) {
+        console.error("Error updating priority in Firestore:", error);
+      }
+    }
+  };
+
+  const [selectedAssignee, setSelectedAssignee] = useState({ name: "Unassigned", img: "" });
+  const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
+  const [assigneeSearchTerm, setAssigneeSearchTerm] = useState("");
+
+  // Add this to your existing state declarations
+
+
+  // Add this filter function
+  const filteredUsers = users.filter((user) => user.name.toLowerCase().includes(assigneeSearchTerm.toLowerCase()));
+
+  // Add this handler
+  const handleAssigneeSelect = async (user) => {
+    try {
+      // Set the selected assignee state with the complete user object including the avatar
+      setSelectedAssignee({
+        id: user.id,
+        name: user.name,
+        img: user.avatar,
+      });
+      setIsAssigneeDropdownOpen(false);
+      setAssigneeSearchTerm("");
+  
+      if (selectedIssue) {
+        // Get the current user's UID
+        const auth = getAuth();
+        const currentUserUid = auth.currentUser.uid;
+        const MemberUid = user.id;
+  
+        const issueRef = doc(getFirestore(), `Scrum/${scrumId}/backlog/${selectedIssue.id}`);
+        
+        // Create the updated issue object
+        const updatedIssue = {
+          ...selectedIssue,
+          assignId: MemberUid,
+          assignee: {
+            assignId: user.id,
+            name: user.name,
+            picture: user.avatar || null,
+          },
+          assignTimestamp: new Date(),
+        };
+  
+        // Update Firestore
+        await updateDoc(issueRef, {
+          assignId: MemberUid,
+          assignee: {
+            assignId: user.id,
+            name: user.name,
+            picture: user.avatar || null,
+          },
+          assignTimestamp: new Date(),
+        });
+  
+        // Update the state based on whether it's a sprint issue or backlog issue
+        if (isSprintIssue) {
+          setSprintIssues((prevSprintIssues) =>
+            prevSprintIssues.map((issue) =>
+              issue.id === selectedIssue.id ? updatedIssue : issue
+            )
+          );
+        } else {
+          setBacklogIssues((prevBacklogIssues) =>
+            prevBacklogIssues.map((issue) =>
+              issue.id === selectedIssue.id ? updatedIssue : issue
+            )
+          );
+        }
+  
+        // Save the notification to Firestore
+        const notifRef = collection(getFirestore(), `Scrum/${scrumId}/scrumNotif`);
+        
+        const notificationData = {
+          sender: currentUserUid,
+          receiver: [MemberUid],
+          context: scrumId,
+          action: 'assigned you a task in',
+          timeAgo: new Date().toISOString(),
+          subType: 'workload',
+          type: 'assigned',
+          unread: true,
+        };
+  
+        const notificationDocRef = await addDoc(notifRef, notificationData);
+        await updateDoc(notificationDocRef, {
+          id: notificationDocRef.id,
+        });
+  
+        console.log(`Assignment and notification completed successfully`);
+      }
+    } catch (error) {
+      console.error("Error assigning user to issue:", error);
+      // Revert the UI state if the update fails
+      setSelectedAssignee((prevState) => prevState);
+    }
+  };
+  
+
+  // Fetch assignee details from Firestore using the assignId (memberId)
+  const fetchAssigneeDetails = async (memberId) => {
+    const userRef = doc(getFirestore(), `users/${memberId}`);
+    const userSnap = await getDoc(userRef);
+
+    if (userSnap.exists()) {
+      const userData = userSnap.data();
+      return {
+        name: `${userData.firstName} ${userData.lastName}`,
+        img: userData.userPicture,
+      };
+    } else {
+      // Handle case where user data is not found
+      return { name: "Unassigned", img: "" };
+    }
+  };
+
+  const handleBacklogItemClick = async (item) => {
+    setSelectedIssue(item); // Set the selected issue
+  
+    // Fetch issue details from Firestore (including description, assignee, etc.)
+    const issueId = item.id; // Get the selected issue's ID
+  
+    try {
+      const issueDocRef = doc(db, `Scrum/${scrumId}/backlog/${issueId}`);
+      const issueSnap = await getDoc(issueDocRef);
+  
+      if (issueSnap.exists()) {
+        const issueData = issueSnap.data();
+  
+        // Set issue data (including description, stats, etc.) to the state
+        setSubtasks(issueData.subtasks || []); // Load subtasks for this issue
+        setSubtasksCount(issueData.stats?.subtasks?.toString() || "0");
+        setPointsCount(issueData.stats?.points?.toString() || "0");
+        setEffortCount(issueData.stats?.effort?.toString() || "0");
+        setCommentCount(issueData.stats?.comments?.toString() || "0");
+        setComments(issueData.comments || []);
+        setPriority(issueData.priority);
+  
+        // Set description for editing or displaying
+        setDescription(issueData.description || ""); // Load description to be editable
+  
+        // Fetch assignee details if assigned
+        if (issueData.assignee?.assignId) {
+          setSelectedAssignee({
+            name: issueData.assignee.name,
+            img: issueData.assignee.picture || "",
+          });
+        } else {
+          setSelectedAssignee({
+            name: "Unassigned",
+            img: "",
+          });
+        }
+      } else {
+        console.log("Issue not found!");
+      }
+  
+      // Check member access
+      const memberDocRef = doc(db, `Scrum/${scrumId}/member/${uid}`);
+      const memberSnap = await getDoc(memberDocRef);
+  
+      if (memberSnap.exists()) {
+        const memberData = memberSnap.data();
+        if (memberData.access === false) {
+          setIsButtonDisabled(true); // Disable the button
+        } else {
+          setIsButtonDisabled(false); // Enable the button
+        }
+      } else {
+        console.log("Member not found!");
+      }
+    } catch (error) {
+      console.error("Error fetching data from Firestore:", error);
+    }
+  
+    setIsSprintIssue(sprintIssues.some((issue) => issue.id === item.id)); // Check if it's a sprint issue
+    setIsPopupOpen(true); // Open the popup
+  };
+
+  const handleCloseBacklogPopup = () => {
+    setIsPopupOpen(false);
+    setSelectedIssue(null);
+    setDescription("");
+    setIsEditingDescription(false);
+    setIsCreatingSubtask(false);
+    setNewSubtask("");
+    setSubtasks([]);
+    setSubtasksCount("0");
+    setCommentCount("0");
+    setPointsCount("0");
+    setEffortCount("0");
+    setComments([]);
+    setPriority("");
+    setSelectedAssignee({ name: "Unassigned", img: "" });
+    setIsButtonDisabled(false);
+    setIsSprintIssue(false);
+  };  
+  
+  const fetchUserPicture = async () => {
+    setLoading(true);
+    const uid = getAuth().currentUser.uid; // Get the current user's uid
+    try {
+      const userRef = doc(db, 'users', uid);
+      const docSnap = await getDoc(userRef);
+  
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setUserPicture(data.userPicture); // Assuming the field is 'userPicture'
+      } else {
+        console.log('No such document!');
+      }
+    } catch (error) {
+      console.error('Error fetching user picture:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+
+  // Handlers for presentation popup
+  const handleDescriptionClick = () => {
+    if (!isButtonDisabled) {
+      setIsEditingDescription(true);
+    }
+  };
+
+  const handleDescriptionKeyPress = async (e) => {
+    if (e.key === "Enter") {
+      // Ensure the description is not empty and trim whitespace
+      const validDescription = description.trim() || "No description provided"; // Fallback to a default message
+
+      // Update local state with the new description
+      setDescription(validDescription);
+
+      if (selectedIssue) {
+        // Create updated issue with new description value
+        const updatedIssue = {
+          ...selectedIssue,
+          description: validDescription, // Update the description field
+        };
+
+        // Update the local state with the new description
+        setSelectedIssue(updatedIssue);
+
+        // Update the corresponding list (sprint or backlog)
+        if (isSprintIssue) {
+          setSprintIssues((prevSprintIssues) => prevSprintIssues.map((issue) => (issue.id === selectedIssue.id ? updatedIssue : issue)));
+        } else {
+          setBacklogIssues((prevBacklogIssues) => prevBacklogIssues.map((issue) => (issue.id === selectedIssue.id ? updatedIssue : issue)));
+        }
+
+        // Get the scrumId and issueId for Firestore update
+       
+        const issueId = selectedIssue.id; // Get the selected issue's ID
+        const issueDocRef = doc(db, `Scrum/${scrumId}/backlog/${issueId}`); // Reference to the issue document in Firestore
+
+        try {
+          // Update the description in the Firestore document
+          await updateDoc(issueDocRef, {
+            description: validDescription,
+          });
+          console.log("Description updated successfully in Firestore!");
+        } catch (error) {
+          console.error("Error updating description in Firestore:", error);
+        }
+      }
+
+      // Exit edit mode after saving the description
+      setIsEditingDescription(false);
+    }
+  };
+
+  // Use this on the input field or textarea where the description is being edited
+  const handleDescriptionChange = (e) => {
+    setDescription(e.target.value); // Update the local state as the user types
+  };
+  const handleTitleClick = () => {
+    if (!isButtonDisabled) {
+      setEditedTitle(selectedIssue.title);
+      setIsEditingTitle(true);
+    }
+  };
+  
+  // Add this handler to save the title
+  const handleTitleKeyPress = async (e) => {
+    if (e.key === "Enter") {
+      // Ensure the title is not empty and trim whitespace
+      const validTitle = editedTitle.trim() || selectedIssue.title;
+  
+      // Update local state with the new title
+      if (selectedIssue) {
+        // Create updated issue with new title value
+        const updatedIssue = {
+          ...selectedIssue,
+          title: validTitle,
+        };
+  
+        // Update the local state with the new title
+        setSelectedIssue(updatedIssue);
+  
+        // Update the corresponding list (sprint or backlog)
+        if (isSprintIssue) {
+          setSprintIssues((prevSprintIssues) =>
+            prevSprintIssues.map((issue) =>
+              issue.id === selectedIssue.id ? updatedIssue : issue
+            )
+          );
+        } else {
+          setBacklogIssues((prevBacklogIssues) =>
+            prevBacklogIssues.map((issue) =>
+              issue.id === selectedIssue.id ? updatedIssue : issue
+            )
+          );
+        }
+  
+        // After updating the local state, now update Firestore
+        const issueId = selectedIssue.id;
+        const issueDocRef = doc(db, `Scrum/${scrumId}/backlog/${issueId}`);
+  
+        try {
+          // Update the title in the Firestore document
+          await updateDoc(issueDocRef, {
+            title: validTitle,
+          });
+          console.log("Title updated successfully in Firestore!");
+        } catch (error) {
+          console.error("Error updating title in Firestore:", error);
+        }
+      }
+  
+      // Exit edit mode after saving the title
+      setIsEditingTitle(false);
+    }
+  };
+  
+  
+  // Add this handler to handle title input changes
+  const handleTitleChange = (e) => {
+    setEditedTitle(e.target.value);
+  };
+  // Define issue types with their icons (you can customize this array)
+const issueTypes = [
+  { type: 'Task', icon: task },
+  { type: 'Bug', icon: bug },
+  { type: 'Story', icon: story }
+];
+
+
+
+
+// Add a handler to change the issue type
+const handleIssueTypeChange = async (newType) => {
+  if (selectedIssue) {
+    // Create an updated issue with the new type
+    const updatedIssue = {
+      ...selectedIssue,
+      type: newType,
+      icon: issueTypes.find(item => item.type === newType)?.icon || selectedIssue.icon
+    };
+
+    // Update local state
+    setSelectedIssue(updatedIssue);
+
+    // Update the corresponding list (sprint or backlog)
+    if (isSprintIssue) {
+      setSprintIssues((prevSprintIssues) => 
+        prevSprintIssues.map((issue) => 
+          issue.id === selectedIssue.id ? updatedIssue : issue
+        )
+      );
+    } else {
+      setBacklogIssues((prevBacklogIssues) => 
+        prevBacklogIssues.map((issue) => 
+          issue.id === selectedIssue.id ? updatedIssue : issue
+        )
+      );
+    }
+
+    // Update Firestore
+    const issueId = selectedIssue.id;
+    const issueDocRef = doc(db, `Scrum/${scrumId}/backlog/${issueId}`);
+
+    try {
+      await updateDoc(issueDocRef, {
+        type: newType,
+        icon: issueTypes.find(item => item.type === newType)?.icon || selectedIssue.icon
+      });
+      console.log("Issue type updated successfully in Firestore!");
+    } catch (error) {
+      console.error("Error updating issue type in Firestore:", error);
+    }
+
+    // Close the dropdown
+    setIsTypeDropdownOpen(false);
+  }
+};
+
+
+useEffect(() => {
+  const handleClickOutside = (event) => {
+    // Close dropdown if the click is outside both the icon and the dropdown
+    if (
+      isTypeDropdownOpen &&
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.target) &&
+      iconRef.current &&
+      !iconRef.current.contains(event.target)
+    ) {
+      setIsTypeDropdownOpen(false);
+    }
+  };
+
+  // Add event listener for clicks
+  document.addEventListener('mousedown', handleClickOutside);
+
+  // Cleanup listener on unmount
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutside);
+  };
+}, [isTypeDropdownOpen]);
+
+
+const [isSubmittingSubtask, setIsSubmittingSubtask] = useState(false);
+
+const handleCreateSubtask = () => {
+  if (!isSubmittingSubtask) {
+    setIsCreatingSubtask(true);
+  }
+};
+
+const handleSubmitSubtask = async () => {
+  if (!scrumId || !issueId || isSubmittingSubtask) {
+    return;
+  }
+
+  if (newSubtask.trim()) {
+    setIsSubmittingSubtask(true);
+    const issueDocRef = doc(db, `Scrum/${scrumId}/backlog/${issueId}`);
+
+    const newSubtaskObject = {
+      id: Date.now().toString(),
+      title: newSubtask,
+    };
+
+    try {
+      await updateDoc(issueDocRef, {
+        subtasks: arrayUnion(newSubtaskObject),
+        "stats.subtasks": increment(1),
+      });
+
+      const updatedSubtasks = [...(subtasksByIssue[issueId] || []), newSubtaskObject];
+      setSubtasksByIssue((prevState) => ({
+        ...prevState,
+        [issueId]: updatedSubtasks,
+      }));
+
+      setSubtasks(updatedSubtasks);
+
+      const updatedIssue = {
+        ...selectedIssue,
+        stats: {
+          ...selectedIssue.stats,
+          subtasks: updatedSubtasks.length,
+        },
+        subtasks: updatedSubtasks,
+      };
+      setSelectedIssue(updatedIssue);
+
+      if (isSprintIssue) {
+        setSprintIssues((prevSprintIssues) => 
+          prevSprintIssues.map((issue) => 
+            issue.id === selectedIssue.id ? updatedIssue : issue
+          )
+        );
+      } else {
+        setBacklogIssues((prevBacklogIssues) => 
+          prevBacklogIssues.map((issue) => 
+            issue.id === selectedIssue.id ? updatedIssue : issue
+          )
+        );
+      }
+
+      setSubtasksCount(updatedSubtasks.length.toString());
+      setNewSubtask("");
+      setIsCreatingSubtask(false);
+    } catch (error) {
+      console.error("Error adding subtask to Firestore:", error);
+    } finally {
+      setIsSubmittingSubtask(false);
+    }
+  }
+};
+
+  // For fetching subtasks
+  const fetchSubtasks = async () => {
+    const issueDocRef = doc(db, `Scrum/${scrumId}/backlog/${issueId}`);
+    try {
+      const docSnapshot = await getDoc(issueDocRef);
+      if (docSnapshot.exists()) {
+        const issueData = docSnapshot.data();
+        // Add unique ids to subtasks if they don't exist
+        const fetchedSubtasks = (issueData.subtasks || []).map((subtask, index) => ({
+          ...subtask,
+          id: subtask.id || `subtask-${Date.now()}-${index}`, // Ensure each subtask has a unique id
+        }));
+
+        // Update subtasksByIssue state
+        setSubtasksByIssue((prevState) => ({
+          ...prevState,
+          [issueId]: fetchedSubtasks,
+        }));
+
+        // Update local subtasks state
+        setSubtasks(fetchedSubtasks);
+
+        // Update subtasks count
+        setSubtasksCount(fetchedSubtasks.length.toString());
+      } else {
+        console.log("No such document!");
+      }
+    } catch (error) {
+      console.error("Error fetching subtasks:", error);
+    }
+  };
+
+  fetchSubtasks();
+  const handleCancelSubtask = () => {
+    setNewSubtask("");
+    setIsCreatingSubtask(false);
+  };
+  const [isDeletingSubtask, setIsDeletingSubtask] = useState(false);
+
+const handleDeleteSubtask = (subtaskId) => {
+  if (!isDeletingSubtask) {
+    setSubtaskToDelete(subtaskId);
+    setShowSubtaskDeleteConfirmation(true);
+  }
+};
+
+const confirmDeleteSubtask = async () => {
+  if (subtaskToDelete && !isDeletingSubtask) {
+    setIsDeletingSubtask(true);
+    
+    try {
+      // Remove the subtask from the subtasks array
+      const updatedSubtasks = subtasks.filter((subtask) => subtask.id !== subtaskToDelete);
+      setSubtasks(updatedSubtasks);
+
+      // Update the subtasks count in the selectedIssue
+      const updatedIssue = {
+        ...selectedIssue,
+        subtasks: updatedSubtasks,
+        stats: {
+          ...selectedIssue.stats,
+          subtasks: selectedIssue.stats.subtasks - 1,
+        },
+      };
+      setSelectedIssue(updatedIssue);
+
+      // Update the subtasks count in the corresponding list (sprint or backlog)
+      if (isSprintIssue) {
+        setSprintIssues((prevSprintIssues) => 
+          prevSprintIssues.map((issue) => 
+            issue.id === selectedIssue.id ? updatedIssue : issue
+          )
+        );
+      } else {
+        setBacklogIssues((prevBacklogIssues) => 
+          prevBacklogIssues.map((issue) => 
+            issue.id === selectedIssue.id ? updatedIssue : issue
+          )
+        );
+      }
+
+      // Update the subtasks count display
+      setSubtasksCount((prevCount) => (parseInt(prevCount) - 1).toString());
+
+      // Update Firestore document
+      const issueDocRef = doc(db, "Scrum", scrumId, "backlog", selectedIssue.id);
+      await updateDoc(issueDocRef, {
+        subtasks: updatedSubtasks,
+        "stats.subtasks": updatedIssue.stats.subtasks,
+      });
+
+      // Reset confirmation states
+      setShowSubtaskDeleteConfirmation(false);
+      setSubtaskToDelete(null);
+
+      console.log("Subtask deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting subtask in Firestore:", error);
+      setShowErrorPopup(true);
+      setErrorMessage("Failed to delete subtask. Please try again.");
+    } finally {
+      setIsDeletingSubtask(false);
+    }
+  }
+};
+
+  const cancelDeleteSubtask = () => {
+    setShowSubtaskDeleteConfirmation(false);
+    setSubtaskToDelete(null);
+  };
+  const handleCancelEditSubtask = () => {
+    setEditingSubtaskId(null);
+    setEditingSubtaskTitle("");
+  };
+
+  const handleUpdateSubtask = async () => {
+    if (editingSubtaskTitle.trim()) {
+      // Update the subtask in the subtasks array
+      const updatedSubtasks = subtasks.map((subtask) => (subtask.id === editingSubtaskId ? { ...subtask, title: editingSubtaskTitle.trim() } : subtask));
+      setSubtasks(updatedSubtasks);
+
+      // Update the selected issue with the new subtasks
+      const updatedIssue = {
+        ...selectedIssue,
+        subtasks: updatedSubtasks,
+      };
+      setSelectedIssue(updatedIssue);
+
+      // Update Firestore document for the corresponding issue in Scrum/${scrumId}/backlog/${issueId}
+      const issueDocRef = doc(db, "Scrum", scrumId, "backlog", selectedIssue.id); // Reference to the specific issue
+      try {
+        // Update the issue in Firestore
+        await updateDoc(issueDocRef, {
+          subtasks: updatedSubtasks,
+        });
+
+        // Update the list (sprint or backlog) in local state
+        if (isSprintIssue) {
+          setSprintIssues((prevSprintIssues) => prevSprintIssues.map((issue) => (issue.id === selectedIssue.id ? updatedIssue : issue)));
+        } else {
+          setBacklogIssues((prevBacklogIssues) => prevBacklogIssues.map((issue) => (issue.id === selectedIssue.id ? updatedIssue : issue)));
+        }
+
+        // Reset editing states
+        setEditingSubtaskId(null);
+        setEditingSubtaskTitle("");
+
+        console.log("Subtask updated successfully!");
+      } catch (error) {
+        console.error("Error updating subtask in Firestore:", error);
+        setShowErrorPopup(true);
+        setErrorMessage("Failed to update subtask. Please try again.");
+      }
+    }
+  };
+  const handleEditSubtask = (subtask) => {
+    setEditingSubtaskId(subtask.id);
+    setEditingSubtaskTitle(subtask.title);
+  };
+  // Function to calculate time remaining
+  const calculateTimeRemaining = () => {
+    if (!startDate || !endDate) return { timeRemaining: "" };
+
+    // Combine start and end dates with their respective times
+    const startDateTime = new Date(`${startDate}T${startTime || "00:00"}`);
+    const endDateTime = new Date(`${endDate}T${endTime || "23:59"}`);
+    const currentDateTime = new Date();
+
+    // Ensure end date is in the future
+    if (endDateTime <= currentDateTime) {
+      return { timeRemaining: "Sprint Completed" };
+    }
+
+    // Calculate time difference
+    const timeDiff = endDateTime - currentDateTime; // Difference in milliseconds
+    const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24)); // Full days
+    const hoursDiff = Math.floor((timeDiff % (1000 * 3600 * 24)) / (1000 * 3600)); // Remaining hours
+    const minutesDiff = Math.floor((timeDiff % (1000 * 3600)) / (1000 * 60)); // Remaining minutes
+    const secondsDiff = Math.floor((timeDiff % (1000 * 60)) / 1000); // Remaining seconds
+
+    // Determine what to display
+    let timeRemaining = "";
+
+    if (daysDiff > 0 && hoursDiff === 0) {
+      timeRemaining = `${daysDiff} Day${daysDiff === 1 ? "" : "s"}, ${minutesDiff} Minute${minutesDiff === 1 ? "" : "s"}`;
+    } else if (daysDiff > 0) {
+      timeRemaining = `${daysDiff} Day${daysDiff === 1 ? "" : "s"}, ${hoursDiff} Hour${hoursDiff === 1 ? "" : "s"}`;
+    } else if (hoursDiff > 0) {
+      timeRemaining = `${hoursDiff} Hour${hoursDiff === 1 ? "" : "s"}, ${minutesDiff} Minute${minutesDiff === 1 ? "" : "s"}`;
+    } else if (minutesDiff > 0) {
+      timeRemaining = `${minutesDiff} Minute${minutesDiff === 1 ? "" : "s"}, ${secondsDiff} Second${secondsDiff === 1 ? "" : "s"}`;
+    } else {
+      timeRemaining = `${secondsDiff} Second${secondsDiff === 1 ? "" : "s"}`;
+    }
+
+    return { timeRemaining };
+  };
+
+  // Set an interval to update the time remaining every second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeRemaining(calculateTimeRemaining().timeRemaining);
+    }, 1000); // Update every second
+
+    // Clear interval on component unmount
+    return () => clearInterval(interval);
+  }, []); // Empty dependency array ensures this only runs once when the component mounts
+
+  // Define typeOptions and priorityOptions at the component level
+  const typeOptions = [
+    { value: "story", label: "Story", icon: story },
+    { value: "bug", label: "Bug", icon: bug },
+    { value: "task", label: "Task", icon: task },
+  ];
+
+  const priorityOptions = [
+    { value: "low", label: "Low", icon: low },
+    { value: "medium", label: "Medium", icon: medium },
+    { value: "high", label: "High", icon: high },
+  ];
+
+  const [backlogIssues, setBacklogIssues] = useState([
+    /*
+    {
+      id: 4,
+      title: "Plagiarism Checking",
+      type: "task",
+      icon: task,
+      code: `${key} - 4`,
+      priority: "high",
+      stats: {
+        comments: 0,
+        subtasks: 0,
+        points: 7,
+        effort: 3,
+      },
+      assignee: {
+        name: members.find(member => member.name === "Anthony Prajes")?.name || "Anthony Prajes",
+        picture: members.find(member => member.name === "Anthony Prajes")?.img
+      },
+    },*/
+  ]);
+
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+  const [showPriorityDropdown, setShowPriorityDropdown] = useState(false);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [newIssue, setNewIssue] = useState({
+    title: "",
+    type: "story",
+    priority: "low",
+  });
+
+  // Function to get the icon based on type
+  const getTypeIcon = (type) => {
+    const icons = {
+      story: story,
+      bug: bug,
+      task: task,
+    };
+    return icons[type];
+  };
+
+  // Add handleCreateIssue function
+  const handleCreateIssue = () => {
+    setShowCreateForm((prevState) => !prevState);
+    setShowTypeDropdown(false);
+    setShowPriorityDropdown(false);
+  };
+
+  // Add handleTypeSelect function
+  const handleTypeSelect = (type) => {
+    setNewIssue({ ...newIssue, type });
+    setShowTypeDropdown(false);
+  };
+
+  // Add handlePrioritySelect function
+  const handlePrioritySelect = (priority) => {
+    setNewIssue({ ...newIssue, priority });
+    setShowPriorityDropdown(false);
+  };
+
+  // Function to handle form submission
+  const [isSubmitting, setIsSubmitting] = useState(false); // Track submission state
+
+  const handleSubmitIssue = async () => {
+    if (isSubmitting) return; // Prevent multiple submissions
+  
+    if (!newIssue.title.trim()) {
+      setErrorMessage("Please enter an issue title");
+      setShowErrorPopup(true);
+      return;
+    }
+  
+    try {
+      setIsSubmitting(true); // Set the submission state to true
+  
+      // Logic for creating the issue...
+      const backlogCollection = collection(db, `Scrum/${scrumId}/backlog`);
+      const backlogSnapshot = await getDocs(backlogCollection);
+      const documentCount = backlogSnapshot.size;
+      const code = documentCount > 0 ? documentCount + 1 : 1;
+      const example = Math.random().toString(36).substring(2, 15);
+      const key = gen(projectName);
+      const documentPath = `Scrum/${scrumId}/backlog/${example}`;
+  
+      const firestoreIssueObj = {
+        id: example,
+        title: newIssue.title,
+        type: newIssue.type,
+        scrumMaster: uid,
+        icon: getTypeIcon(newIssue.type),
+        code,
+        priority: newIssue.priority,
+        issueStatus: "backlog",
+        status: "To-do",
+        stats: {
+          comments: 0,
+          subtasks: 0,
+          points: 0,
+          effort: 0,
+        },
+      };
+  
+      const localIssueObj = {
+        ...firestoreIssueObj,
+        code: `${key}-${code}`,
+      };
+  
+      await setDoc(doc(db, documentPath), firestoreIssueObj);
+      setBacklogIssues((prevIssues) => [...prevIssues, localIssueObj]);
+  
+      const updatedSprintIssues =
+        JSON.parse(localStorage.getItem("sprintIssues")) || [];
+      updatedSprintIssues.push(localIssueObj);
+      localStorage.setItem("sprintIssues", JSON.stringify(updatedSprintIssues));
+  
+      setShowSuccessPopup(true);
+    } catch (error) {
+      console.error("Error saving issue to Firestore:", error);
+      setErrorMessage("An error occurred while saving the issue. Please try again.");
+      setShowErrorPopup(true);
+    } finally {
+      setIsSubmitting(false); // Reset the submission state
+    }
+  };
+
+  
+
+const handleCloseSuccessPopup = () => {
+  // Reset form
+  setNewIssue({
+    title: "",
+    type: "story",
+    priority: "low",
+  });
+  setShowCreateForm(false);
+  
+  // Close the success popup
+  setShowSuccessPopup(false);
+};
+
+
+  const handleDelete = (issueId, isSprintIssue = false) => {
+    // Find the issue object from either sprint or backlog issues
+    const issueToDelete = isSprintIssue ? sprintIssues.find((issue) => issue.id === issueId) : backlogIssues.find((issue) => issue.id === issueId);
+
+    setItemToDelete(issueToDelete);
+    setIsSprintIssue(isSprintIssue);
+    setShowDeleteConfirmation(true);
+    setActiveMoreOptions(null);
+  };
+
+  // Confirmation handlers remain the same
+  const handleConfirmDelete = async () => {
+    try {
+      const issueId = itemToDelete.id;
+ 
+
+      if (scrumId && issueId) {
+        // Firestore reference for the issue to delete
+        const issueRef = doc(db, `Scrum/${scrumId}/backlog/${issueId}`);
+
+        // Delete the issue from Firestore
+        await deleteDoc(issueRef);
+
+        // Update state to remove the issue locally
+        if (isSprintIssue) {
+          setSprintIssues((prev) => prev.filter((issue) => issue.id !== issueId));
+        } else {
+          setBacklogIssues((prev) => prev.filter((issue) => issue.id !== issueId));
+        }
+
+        // Close the popup after deletion
+        handleClosePopup();
+      }
+    } catch (error) {
+      console.error("Error deleting issue:", error);
+    }
+  };
+
+  const handleClosePopup = () => {
+    setShowDeleteConfirmation(false);
+    setItemToDelete(null);
+    setIsSprintIssue(false);
+  };
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(".more-options-dropdown") && !event.target.closest(".more-options-icon")) {
+        setActiveMoreOptions(null);
+      }
+      if (!event.target.closest(".backlogs-dropdown-container") && !event.target.closest(".backlogs-create-issue-form")) {
+        setShowTypeDropdown(false);
+        setShowPriorityDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Update the renderCreateIssueForm function
+  const renderCreateIssueForm = () => {
+    if (!showCreateForm) return null;
+
+    return (
+      <div className="backlogs-create-issue-form">
+        <div className="backlogs-form-header">
+          <input
+            type="text"
+            placeholder="What needs to be addressed?"
+            className="backlogs-what-needs-addressed"
+            value={newIssue.title}
+            onChange={(e) => setNewIssue({ ...newIssue, title: e.target.value })}
+          />
+        </div>
+        <div className="backlogs-form-controls">
+          <div className="backlogs-dropdown-container">
+            <button
+              className="backlogs-dropdown-button backlogs-type-button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowTypeDropdown(!showTypeDropdown);
+                if (showPriorityDropdown) setShowPriorityDropdown(false);
+              }}
+            >
+              <img src={typeOptions.find((t) => t.value === newIssue.type)?.icon} alt="type" className="backlogs-dropdown-icon backlogs-type-icon" />
+              <span>{typeOptions.find((t) => t.value === newIssue.type)?.label}</span>
+              <ChevronDown className={`backlogs-chevron-icon ${showTypeDropdown ? "rotate" : ""}`} />
+            </button>
+            {showTypeDropdown && (
+              <div className="backlogs-dropdown-menu backlogs-type-menu">
+                {typeOptions.map((type) => (
+                  <div key={type.value} className="backlogs-dropdown-item backlogs-type-item" onClick={() => handleTypeSelect(type.value)}>
+                    <img src={type.icon} alt={type.label} className="backlogs-item-icon backlogs-type-item-icon" />
+                    <span>{type.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="backlogs-dropdown-container">
+            <button
+              className="backlogs-dropdown-button backlogs-priority-button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowPriorityDropdown(!showPriorityDropdown);
+                if (showTypeDropdown) setShowTypeDropdown(false);
+              }}
+            >
+              <img src={priorityOptions.find((p) => p.value === newIssue.priority)?.icon} alt="priority" className="backlogs-dropdown-icon backlogs-priority-icon" />
+              <span>{priorityOptions.find((p) => p.value === newIssue.priority)?.label}</span>
+              <ChevronDown className={`backlogs-chevron-icon ${showPriorityDropdown ? "rotate" : ""}`} />
+            </button>
+            {showPriorityDropdown && (
+              <div className="backlogs-dropdown-menu backlogs-priority-menu">
+                {priorityOptions.map((priority) => (
+                  <div key={priority.value} className="backlogs-dropdown-item backlogs-priority-item" onClick={() => handlePrioritySelect(priority.value)}>
+                    <img src={priority.icon} alt={priority.label} className="backlogs-item-icon backlogs-priority-item-icon" />
+                    <span>{priority.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <button className="backlogs-create-button" onClick={handleSubmitIssue}style={{
+    cursor: isSubmitting ? 'not-allowed' : 'pointer',
+    opacity: isSubmitting ? 0.7 : 1,
+  }}
+>
+  {isSubmitting ? 'Creating' : 'Create'}
+</button>
+        </div>
+      
+        {showSuccessPopup && (
+      <div className="backlog-issue-popup-overlay">
+        <div className="backlog-issue-popup-modal">
+          <img src={successPopup} alt="Success" className="backlog-issue-popup-icon" />
+          <p className="backlog-issue-popup-message">
+            Issue has been successfully created!
+          </p>
+          <button 
+            className="backlog-issue-popup-button" 
+            onClick={handleCloseSuccessPopup}
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    )}
+    
+    {showErrorPopup && (
+      <div className="backlog-issue-popup-overlay">
+        <div className="backlog-issue-popup-modal">
+          <img src={errorPopup} alt="Error" className="backlog-issue-popup-icon" />
+          <p className="backlog-issue-popup-error-message">{errorMessage}</p>
+          <button 
+            className="backlog-issue-popup-error-button" 
+            onClick={() => setShowErrorPopup(false)}
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    )}
+  </div>
+);
+    };
+
+  const [sprintIssues, setSprintIssues] = useState([
+    /* {
+     id: 1,
+      title: "Background Research",
+      type: "story",
+      icon: story,
+      code: `${key} - 1`,
+      priority: "medium",
+      stats: {
+        comments: 1,
+        subtasks: 2,
+        points: 10,
+        effort: 5,
+      },
+      assignee: {
+        name: members.find(member => member.name === "Gain Bobis")?.name || "Gain Bobis",
+        picture: members.find(member => member.name === "Gain Bobis")?.img
+      }
+    },
+    {
+      id: 2,
+      title: "Documentation",
+      type: "story",
+      icon: story,
+      code: `${key} - 2`,
+      priority: "low",
+      stats: {
+        comments: 0,
+        subtasks: 0,
+        points: 5,
+        effort: 3,
+      },
+      assignee: {
+        name: members.find(member => member.name === "Anmark Benasalbas")?.name || "Anmark Benasalbas",
+        picture: members.find(member => member.name === "Anmark Benasalbas")?.img
+      }
+    },
+    {
+      id: 3,
+      title: "RRL Checking",
+      type: "task",
+      icon: task,
+      code: `${key} - 3`,
+      priority: "high",
+      stats: {
+        comments: 0,
+        subtasks: 0,
+        points: 3,
+        effort: 3,
+      },
+      assignee: {
+        name: members.find(member => member.name === "Franco Bayani")?.name || "Franco Bayani",
+        picture: members.find(member => member.name === "Franco Bayani")?.img
+      }
+    },*/
+  ]);
+  const fetchIssues = async (scrumId) => {
+    try {
+      const issuesRef = collection(db, `Scrum/${scrumId}/backlog`);
+      const querySnapshot = await getDocs(issuesRef);
+  
+      // Categorize tasks into backlog and sprint issues
+      const fetchedBacklogIssues = [];
+      const fetchedSprintIssues = [];
+  
+      querySnapshot.forEach((doc) => {
+        const data = {
+          ...doc.data(),
+          id: doc.id,
+          icon: getTypeIcon(doc.data().type),  // Add icon based on issue type
+          code: `${gen(projectName)}-${doc.data().code}`  // Combine project initials with existing code
+        };
+  
+        if (data.issueStatus === "backlog") {
+          fetchedBacklogIssues.push(data);
+        } else if (data.issueStatus === "sprint") {
+          fetchedSprintIssues.push(data);
+        }
+      });
+  
+      // Update state
+      setBacklogIssues(fetchedBacklogIssues);
+      setSprintIssues(fetchedSprintIssues);
+  
+      // Save to localStorage
+      localStorage.setItem('backlogIssues', JSON.stringify(fetchedBacklogIssues));
+      localStorage.setItem('sprintIssues', JSON.stringify(fetchedSprintIssues));
+    } catch (error) {
+      console.error("Error fetching issues:", error);
+    }
+  };
+  // Example usage
+  useEffect(() => {
+    const scrumId = location.state?.id || JSON.parse(localStorage.getItem('selectedProject'))?.id;
+    if (scrumId) {
+      fetchIssues(scrumId);
+    }
+  }, []);
+  const getPriorityIcon = (priority) => {
+    const priorityIcons = {
+      low: low,
+      medium: medium,
+      high: high,
+    };
+    return priorityIcons[priority];
+  };
+
+  const renderStats = (stats, priority, assignee) => (
+    <div className="item-stats">
+      <div className="stat-item">
+        <img src={comment} alt="comments" className="stat-icon" draggable="false" />
+        <span className="backlogs-count">{stats?.comments ?? 0}</span>
+      </div>
+
+      <div className="stat-item">
+        <img src={subtask} alt="subtasks" className="stat-icon" draggable="false" />
+        <span className="backlogs-count">{stats?.subtasks ?? 0}</span>
+      </div>
+
+      <div className="stat-item stat-with-overlay">
+        <img src={points} alt="points" className="stat-icon overlay-icon" draggable="false" />
+        <span className="stat-overlay">{stats?.points ?? 0}</span>
+      </div>
+
+      <div className="stat-item stat-with-overlay">
+        <img src={effort} alt="effort" className="stat-icon overlay-icon" draggable="false" />
+        <span className="stat-overlay">{stats?.effort ?? 0}</span>
+      </div>
+
+      <div className="priority-arrow">
+        <img src={getPriorityIcon(priority)} alt={`${priority} priority`} className="priority-icon" draggable="false" />
+      </div>
+
+      <div className="backlog-assignee-avatar-issue">
+        {assignee?.name ? (
+          assignee.picture ? (
+            <img src={assignee.picture} alt={assignee.name} className="backlog-assignee-avatar-img" style={{ width: "20px", height: "20px", borderRadius: "9999px" }} draggable="false" />
+          ) : (
+            <div
+              className="backlog-assignee-avatar-initial"
+              style={{
+                width: "20px",
+                height: "20px",
+                backgroundColor: "#2665AC",
+                color: "white",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "12px",
+                fontWeight: "500",
+                borderRadius: "9999px",
+              }}
+            >
+              {(assignee?.name?.charAt(0) || "").toUpperCase()}
+            </div>
+          )
+        ) : (
+          <div className="backlog-issue-tooltip-container">
+            <div
+              className="backlog-unassigned-avatar"
+              style={{
+                width: "20px",
+                height: "20px",
+                borderRadius: "9999px",
+                backgroundColor: "white",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <UserCircle2 style={{ color: "#2665AC" }} />
+            </div>
+            <span
+              style={{
+                marginLeft: "4px",
+                color: "#2665AC",
+                fontSize: "14px",
+              }}
+            >
+              Unassigned
+            </span>
+            <div className="backlog-issue-custom-tooltip">No team member assigned to this task</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const handleDragStart = (e, item, source) => {
+    setDraggedItem(item);
+    setDraggedSource(source);
+    e.target.classList.add("dragging");
+    e.dataTransfer.setData("text/plain", JSON.stringify({ id: item.id, source }));
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+
+    // Remove any existing drop indicators
+    document.querySelectorAll(".drop-above, .drop-below").forEach((el) => {
+      el.classList.remove("drop-above", "drop-below");
+    });
+
+    const dropTarget = e.target.closest(".backlog-item");
+    if (dropTarget) {
+      const rect = dropTarget.getBoundingClientRect();
+      const midpoint = rect.top + rect.height / 2;
+
+      if (e.clientY < midpoint) {
+        dropTarget.classList.add("drop-above");
+      } else {
+        dropTarget.classList.add("drop-below");
+      }
+    }
+  };
+
+  const handleDragLeave = (e) => {
+    // Only remove indicators if we're actually leaving the container
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      document.querySelectorAll(".drop-above, .drop-below").forEach((el) => {
+        el.classList.remove("drop-above", "drop-below");
+      });
+    }
+  };
+
+  const handleDragEnd = (e) => {
+    e.target.classList.remove("dragging");
+    setDraggedItem(null);
+    setDraggedSource(null);
+
+    // Clean up any remaining drop indicators
+    document.querySelectorAll(".drop-above, .drop-below").forEach((el) => {
+      el.classList.remove("drop-above", "drop-below");
+    });
+  };
+
+  const handleDrop = async (e, targetSection) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove("drag-over");
+  
+    // Clean up drop indicators
+    document.querySelectorAll(".drop-above, .drop-below").forEach((el) => {
+      el.classList.remove("drop-above", "drop-below");
+    });
+  
+    try {
+      const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+      const sourceSection = data.source;
+  
+      // Check user access permission
+      const checkUserAccess = async () => {
+        const memberDocRef = doc(db, `Scrum/${scrumId}/member/${uid}`);
+        try {
+          const memberDoc = await getDoc(memberDocRef);
+          if (memberDoc.exists() && memberDoc.data().access === true) {
+            return true;
+          } else {
+            console.error("Access denied: User does not have the required permissions.");
+            return false;
+          }
+        } catch (error) {
+          console.error("Error checking user access:", error);
+          return false;
+        }
+      };
+  
+      const hasAccess = await checkUserAccess();
+      if (!hasAccess) {
+        return; // Exit if the user does not have access
+      }
+  
+      // Find the target item (if any)
+      const dropTarget = e.target.closest(".backlog-item");
+      const targetId = dropTarget ? parseInt(dropTarget.getAttribute("data-id")) : null;
+  
+      // Helper function to swap positions of two items in an array
+      const swapPositions = (arr, sourceId, targetId) => {
+        const newArr = [...arr];
+        const sourceIndex = newArr.findIndex((item) => item.id === sourceId);
+        const targetIndex = newArr.findIndex((item) => item.id === targetId);
+  
+        if (sourceIndex !== -1 && targetIndex !== -1) {
+          [newArr[sourceIndex], newArr[targetIndex]] = [newArr[targetIndex], newArr[sourceIndex]];
+        }
+        return newArr;
+      };
+  
+      // Helper function to find the correct insertion index
+      const findDropIndex = (items, targetElement) => {
+        const dropTarget = targetElement.closest(".backlog-item");
+  
+        if (!dropTarget) {
+          return items.length;
+        }
+  
+        const targetId = parseInt(dropTarget.getAttribute("data-id"));
+        const targetIndex = items.findIndex((item) => item.id === targetId);
+  
+        const rect = dropTarget.getBoundingClientRect();
+        const dropY = e.clientY;
+        const midpoint = rect.top + rect.height / 2;
+  
+        return dropY < midpoint ? targetIndex : targetIndex + 1;
+      };
+  
+      // Update Firestore status
+      const updateTaskStatusInFirestore = async (taskId, newStatus) => {
+        const taskDocRef = doc(db, `Scrum/${scrumId}/backlog`, taskId.toString());
+  
+        try {
+          await updateDoc(taskDocRef, { issueStatus: newStatus });
+          console.log(`Task ${taskId} status updated to ${newStatus}`);
+        } catch (error) {
+          console.error(`Failed to update task ${taskId} status:`, error);
+        }
+      };
+  
+      // Synchronize data to localStorage
+      const syncToLocalStorage = (key, data) => {
+        localStorage.setItem(key, JSON.stringify(data));
+      };
+  
+      // Handle swap within the same section
+      if (sourceSection === targetSection && targetId) {
+        if (targetSection === "sprint") {
+          setSprintIssues((prevIssues) => {
+            const updatedIssues = swapPositions(prevIssues, data.id, targetId);
+            syncToLocalStorage("sprintIssues", updatedIssues);
+            return updatedIssues;
+          });
+        } else if (targetSection === "backlog") {
+          setBacklogIssues((prevIssues) => {
+            const updatedIssues = swapPositions(prevIssues, data.id, targetId);
+            syncToLocalStorage("backlogIssues", updatedIssues);
+            return updatedIssues;
+          });
+        }
+        return;
+      }
+  
+      // Handle cross-section move
+      let itemToMove = null;
+      if (sourceSection !== targetSection || !targetId) {
+        // Moving to sprint section
+        if (targetSection === "sprint") {
+          itemToMove = backlogIssues.find((item) => item.id === data.id);
+          if (itemToMove) {
+            const updatedBacklogIssues = backlogIssues.filter((item) => item.id !== data.id);
+            const insertIndex = findDropIndex(sprintIssues, e.target);
+  
+            setSprintIssues((prev) => {
+              const newIssues = [...prev];
+              newIssues.splice(insertIndex, 0, { ...itemToMove, issueStatus: "sprint" });
+              syncToLocalStorage("sprintIssues", newIssues);
+              return newIssues;
+            });
+            setBacklogIssues(updatedBacklogIssues);
+            syncToLocalStorage("backlogIssues", updatedBacklogIssues);
+  
+            // Update Firestore
+            updateTaskStatusInFirestore(data.id, "sprint");
+          }
+        }
+        // Moving to backlog section
+        else if (targetSection === "backlog") {
+          itemToMove = sprintIssues.find((item) => item.id === data.id);
+          if (itemToMove) {
+            const updatedSprintIssues = sprintIssues.filter((item) => item.id !== data.id);
+            const insertIndex = findDropIndex(backlogIssues, e.target);
+  
+            setBacklogIssues((prev) => {
+              const newIssues = [...prev];
+              newIssues.splice(insertIndex, 0, { ...itemToMove, issueStatus: "backlog" });
+              syncToLocalStorage("backlogIssues", newIssues);
+              return newIssues;
+            });
+            setSprintIssues(updatedSprintIssues);
+            syncToLocalStorage("sprintIssues", updatedSprintIssues);
+  
+            // Update Firestore
+            updateTaskStatusInFirestore(data.id, "backlog");
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error handling drop:", error);
+    }
+  };
+  
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText("TEAM-123-456");
+    setShowCopyTooltip(true);
+    setTimeout(() => setShowCopyTooltip(false), 2000);
+  };
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredSprintIssues, setFilteredSprintIssues] = useState(sprintIssues);
+  const [filteredBacklogIssues, setFilteredBacklogIssues] = useState(backlogIssues);
+
+  // Add a new state to track the highest ID
+  const [nextId, setNextId] = useState(() => {
+    try {
+      const sprintIds = sprintIssues?.map((issue) => parseInt(issue.id) || 0) || [];
+      const backlogIds = backlogIssues?.map((issue) => parseInt(issue.id) || 0) || [];
+      const maxId = Math.max(...sprintIds, ...backlogIds, 0);
+      return maxId + 1;
+    } catch (error) {
+      console.error("Error calculating next ID:", error);
+      return 1; // Fallback to 1 if calculation fails
+    }
+  });
+
+  // Update useEffect for filtering
+  useEffect(() => {
+    const filterIssues = (issues) => {
+      return issues.filter(
+        (issue) =>
+          issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          issue.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          issue.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          issue.priority.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
+    };
+
+    // Update filtered issues whenever the source arrays or search query changes
+    setFilteredSprintIssues(filterIssues(sprintIssues));
+    setFilteredBacklogIssues(filterIssues(backlogIssues));
+  }, [searchQuery, sprintIssues, backlogIssues]);
+
+  // Update the handleSearch function
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  
+  // Function to invite member and send notifications
+// Function to invite member and send notifications
+const inviteMember = async (email, scrumId, fetchedBacklogIssues, setMembers) => {
+  try {
+    const auth = getAuth();
+    const uid = auth.currentUser.uid;
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", email));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const userDoc = querySnapshot.docs[0];
+      const memberUid = userDoc.id;
+
+      // Get the member's details
+      const memberData = userDoc.data();
+      const member = {
+        id: memberUid,
+        img: memberData.userPicture || "",
+        name: `${memberData.firstName || ""} ${memberData.lastName || ""}`.trim(),
+        role: "Team Member",
+        access: false,
+        memberId: memberUid  // Add memberId for future reference
+      };
+
+
+      // Get the document reference for the current scrum
+      const scrumDocRef = doc(db, `Scrum/${scrumId}/member/${memberUid}`);
+      const memberDoc = await getDoc(scrumDocRef);
+
+      if (memberDoc.exists()) {
+        console.log("This member has already been invited to the Scrum.");
+        return;
+      }
+
+      // Add the Team Member to Firestore
+      await setDoc(scrumDocRef, {
+        memberUid,
+        role: "Team Member",
+        createdAt: serverTimestamp(),
+        access: false,
+      });
+
+      // Retrieve the current project details from localStorage
+      const storedProject = JSON.parse(localStorage.getItem('selectedProject')) || {};
+      const updatedMembers = storedProject.members || [];
+
+      setMembers((prevMembers) => {
+        // Check if member already exists
+        const memberExists = prevMembers.some(existingMember => existingMember.id === member.id);
+        
+        if (!memberExists) {
+          // Update localStorage
+          const storedProject = JSON.parse(localStorage.getItem('selectedProject')) || {};
+          const updatedMembers = [...prevMembers, member];
+          storedProject.members = updatedMembers;
+          localStorage.setItem('selectedProject', JSON.stringify(storedProject));
+
+          // Update users state for assignee dropdown
+          setUsers((prevUsers) => [
+            ...prevUsers,
+            {
+              id: member.id,
+              name: member.name,
+              avatar: member.img,
+            }
+          ]);
+          return updatedMembers;
+        }
+        return prevMembers;
+      });  
+
+      // Add Scrum to the user's backlog
+      const backlogRef = doc(db, `users/${memberUid}/Scrum/${scrumId}`);
+      await setDoc(backlogRef, {
+        scrumId,
+        createdAt: serverTimestamp(),
+      });
+
+      // Retrieve current user's backlog document to get notifId
+      const currentUserBacklogRef = doc(db, `users/${uid}/Scrum/${scrumId}`);
+      const currentUserBacklogDoc = await getDoc(currentUserBacklogRef);
+
+      if (!currentUserBacklogDoc.exists()) {
+        console.error("No notifId found in the user's backlog.");
+        return;
+      }
+
+      // Create a new notification for the invited member
+      const notifCollectionRef = collection(db, `Scrum/${scrumId}/scrumNotif`);
+      const notifDocRef = await addDoc(notifCollectionRef, {
+        sender: uid,
+        receiver: [memberUid],
+        context: scrumId,
+        action: "has invited you to join the Scrum",
+        timeAgo: new Date().toISOString(),
+        subType: "workload",
+        type: "assigned",
+        unread: true,
+      });
+
+      const notifDocId = notifDocRef.id;
+
+
+
+      console.log("Member invited successfully!");
+      setShowInviteSuccessPopup(true);
+      return member;
+
+    } else {
+      console.error("No user found with the provided email.");
+      throw new Error("No user found with the provided email.");
+    }
+  } catch (error) {
+    console.error("Error inviting member:", error);
+    setErrorInviteMessage(error.message || "Failed to invite member. Please try again.");
+    setShowInviteErrorPopup(true); // Show error popup
+    throw error;
+  }
+};
+
+
+const handleInviteClick = () => {
+  const emailInput = document.querySelector(".backlog-member-email-input");
+  const email = emailInput.value.trim();
+  const role = selectedRole;
+
+  if (!email) {
+    setErrorInviteMessage("Please enter a valid email.");
+    setShowInviteErrorPopup(true);
+    return;
+  }
+  if (!role) {
+    setErrorInviteMessage("Please select a role.");
+    setShowInviteErrorPopup(true);
+    return;
+  }
+  if (!scrumId) {
+    setErrorInviteMessage("Scrum ID is not available. Please refresh the page or try again.");
+    setShowInviteErrorPopup(true);
+    return;
+  }
+
+  inviteMember(email, scrumId, null, setMembers)
+    .then((invitedMember) => {
+      console.log("Invitation sent successfully.", invitedMember);
+      emailInput.value = ""; // Clear the input field
+    })
+    .catch((error) => {
+      console.error("Error inviting member:", error);
+    });
+};
+const [isDone, setIsDone] = useState(false);
+
+useEffect(() => {
+  const fetchIsDone = async () => {
+    try {
+      const db = getFirestore();
+      const docRef = doc(db, `Scrum/${scrumId}`);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setIsDone(data.isDone === true);
+      }
+    } catch (error) {
+      console.error("Error fetching isDone status:", error);
+    }
+  };
+
+  if (scrumId) {
+    fetchIsDone();
+  }
+}, [scrumId]);
+const [hasAccess, setHasAccess] = useState(false);
+
+useEffect(() => {
+  const checkAccess = async () => {
+    const db = getFirestore();
+    const memberRef = doc(db, `Scrum/${scrumId}/member/${uid}`);
+
+    try {
+      const docSnap = await getDoc(memberRef);
+
+      if (docSnap.exists() && docSnap.data().access === true) {
+        setHasAccess(true);
+      } else {
+        setHasAccess(false);
+      }
+    } catch (error) {
+      console.error('Error fetching member data:', error);
+      setHasAccess(false);
+    }
+  };
+
+  checkAccess();
+}, [scrumId, uid]);
+
+const handleDisable = () => {
+  // Only called if the button is rendered
+  setShowMemberInviteModal(true);
+};
+
+
+{/*
+  const handleMemberClick = (memberId) => {
+    navigate(`/profile/${memberId}`);
+  }; */}
+
   const handleProfileNavigation = (member) => {
-    navigate("/ProfileDetails", {
+    navigate("/ProfileDetails", { 
       state: {
         memberId: member.memberId,
         name: `${member.firstName} ${member.lastName}`,
@@ -253,271 +2685,742 @@ const [removalSuccessMessage, setRemovalSuccessMessage] = useState("");
         edit: uid === member.memberId ? false : true, // If uid matches memberId, set edit to false, otherwise true
       },
     });
+
   };
 
-  const handleRemoveMember = async (member) => {
-    try {
-      const currentEpicId = epicId || location.state?.epicId;
+  const [showRemovalSuccessPopup, setShowRemovalSuccessPopup] = useState(false);
+  const [showRemovalErrorPopup, setShowRemovalErrorPopup] = useState(false);
+  const [removalErrorMessage, setRemovalErrorMessage] = useState("");
+  const [removalSuccessMessage, setRemovalSuccessMessage] = useState("");
   
-      const userKanbanDocRef = doc(db, `users/${member.memberId}/Kanban/${currentEpicId}`);
-      await deleteDoc(userKanbanDocRef);
   
-      const kanbanIssuesRef = collection(db, `Kanban/${currentEpicId}/kanbanIssue`);
-      const kanbanIssuesSnapshot = await getDocs(kanbanIssuesRef);
   
-      const updatePromises = kanbanIssuesSnapshot.docs.map(async (issueDoc) => {
-        const issueData = issueDoc.data();
-        if (issueData.assignId === member.memberId) {
-          const issueDocRef = doc(db, `Kanban/${currentEpicId}/kanbanIssue/${issueDoc.id}`);
-          return updateDoc(issueDocRef, { assignId: null });
+  const handleConfirmRemovebacklog = async () => {
+      if (selectedScrumMember) {
+        try {
+          const { memberId } = selectedScrumMember;
+    
+          // 1. Delete `users/${memberId}/Scrum/${scrumId}`
+          const userScrumDocRef = doc(db, `users/${memberId}/Scrum/${scrumId}`);
+          await deleteDoc(userScrumDocRef);
+    
+          // 2. Loop through `Scrum/${scrumId}/backlog` and remove `assignee.assignId` matching `memberId`
+          const backlogCollectionRef = collection(db, `Scrum/${scrumId}/backlog`);
+          const backlogDocs = await getDocs(backlogCollectionRef);
+    
+          backlogDocs.forEach(async (docSnapshot) => {
+            const backlogData = docSnapshot.data();
+            // Check if assignee.assignId matches the memberId
+            if (backlogData.assignee && backlogData.assignee.assignId === memberId) {
+              const backlogDocRef = doc(db, `Scrum/${scrumId}/backlog/${docSnapshot.id}`);
+              // Nullify all the fields inside assignee
+              await updateDoc(backlogDocRef, {
+                assignee: null, // Set assignee field to null
+              });
+            }
+          });
+    
+          // 3. Delete `Scrum/${scrumId}/member/${memberId}`
+          const scrumMemberDocRef = doc(db, `Scrum/${scrumId}/member/${memberId}`);
+          await deleteDoc(scrumMemberDocRef);
+    
+          // 4. Remove the member locally from the state and update localStorage
+          handleRemoveMember(selectedScrumMember); // Remove member locally
+          setShowRemoveScrumPopup(false); // Hide confirmation popup
+    
+          setRemovalSuccessMessage(`${selectedScrumMember?.name} successfully removed from the team.`);
+          setShowRemovalSuccessPopup(true);
+          console.log(`Member ${memberId} successfully removed.`);
+        } catch (error) {
+          setRemovalErrorMessage("Failed to remove member from the team. Please try again.");
+          setShowRemovalErrorPopup(true);
+          console.error("Error removing member:", error);
         }
-      });
+      }
+    };
   
-      await Promise.all(updatePromises);
+
   
-      const epicMemberDocRef = doc(db, `Kanban/${currentEpicId}/Member/${member.memberId}`);
-      await deleteDoc(epicMemberDocRef);
+
+  const [hoveredScrumMember, setHoveredScrumMember] = useState(null);
+  const [showRemoveScrumPopup, setShowRemoveScrumPopup] = useState(false);
+  const [selectedScrumMember, setSelectedScrumMember] = useState(null);
   
-      setMembers((prevMembers) => prevMembers.filter((m) => m.memberId !== member.memberId));
-      setRemovalSuccessMessage(`${member.firstName} ${member.lastName} successfully removed from the team.`);
-      setShowRemovalSuccessPopup(true);
-      console.log("Member removed successfully");
-    } catch (error) {
-      console.error("Error removing member:", error);
-      setRemovalErrorMessage("Failed to remove member from the team. Please try again.");
-      setShowRemovalErrorPopup(true);
+  const handleRemoveMemberClick = (member) => {
+    setSelectedScrumMember(member);
+    setShowRemoveScrumPopup(true); // Show confirmation popup
+  };
+  
+  const handleRemoveMember = (memberToRemove) => {
+    setMembers((prevMembers) => {
+      // Remove the member from the local state
+      const updatedMembers = prevMembers.filter((member) => member.memberId !== memberToRemove.memberId);
+      // Update localStorage with the new list of members
+      const storedProject = JSON.parse(localStorage.getItem('selectedProject')) || {};
+      storedProject.members = updatedMembers;
+      localStorage.setItem('selectedProject', JSON.stringify(storedProject));
+      return updatedMembers;
+    });
+  };
+  
+  const handleConfirmRemove = async () => {
+    if (selectedScrumMember) {
+      try {
+        const { memberId } = selectedScrumMember;
+  
+        // 1. Delete `users/${memberId}/Scrum/${scrumId}`
+        const userScrumDocRef = doc(db, `users/${memberId}/Scrum/${scrumId}`);
+        await deleteDoc(userScrumDocRef);
+  
+        // 2. Loop through `Scrum/${scrumId}/backlog` and remove `assignee.assignId` matching `memberId`
+        const backlogCollectionRef = collection(db, `Scrum/${scrumId}/backlog`);
+        const backlogDocs = await getDocs(backlogCollectionRef);
+  
+        backlogDocs.forEach(async (docSnapshot) => {
+          const backlogData = docSnapshot.data();
+          // Check if assignee.assignId matches the memberId
+          if (backlogData.assignee && backlogData.assignee.assignId === memberId) {
+            const backlogDocRef = doc(db, `Scrum/${scrumId}/backlog/${docSnapshot.id}`);
+            // Nullify all the fields inside assignee
+            await updateDoc(backlogDocRef, {
+              assignee: null, // Set assignee field to null
+            });
+          }
+        });
+  
+        // 3. Delete `Scrum/${scrumId}/member/${memberId}`
+        const scrumMemberDocRef = doc(db, `Scrum/${scrumId}/member/${memberId}`);
+        await deleteDoc(scrumMemberDocRef);
+  
+        // 4. Remove the member locally from the state and update localStorage
+        handleRemoveMember(selectedScrumMember); // Remove member locally
+        setShowRemoveScrumPopup(false); // Hide confirmation popup
+  
+        console.log(`Member ${memberId} successfully removed.`);
+      } catch (error) {
+        console.error("Error removing member:", error);
+      }
+    }
+  };
+  
+  const handleCancelRemove = () => {
+    setShowRemoveScrumPopup(false); // Hide popup
+  };
+  
+
+
+  
+  const getIconSrc = (type) => {
+    const typeLowerCase = type?.toLowerCase(); // Handle case insensitivity
+    switch (typeLowerCase) {
+      case 'bug':
+        return bug; // Bug icon
+      case 'task':
+        return task; // Task icon
+      case 'story':
+        return story; // Story icon
+      default:
+        return ''; // Fallback for unknown types, or you can provide a generic default icon
     }
   };
 
-  const MembersPopup = ({ members, onClose }) => {
-    const [hoveredMember, setHoveredMember] = useState(null);
-    const [showRemovePopup, setShowRemovePopup] = useState(false);
-    const [selectedMember, setSelectedMember] = useState(null);
-    const auth = getAuth();
-    const currentUser = auth.currentUser;
 
-    const handleRemoveMemberClick = (member) => {
-      setSelectedMember(member);
-      setShowRemovePopup(true);
-    };
+  const showRemoveIcon = (member, index) => {
+    return allow && hoveredScrumMember === index && uid && member.memberId !== uid;
+  };
 
-    const handleConfirmRemove = async () => {
-      if (selectedMember) {
-        await handleRemoveMember(selectedMember);
-        setShowRemovePopup(false);
+    const priorityChangeRef = useRef(null);
+    const assigneeChangeRef = useRef(null);
+    const sortChangeRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Check if click is on the scrollbar of details list
+      const detailsList = document.querySelector('.backlog-popup__details-list');
+      if (detailsList) {
+        const rect = detailsList.getBoundingClientRect();
+        const isClickOnVerticalScrollbar = 
+          event.clientX > rect.right - 16 && // 16px is typical scrollbar width
+          event.clientX < rect.right &&
+          event.clientY > rect.top &&
+          event.clientY < rect.bottom;
+        
+        const isClickOnHorizontalScrollbar =
+          event.clientY > rect.bottom - 16 && // 16px is typical scrollbar height
+          event.clientY < rect.bottom &&
+          event.clientX > rect.left &&
+          event.clientX < rect.right;
+  
+        // If click is on scrollbar, don't close dropdowns
+        if (isClickOnVerticalScrollbar || isClickOnHorizontalScrollbar) {
+          return;
+        }
+      }
+
+      // Handle Sort issue dropdown
+      const isSortClick = event.target.closest(".backlog-presentation-popup__sort-dropdown");
+      const isOutsideSortMenu = !sortChangeRef.current?.contains(event.target);
+      if (isOutsideSortMenu && !isSortClick) {
+        setIsSortDropdownOpen(false);
+      }
+  
+      // Handle priority issue dropdown
+      const isPriorityClick = event.target.closest(".backlog-priority-dropdown");
+      const isOutsidePresentationMenu = !priorityChangeRef.current?.contains(event.target);
+      if (isOutsidePresentationMenu && !isPriorityClick) {
+        setPopupShowPriorityDropdown(false);
+      }
+  
+      // Handle assignee issue dropdown
+      const isAssigneeClick = event.target.closest(".backlog-assignee-dropdown");
+      const isOutsideAssigneeMenu = !assigneeChangeRef.current?.contains(event.target);
+      if (isOutsideAssigneeMenu && !isAssigneeClick) {
+        setIsAssigneeDropdownOpen(false);
       }
     };
-
-    const showRemoveIcon = (member, index) => {
-      return hasAccess && hoveredMember === index && currentUser && member.memberId !== currentUser.uid;
+  
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
     };
+  }, []);
 
-    return (
-      <div className="members-popup-overlay">
-        <div className="members-popup-container">
-          <div className="members-popup-header">
-            <h3 className="members-popup-title">Members</h3>
-            <button onClick={onClose} className="members-popup-close">
-              <X size={20} />
-            </button>
+  const titleRef = useRef(null);
+  const issuePopupTitleRef = useRef(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [isIssuePopupOverflowing, setIsIssuePopupOverflowing] = useState(false);
+  const [showIssuePopupTooltip, setShowIssuePopupTooltip] = useState(false);
+
+  useEffect(() => {
+    if (titleRef.current) {
+      const isOverflow = 
+        titleRef.current.offsetWidth < titleRef.current.scrollWidth;
+      setIsOverflowing(isOverflow);
+    }
+
+  }, [projectName]);
+
+  useEffect(() => {
+    // Check for title overflow when selected issue changes
+    if (issuePopupTitleRef.current) {
+      const element = issuePopupTitleRef.current;
+      setIsIssuePopupOverflowing(element.scrollWidth > element.offsetWidth);
+    }
+  }, [selectedIssue?.title]); 
+
+  return (
+       <div className="backlogs-container">
+      <div className="backlogs-header">
+        <div className="project-info">
+        <h1
+    className="project-name"
+    ref={titleRef}
+    onMouseEnter={() => isOverflowing && setShowTooltip(true)}
+    onMouseLeave={() => setShowTooltip(false)}
+  >
+    {projectName}
+    {showTooltip && (
+      <div className="backlogs-title-tooltip">{projectName}</div>
+    )}
+  </h1>
+          <div className="member-icons">
+            <div className="member-icon-container" onClick={() => setShowMembersPopup(true)}>
+              {members.slice(0, 3).map((member, index) => (
+                <img key={index} src={member.img} alt={`Member ${member.name}`} className="member-icon" />
+              ))}
+              {members.length > 3 && <div className="member-count">+{members.length - 3}</div>}
+            </div>
           </div>
-          <div className="members-list">
-            {members.map((member, index) => (
-              <div key={member.memberId} className="member-item" onMouseEnter={() => setHoveredMember(index)} onMouseLeave={() => setHoveredMember(null)}>
-                {member.userPicture ? (
-                  <img src={member.userPicture} alt={member.firstName} className="member-avatar" />
-                ) : (
-                  <div className="member-initial">{member.firstName.charAt(0).toUpperCase()}</div>
-                )}
-                <div className="members-info">
-                  <span className="member-name" onClick={() => handleProfileNavigation(member)}>
-                    {`${member.firstName} ${member.lastName}`}
-                  </span>
-                  <span className="member-role">{member.role}</span>
-                </div>
+        </div>
+        <div className="backlogs-controls-container">
+          <div className="backlogs-search-container">
+            <input type="text" placeholder="Search" className="backlogs-search-input" value={searchQuery} onChange={handleSearch} />
+            <img src={searchIcon} alt="search" className="backlogs-search-icon" />
+          </div>
+          {hasAccess && (
+      <button
+        className="backlogs-invite-member-btn"
+        onClick={handleDisable}
+      >
+        Invite Member
+      </button>
+    )}
+        </div>
+      </div>
 
-                {showRemoveIcon(member, index) && projectStatus !== "Complete" && (
-                  <img
-                    src={RemoveMemberIcon}
-                    alt="Remove Member"
-                    className="remove-member-icon"
-                    onClick={() => handleRemoveMemberClick(member)}
-                    style={{
-                      cursor: "pointer",
-                      width: "20px",
-                      height: "20px",
-                      marginLeft: "auto",
+
+      <div className="sprint-info-container">
+        <div className="sprint-header">
+          <div className="sprint-title">{key} - 0</div>
+          <div className="sprint-dates">
+            <span>{`${startDate} - ${endDate}`}</span>
+            <img src={days} alt="Days-Remaining-Icon" className="clock-icon" />
+            <span className="time-remaining">{timeRemaining}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="sprint-content-container">
+        <div className="sprint-details">
+          <div className="selected-development">
+            <span className="development-label">Selected for development</span>
+            <span className="issues-count">{filteredSprintIssues.length} issues</span>
+          </div>
+          {allow && (
+  <button
+    className="start-sprint-btn"
+    onClick={handleStartSprintClick}
+  >
+    Start Sprint
+  </button>
+)}
+
+        </div>
+
+
+        {/* Sprint section with drag and drop */}
+        <div
+          className={`backlog-items-container ${filteredSprintIssues.length === 0 ? "empty" : ""} ${draggedItem ? "drag-over" : ""}`}
+          onDragOver={handleDragOver}
+          onDrop={(e) => handleDrop(e, "sprint")}
+          onDragLeave={handleDragLeave}
+        >
+          {filteredSprintIssues.map((item) => (
+            <div
+              key={item.id}
+              data-id={item.id}
+              className="backlog-item"
+              draggable="true"
+              onDragStart={(e) => handleDragStart(e, item, "sprint")} // Explicitly pass "sprint"
+              onDragEnd={handleDragEnd}
+              onClick={() => handleBacklogItemClick(item)}
+            >
+              <div className="backlog-item-header">
+                <div className="backlog-item-header-content">
+                <img 
+  src={getIconSrc(item.type)}  // Dynamically set the correct icon based on item.type
+  alt={item.type}              // Alt text matches the item type
+  className="item-type-icon"   // Apply styling through this class
+  draggable="false"            // Prevent the icon from being dragged
+/>
+
+<span className="item-title">{item.title}</span>
+                </div>
+                <div hidden={!allow} className="more-options-container" onClick={(e) => e.stopPropagation()}>
+                  <MoreHorizontal
+                    className="more-options-icon"
+                    onClick={() => {
+                      setActiveMoreOptions(activeMoreOptions === item.id ? null : item.id);
                     }}
                   />
-                )}
+
+{activeMoreOptions === item.id && (
+                    <div className="more-options-dropdown" onClick={(e) => e.stopPropagation()}>
+                      <div
+                        className="issues-dropdown-item issues-delete-option"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(item.id, true);
+                        }}
+                      >
+                        Delete
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            ))}
+
+              <div className="backlog-item-footer">
+                <div className="backlog-item-left">
+                  <span className="item-code">{item.code}</span>
+                  {renderStats(item.stats, item.priority, item.assignee)}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+
+        <div className="product-backlog-container">
+          <div className="product-backlog-header">
+            <div className="backlog-title-section">
+              <span className="backlog-title">Backlog</span>
+              <span className="issues-count">{filteredBacklogIssues.length} issues</span>
+            </div>
           </div>
 
-          {showRemovePopup && (
-            <div className="remove-popup-overlay">
-              <div className="remove-popup-container">
-                <div className="remove-popup-body">
-                  <p>
-                    Are you sure you want to remove {selectedMember?.firstName} {selectedMember?.lastName} from the project?
-                  </p>
+
+          {/* Backlog section with drag and drop */}
+          <div
+            className={`backlog-items-container ${filteredBacklogIssues.length === 0 ? "empty" : ""} ${draggedItem ? "drag-over" : ""}`}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, "backlog")}
+            onDragLeave={handleDragLeave}
+          >
+            {filteredBacklogIssues.map((item) => (
+              <div
+                key={item.id}
+                data-id={item.id}
+                className="backlog-item"
+                style={{ cursor: "pointer" }}
+                draggable="true"
+                onDragStart={(e) => handleDragStart(e, item, "backlog")}
+                onDragEnd={handleDragEnd}
+                onClick={() => handleBacklogItemClick(item)}
+              >
+                <div className="backlog-item-header">
+                  <div className="backlog-item-header-content">
+                  <img 
+  src={getIconSrc(item.type)}  // Dynamically set the correct icon based on item.type
+  alt={item.type}              // Alt text matches the item type
+  className="item-type-icon"   // Apply styling through this class
+  draggable="false"            // Prevent the icon from being dragged
+/>
+
+<span className="item-title">{item.title}</span>
+                  </div>
+                  <div className="more-options-container" onClick={(e) => e.stopPropagation()}>
+                    <MoreHorizontal
+                      className="more-options-icon"
+                      onClick={() => {
+                        setActiveMoreOptions(activeMoreOptions === item.id ? null : item.id);
+                      }}
+                    />
+
+{activeMoreOptions === item.id && (
+                      <div className="more-options-dropdown" onClick={(e) => e.stopPropagation()}>
+                        <div
+                          className="issues-dropdown-item issues-delete-option"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(item.id, false);
+                          }}
+                        >
+                          Delete
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="remove-popup-actions">
-                  <button onClick={handleConfirmRemove}>Yes</button>
-                  <button onClick={() => setShowRemovePopup(false)}>No</button>
+
+                <div className="backlog-item-footer">
+                  <div className="backlog-item-left">
+                    <span className="item-code">{item.code}</span>
+                    {renderStats(item.stats, item.priority, item.assignee)}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {renderCreateIssueForm()}
+          </div>
+
+
+          {/* Delete Confirmation Popup */}
+          {showDeleteConfirmation && (
+            <div className="backlogs-delete-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="backlogs-delete-popup-container">
+                <p className="backlogs-delete-popup-message">Are you sure you want to delete {itemToDelete?.title}?</p>
+                <div className="backlogs-delete-popup-actions">
+                  <button className="backlogs-yes-action-button" onClick={handleConfirmDelete}>
+                    Yes
+                  </button>
+                  <button className="backlogs-no-action-button" onClick={handleClosePopup}>
+                    No
+                  </button>
                 </div>
               </div>
             </div>
           )}
-        </div>
-      </div>
-    );
-  };
+
+{showStartSprintPopup && (
+            <div className="start-sprint-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="start-sprint-popup-container">
+                <h2 className="start-sprint-popup-title">Start Sprint</h2>
+                <div className="start-sprint-popup-divider" />
+                <form onSubmit={handleStartSprintSubmit} className="start-sprint-popup-content">
+                  <div className="start-sprint-form-section">
+                    <div className="start-sprint-issue-count">
+                      <p>
+                        {filteredSprintIssues.length}
+                        {filteredSprintIssues.length === 1 ? " issue" : " issues"} will be included in this sprint
+                      </p>
+                    </div>
+
+                    <div className="start-sprint-date-group">
+                      <p className="start-sprint-date-label">Project Name</p>
+                      <div className="start-sprint-input">{sprintFormData.projectName}</div>
+                    </div>
+
+                    <DateTimePicker
+  label="Start Date"
+  date={sprintFormData.startDate}
+  time={sprintFormData.startTime}
+  onDateChange={(date) => {
+    const today = new Date().setHours(0, 0, 0, 0); // Get today's date at midnight
+    const selectedDate = new Date(date).setHours(0, 0, 0, 0);
+
+    if (selectedDate >= today) {
+      setSprintFormData({ ...sprintFormData, startDate: date });
+      console.log("Valid Start Date Selected:", date);
+    } else {
+      console.error("Start Date cannot be in the past.");
+    }
+  }}
+  onTimeChange={(time) => setSprintFormData({ ...sprintFormData, startTime: time })}
+  min={new Date().toISOString().split('T')[0]} // Set the minimum date to today
+/>
+
+<DateTimePicker
+  label="End Date"
+  date={sprintFormData.endDate}
+  time={sprintFormData.endTime}
+  onDateChange={(date) => {
+    // Ensure the end date is not before the start date
+    if (new Date(date) >= new Date(sprintFormData.startDate)) {
+      setSprintFormData({ ...sprintFormData, endDate: date });
+    } else {
+      console.error("End Date cannot be before Start Date");
+    }
+  }}
+  onTimeChange={(time) => setSprintFormData({ ...sprintFormData, endTime: time })}
+/>
 
 
-  const InviteMemberPopup = ({ onClose }) => {
-    const [showMemberDetails, setShowMemberDetails] = useState(false);
-    const currentEpicId = epicId || location.state?.epicId;
-    const displayedMembers = members.slice(0, 2);
-    const memberCount = members.length;
-
-    const handleInvite = async () => {
-      const emailInput = document.querySelector(".member-email-input").value.trim();
-      if (!emailInput) {
-        setErrorInviteMessage("Please enter a valid email.");
-        setShowInviteErrorPopup(true);
-        return;
-      }
-    
-      try {
-        const auth = getAuth();
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-          setErrorInviteMessage("You must be signed in to perform this action.");
-          setShowInviteErrorPopup(true);
-          return;
-        }
-        const currentUserId = currentUser.uid;
-    
-        const userKanbanRef = doc(db, `users/${currentUserId}/Kanban/${currentEpicId}`);
-        const userKanbanDoc = await getDoc(userKanbanRef);
-    
-        if (!userKanbanDoc.exists()) {
-          setErrorInviteMessage("Notification ID not found. Please ensure your Kanban setup is complete.");
-          setShowInviteErrorPopup(true);
-          return;
-        }
-    
-        let notifId = userKanbanDoc.data().notifId;
-    
-        // If Notification ID is missing, create and assign a new one
-        if (!notifId) {
-          const notifRef = doc(collection(db, `Kanban/${currentEpicId}/kanbanNotif`));
-          const notification = {
-            context: currentEpicId,
-            id: notifRef.id,
-            receiver: [currentUserId],
-            timeAgo: new Date().toISOString(),
-            type: "general",
-            unread: true,
-          };
-          await setDoc(notifRef, notification);
-    
-          // Update the user's Kanban document with the new notifId
-          await updateDoc(userKanbanRef, {
-            notifId: notifRef.id,
-          });
-    
-          notifId = notifRef.id; // Assign the new Notification ID
-        }
-    
-        const usersRef = collection(db, "users");
-        const emailQuery = query(usersRef, where("email", "==", emailInput));
-        const querySnapshot = await getDocs(emailQuery);
-    
-        if (querySnapshot.empty) {
-          setErrorInviteMessage("No user found with this email.");
-          setShowInviteErrorPopup(true);
-          return;
-        }
-    
-        const userDoc = querySnapshot.docs[0];
-        const userId = userDoc.id;
-    
-        const memberRef = doc(db, `Kanban/${currentEpicId}/Member/${userId}`);
-        const memberSnapshot = await getDoc(memberRef);
-    
-        if (memberSnapshot.exists()) {
-          setErrorInviteMessage("This user has already been invited to the epic.");
-          setShowInviteErrorPopup(true);
-          return;
-        }
-    
-        await setDoc(memberRef, {
-          MemberUid: userId,
-          Access: false,
-          createdAt: serverTimestamp(),
-          Type: "Team Member",
-        });
-    
-        await setDoc(doc(db, `users/${userId}/Kanban/${currentEpicId}`), {
-          EpicId: currentEpicId,
-          createdAt: serverTimestamp(),
-        });
-    
-        // Add notification logic
-        const notifRef = collection(db, `Kanban/${currentEpicId}/kanbanNotif`);
-    
-        const notificationData = {
-          sender: currentUserId,
-          receiver: [userId],
-          context: currentEpicId,
-          action: "has invited you to join the Kanban",
-          timeAgo: new Date().toISOString(),
-          subType: "workload",
-          type: "assigned",
-          unread: true,
-        };
-    
-        const notificationDocRef = await addDoc(notifRef, notificationData);
-        await updateDoc(notificationDocRef, {
-          id: notificationDocRef.id,
-        });
-    
-        setShowInviteSuccessPopup(true);
-        onClose();
-        fetchMembers();
-      } catch (error) {
-        console.error("Error inviting user:", error);
-        setErrorInviteMessage("There was an error inviting the user.");
-        setShowInviteErrorPopup(true);
-      }
-    };
-    
-    
-
-    const MemberDetailsPopup = ({ onBack }) => {
-      return (
-        <div className="member-modal-overlay">
-          <div className="member-modal-container">
-            <div className="member-details-header">
-              <div className="member-details-title-group">
-                <button onClick={onBack} className="member-back-button">
-                  <ArrowLeft size={15} style={{ marginTop: "2px" }} />
-                </button>
-                <h3 className="member-details-title">Members</h3>
+</div>
+                </form>
+                <div className="start-sprint-popup-actions">
+                  <button className="start-sprint-action-button" onClick={handleStartSprintSubmit}>
+                    Start Sprint
+                  </button>
+                  <button className="start-sprint-action-button" onClick={() => setShowStartSprintPopup(false)}>
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
+          )}
 
-            <div className="member-details-list">
-              {members.map((member, index) => (
-                <div key={index} className="member-details-item">
-                  <div className="member-details-info">
-                    {member.userPicture ? (
-                      <img src={member.userPicture} alt={`${member.firstName} ${member.lastName}`} className="member-details-image" />
-                    ) : (
-                      <div
-                        className="member-placeholder"
+{showNoIssuesPopup && (
+            <div className="no-issues-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="no-issues-popup-container">
+                <h2 className="no-issues-popup-title">Start Sprint</h2>
+                <div className="no-issues-popup-divider" />
+                <div className="no-issues-popup-content">
+                  <p>There are no issues in the selected section yet. Please add an issue to the selected section.</p>
+                </div>
+                <div className="no-issues-popup-actions">
+                  <button className="no-issues-action-button" onClick={() => setShowNoIssuesPopup(false)}>
+                    OK
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+{showMemberInviteModal && (
+            <div className="backlog-member-modal-overlay">
+              <div className="backlog-member-modal-container">
+                <h3 className="backlog-member-modal-title">Invite Member</h3>
+
+                <div className="backlog-member-email-input-section">
+                  <div className="backlog-member-email-input-container">
+                    <div className="backlog-member-email-input-wrapper">
+                      <input type="email" placeholder="Invite others by Email" className="backlog-member-email-input" />
+                
+                    </div>
+                    <button className="backlog-member-invite-button"  onClick={handleInviteClick} hidden={isButtonDisabled}>
+                      Invite
+                    </button>
+                  </div>
+                </div>
+
+
+                {showInviteSuccessPopup && (
+  <div className="backlog-invite-popup-overlay">
+    <div className="backlog-invite-popup-modal">
+      <img src={successPopup} alt="Success" className="backlog-invite-popup-icon" />
+      <p className="backlog-invite-popup-message">
+        Member has been successfully invited!
+      </p>
+      <button 
+        className="backlog-invite-popup-button" 
+        onClick={() => setShowInviteSuccessPopup(false)}
+      >
+        OK
+      </button>
+    </div>
+  </div>
+)}
+
+
+{showInviteErrorPopup && (
+  <div className="backlog-invite-popup-overlay">
+    <div className="backlog-invite-popup-modal">
+      <img src={errorPopup} alt="Error" className="backlog-invite-popup-icon" />
+      <p className="backlog-invite-popup-error-message">{errorInviteMessage}</p>
+      <button 
+        className="backlog-invite-popup-error-button" 
+        onClick={() => setShowInviteErrorPopup(false)}
+      >
+        OK
+      </button>
+    </div>
+  </div>
+)}
+
+
+<div className="backlog-member-list">
+                  <div className="backlog-member-list-item" onClick={() => setShowMemberDetails(true)}>
+                    <div className="backlog-member-info">
+                      <div className="backlog-member-images">
+                        {members.slice(0, 2).map((member, index) =>
+                          member.img ? (
+                            <img
+                              key={index}
+                              src={member.img}
+                              alt={member.name}
+                              style={{
+                                width: "2rem",
+                                height: "2rem",
+                                borderRadius: "9999px",
+                                marginRight: "-8px",
+                                objectFit: "cover",
+                              }}
+                            />
+                          ) : (
+
+                            <div
+                              key={index}
+                              style={{
+                                backgroundColor: "rgb(38, 101, 172)",
+                                color: "white",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: "2rem",
+                                height: "2rem",
+                                borderRadius: "9999px",
+                                fontSize: "14px",
+                                fontWeight: "500",
+                                marginRight: "-8px",
+                              }}
+                            >
+                              {member.name.charAt(0).toUpperCase()}
+                            </div>
+
+                          ),
+                        )}
+                        {members.length > 2 && (
+                          <div className="backlog-member-image-count">
+                            <span className="backlog-member-image-count-text">+{members.length - 2}</span>
+                          </div>
+                        )}
+                      </div>
+                      <span className="backlog-member-names">
+                        {members
+                          .slice(0, 2)
+                          .map((member) => member.name)
+                          .join(", ")}
+                        {members.length > 2 && ` and ${members.length - 2} Others`}
+                      </span>
+                    </div>
+                    <svg className="backlog-member-arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+
+
+                <button onClick={() => setShowMemberInviteModal(false)} className="backlog-member-close-button">
+                  <span className="backlog-member-close-icon">×</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+
+{showMemberDetails && (
+            <div className="backlog-members-popup-overlay">
+              <div className="backlog-member-modal-container">
+                <div className="backlog-member-details-header">
+                  <div className="backlog-member-details-title-group">
+                    <button onClick={() => setShowMemberDetails(false)} className="backlog-member-back-button">
+                      <ArrowLeft size={15} style={{ marginTop: "2px" }} />
+                    </button>
+                    <h3 className="backlog-member-details-title">Members</h3>
+                  </div>
+                </div>
+
+
+
+                <div className="backlog-member-details-list">
+                  {members.map((member, index) => (
+                    <div key={index} className="backlog-member-details-item">
+                      <div className="backlog-member-details-info">
+                        {member.img ? (
+                          <img
+                            src={member.img}
+                            alt={member.name}
+                            className="backlog-member-details-image"
+                            style={{
+                              width: "2.5rem",
+                              height: "2.5rem",
+                              borderRadius: "9999px",
+                            }}
+                          />
+                        ) : (
+
+                          <div
+                            className="backlog-member-placeholder"
+                            style={{
+                              backgroundColor: "rgb(38, 101, 172)",
+                              color: "white",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              width: "2.5rem",
+                              height: "2.5rem",
+                              borderRadius: "9999px",
+                              fontSize: "14px",
+                              fontWeight: "500",
+                            }}
+                          >
+                            {member.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className="backlog-member-details-text">
+                          <span className="backlog-member-details-name">{member.name}</span>
+                          <span className="backlog-member-details-role">{member.role || "Team Member"}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+
+{showMembersPopup && (
+            <div className="backlog-members-popup-overlay">
+              <div className="backlog-members-popup-container">
+                <div className="backlog-members-popup-header">
+                  <h3 className="backlog-members-popup-title">Members</h3>
+                  <button onClick={() => setShowMembersPopup(false)} className="backlog-members-popup-close">
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className="backlog-members-list">
+                  {members.map((member, index) => (
+                    <div key={index} className="backlog-member-item"  
+                    onMouseEnter={() => setHoveredScrumMember(index)}
+                    onMouseLeave={() => setHoveredScrumMember(null)}>
+                      {member.img ? (
+                        <img src={member.img} alt={member.name} className="backlog-member-avatar" />
+                      ) : (
+
+                        <div
                         style={{
                           backgroundColor: "rgb(38, 101, 172)",
                           color: "white",
@@ -531,3912 +3434,63 @@ const [removalSuccessMessage, setRemovalSuccessMessage] = useState("");
                           fontWeight: "500",
                         }}
                       >
-                        {member.firstName.charAt(0).toUpperCase()}
+                        {member.name.charAt(0).toUpperCase()}
                       </div>
                     )}
-                    <div className="member-details-text">
-                      <span className="member-details-name" onClick={() => handleProfileNavigation(member)}>
-                        {`${member.firstName} ${member.lastName}`}
-                      </span>
-                      <span className="member-details-role">{member.role}</span>
+                    <div className="backlog-member-text">
+                      <span className="backlog-member-name" onClick={() => handleProfileNavigation(member)}>{member.name}</span>
+                      <span className="backlog-member-role">{member.role}</span>
                     </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      );
-    };
-
-    if (showMemberDetails) {
-      return <MemberDetailsPopup onBack={() => setShowMemberDetails(false)} />;
-    }
-
-    return (
-      <div className="member-modal-overlay">
-        <div className="member-modal-container">
-          <h3 className="member-modal-title">Invite Member</h3>
-
-          <div className="member-email-input-section">
-            <div className="member-email-input-container">
-              <input type="email" placeholder="Invite others by Email" className="member-email-input" />
-              <button className="member-invite-button" onClick={handleInvite}>
-                Invite
-              </button>
-            </div>
-          </div>
-
-          <div className="member-list">
-            <div className="member-list-item" onClick={() => setShowMemberDetails(true)}>
-              <div className="member-info">
-                <div className="member-images">
-                  {displayedMembers.map((member, index) =>
-                    member.userPicture ? (
-                      <img key={index} src={member.userPicture} alt={member.firstName} className="member-image" />
-                    ) : (
-                      <div
-                        key={index}
-                        style={{
-                          backgroundColor: "rgb(38, 101, 172)",
-                          color: "white",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          width: "2rem",
-                          height: "2rem",
-                          borderRadius: "9999px",
-                          fontSize: "14px",
-                          fontWeight: "500",
-                        }}
-                      >
-                        {member.firstName.charAt(0).toUpperCase()}
-                      </div>
-                    ),
-                  )}
-                  {memberCount > 2 && (
-                    <div className="member-image-count">
-                      <span className="member-image-count-text">+{memberCount - 2}</span>
-                    </div>
-                  )}
-                </div>
-                <span className="member-names">
-                  {displayedMembers.map((member, index) => (
-                    <span key={index}>
-                      {member.firstName}
-                      {index < displayedMembers.length - 1 && ", "}
-                    </span>
-                  ))}
-                  {memberCount > 2 && ` and ${memberCount - 2} Others`}
-                </span>
-              </div>
-              <svg className="member-arrow-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
-          </div>
-
-          <button onClick={onClose} className="member-close-button">
-            <span className="member-close-icon">×</span>
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  const [subtasks, setSubtasks] = useState([]);
-  const uid = auth.currentUser ? auth.currentUser.uid : "";
-
-  // Add this useEffect in the parent component
-  useEffect(() => {
-    const fetchSubtasks = async () => {
-      if (!selectedEpicId || !issueId) return;
-
-      try {
-        const issueRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`);
-        const issueDoc = await getDoc(issueRef);
-
-        if (issueDoc.exists()) {
-          const data = issueDoc.data();
-          const subtasksWithIds = (data.subtasks || []).map((subtask) => ({
-            ...subtask,
-            id: subtask.id || Date.now().toString() + Math.random().toString(36).substr(2, 9),
-          }));
-          setSubtasks(subtasksWithIds);
-          setSubtaskCount(data.subtaskCount?.toString() || "0");
-        }
-      } catch (error) {
-        console.error("Error fetching subtasks:", error);
-      }
-    };
-
-    fetchSubtasks();
-  }, [selectedEpicId, issueId]); // Only re-fetch when these values change
-
-  const fetchProjectStatus = async () => {
-    if (!selectedEpicId) return;
-    
-    try {
-      const epicDoc = await getDoc(doc(db, `Kanban/${selectedEpicId}`));
-      if (epicDoc.exists()) {
-        setProjectStatus(epicDoc.data().projectStatus || "");
-      }
-    } catch (error) {
-      console.error("Error fetching project status:", error);
-    }
-  };
-
-  useEffect(() => {
-    if (selectedEpicId) {
-      fetchProjectStatus();
-    }
-  }, [selectedEpicId]);
-
-  const PresentationSlidePopup = ({ onClose, subtasks: initialSubtasks, subtaskCount: initialSubtaskCount, onSubtasksUpdate }) => {
-    const typeChangeRef = useRef(null);
-    const statusChangeRef = useRef(null);
-    const priorityChangeRef = useRef(null);
-    const assigneeChangeRef = useRef(null);
-    const sortChangeRef = useRef(null);
-    const [localSubtasks, setLocalSubtasks] = useState(initialSubtasks);
-    const [localSubtaskCount, setLocalSubtaskCount] = useState(initialSubtaskCount);
-    const [editedTitle, setEditedTitle] = useState(issueName);
-    const [isEditingTitle, setIsEditingTitle] = useState(false);
-    const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
-    const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
-    const [isEditingDescription, setIsEditingDescription] = useState(false);
-    const [description, setDescription] = useState(issuedescription);
-    const [isCreatingSubtask, setIsCreatingSubtask] = useState(false);
-    const [newSubtask, setNewSubtask] = useState("");
-    const [editingSubtaskId, setEditingSubtaskId] = useState(null);
-    const [editingSubtaskTitle, setEditingSubtaskTitle] = useState("");
-    const [subtaskToDelete, setSubtaskToDelete] = useState(null);
-    const [showSubtaskDeleteConfirmation, setShowSubtaskDeleteConfirmation] = useState(false);
-    const [effort, setEffort] = useState(issueEffort);
-    const [showPriorityDropdown, setShowPriorityDropdown] = useState(false);
-    const [priority, setPriority] = useState(issuepriority || "low");
-    const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
-    const [assigneeSearchTerm, setAssigneeSearchTerm] = useState("");
-    const [users, setUsers] = useState([]);
-    const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
-    const [selectedSort, setSelectedSort] = useState("Newest First");
-    const sortOptions = ["Newest First", "Oldest First"];
-    const [newComment, setNewComment] = useState("");
-    const [comments, setComments] = useState([]);
-    const [usersCache, setUsersCache] = useState({});
-    const [showCommentDeleteConfirmation, setShowCommentDeleteConfirmation] = useState(false);
-    const [commentToDelete, setCommentToDelete] = useState(null);
-
-    const [selectedAssignee, setSelectedAssignee] = useState(() => {
-      // Get the current task data
-      const currentTask = tasks.find((task) => task.id === issueId);
-
-      if (currentTask?.assignee) {
-        return {
-          id: currentTask.assignId,
-          name: currentTask.assignee.name,
-          img: currentTask.assignee.picture || null,
-        };
-      }
-
-      return { name: "Unassigned", avatar: "/api/placeholder/24/24" };
-    });
-
-    useEffect(() => {
-      const currentTask = tasks.find((task) => task.id === issueId);
-      if (currentTask?.assignee) {
-        setSelectedAssignee({
-          id: currentTask.assignId,
-          name: currentTask.assignee.name,
-          img: currentTask.assignee.picture || null,
-        });
-      }
-    }, [tasks, issueId]);
-
-    // Update this line to directly use the task's current status
-    const [selectedStatus, setSelectedStatus] = useState(() => {
-      const currentTask = tasks.find((task) => task.id === issueId);
-      return currentTask ? currentTask.status : issueStatus;
-    });
-
-    // Update the useEffect to sync the selectedStatus when tasks change
-    useEffect(() => {
-      const currentTask = tasks.find((task) => task.id === issueId);
-      if (currentTask) {
-        setSelectedStatus(currentTask.status);
-      }
-    }, [tasks, issueId]);
-
-    useEffect(() => {
-      const handleClickOutside = (event) => {
-        // Check if click is on the scrollbar of details list
-        const detailsList = document.querySelector('.presentation-popup__details-list');
-        if (detailsList) {
-          const rect = detailsList.getBoundingClientRect();
-          const isClickOnVerticalScrollbar = 
-            event.clientX > rect.right - 16 && // 16px is typical scrollbar width
-            event.clientX < rect.right &&
-            event.clientY > rect.top &&
-            event.clientY < rect.bottom;
-          
-          const isClickOnHorizontalScrollbar =
-            event.clientY > rect.bottom - 16 && // 16px is typical scrollbar height
-            event.clientY < rect.bottom &&
-            event.clientX > rect.left &&
-            event.clientX < rect.right;
-    
-          // If click is on scrollbar, don't close dropdowns
-          if (isClickOnVerticalScrollbar || isClickOnHorizontalScrollbar) {
-            return;
-          }
-        }
-    
-        // Handle Type issue dropdown
-        if (typeChangeRef.current && !typeChangeRef.current.contains(event.target)) {
-          setIsTypeDropdownOpen(false);
-        }
-
-        // Handle Sort issue dropdown
-        const isSortClick = event.target.closest(".presentation-popup__sort-dropdown");
-        const isOutsideSortMenu = !sortChangeRef.current?.contains(event.target);
-        if (isOutsideSortMenu && !isSortClick) {
-          setIsSortDropdownOpen(false);
-        }
-    
-        // Handle Status issue dropdown
-        const isStatusClick = event.target.closest(".presentation-popup__status-dropdown");
-        const isOutsideStatusMenu = !statusChangeRef.current?.contains(event.target);
-        if (isOutsideStatusMenu && !isStatusClick) {
-          setIsStatusDropdownOpen(false);
-        }
-    
-        // Handle priority issue dropdown
-        const isPriorityClick = event.target.closest(".priority-dropdown");
-        const isOutsidePresentationMenu = !priorityChangeRef.current?.contains(event.target);
-        if (isOutsidePresentationMenu && !isPriorityClick) {
-          setShowPriorityDropdown(false);
-        }
-    
-        // Handle assignee issue dropdown
-        const isAssigneeClick = event.target.closest(".assignee-dropdown");
-        const isOutsideAssigneeMenu = !priorityChangeRef.current?.contains(event.target);
-        if (isOutsideAssigneeMenu && !isAssigneeClick) {
-          setIsAssigneeDropdownOpen(false);
-        }
-      };
-    
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }, []);
-
-    const handleTitleClick = () => {
-      setEditedTitle(issueName);
-      setIsEditingTitle(true);
-    };
-
-    const handleTitleChange = (e) => {
-      setEditedTitle(e.target.value);
-    };
-
-    const handleTitleKeyPress = async (e) => {
-      if (e.key === "Enter") {
-        const validTitle = editedTitle.trim() || issueName;
-
-        if (validTitle !== issueName) {
-          try {
-            // Update Firestore
-            const issueRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`);
-            await updateDoc(issueRef, {
-              IssueName: validTitle,
-            });
-
-            // Update local state
-            setIssueName(validTitle);
-
-            // Update tasks array to reflect the change
-            setTasks((prevTasks) => prevTasks.map((task) => (task.id === issueId ? { ...task, title: validTitle } : task)));
-
-            console.log("Title updated successfully!");
-          } catch (error) {
-            console.error("Error updating title:", error);
-          }
-        }
-
-        setIsEditingTitle(false);
-      }
-    };
-
-    const handleTypeChange = async (selectedType) => {
-      try {
-        // Reference to the Kanban issue document
-        const issueRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`);
-
-        // Update the issue type in Firestore
-        await updateDoc(issueRef, {
-          issueType: selectedType,
-        });
-
-        // Update local state for the issue type
-        setIssueType(selectedType);
-
-        // Update tasks array to reflect the change
-        setTasks((prevTasks) => prevTasks.map((task) => (task.id === issueId ? { ...task, type: selectedType } : task)));
-
-        // Close the dropdown
-        setIsTypeDropdownOpen(false);
-
-        console.log("Type updated successfully!");
-      } catch (error) {
-        console.error("Error updating issue type:", error);
-      }
-    };
-
-    const TypeIcon = ({ type, size, onClick }) => {
-      const typeOption = typeOptions.find((option) => option.id === type);
-      return typeOption ? (
-        <span className={`${typeOption.color}`} style={{ fontSize: size, cursor: projectStatus !== "Complete" && isAdmin ? "pointer" : "default" }} onClick={onClick}>
-          {typeOption.icon}
-        </span>
-      ) : null;
-    };
-
-    const [statusOptions, setStatusOptions] = useState([]); // Initial state for status options
-    //retrieve ng issue column
-    useEffect(() => {
-      const fetchStatusOptions = async () => {
-        try {
-          // Use selectedEpicId to dynamically construct the path
-          const path = `Kanban/${selectedEpicId}/EpicColumn/p9Gdxwc3hs3tzZIdFDVi`;
-
-          // Log the path to the console
-          console.log("Firestore Document Path:", path);
-
-          // Reference to the Firestore document
-          const kanbanDocRef = doc(
-            db,
-            "Kanban", // Collection name
-            selectedEpicId, // Dynamic Epic ID
-            "EpicColumn", // Subcollection name
-            "p9Gdxwc3hs3tzZIdFDVi", // Document ID for issueColumn
-          );
-
-          // Get the document snapshot
-          const kanbanDoc = await getDoc(kanbanDocRef);
-
-          if (kanbanDoc.exists()) {
-            const data = kanbanDoc.data(); // Get the data from Firestore
-            setStatusOptions(data.issueColumn || []); // Set status options
-          } else {
-            console.log("Document does not exist!");
-          }
-        } catch (error) {
-          console.error("Error fetching status options: ", error);
-        }
-      };
-
-      fetchStatusOptions(); // Fetch status options when the component mounts
-    }, [selectedEpicId]); // Add selectedEpicId to the dependency array to update when it changes
-
-    //ito pag add ng issue column
-    const handleStatusSelect = async (status) => {
-      setSelectedStatus(status); // Update the selected status
-      setIsStatusDropdownOpen(false); // Close the dropdown after selection
-
-      try {
-        // Get references to the documents for epic and issue
-        const epicRef = doc(db, "Kanban", selectedEpicId); // Epic reference
-        const issueRef = doc(db, "Kanban", selectedEpicId, "kanbanIssue", issueId); // Issue reference
-
-        // Fetch the epic name, admin, and issue data (issueName, issueType)
-        const epicDoc = await getDoc(epicRef);
-        const issueDoc = await getDoc(issueRef);
-
-        // Correctly log the epic and issue data
-        console.log(epicDoc.data(), issueDoc.data());
-
-        if (epicDoc.exists() && issueDoc.exists()) {
-          const epicName = epicDoc.data().epicName; // Get the epic name
-          const admin = epicDoc.data().admin; // Get the admin (creator/UID)
-          const assignId = issueDoc.data().assignId; // Get the assign
-          const issueType = issueDoc.data().issueType; // Get the issue type (e.g., story, task, bug)
-          const issueName = issueDoc.data().IssueName; // Get the issue name
-
-          if (!issueName) {
-            console.error("Issue name is undefined!");
-            return;
-          }
-
-          // Log the selected status and the paths being used to update Firestore
-          console.log("Selected Status:", status); // Log the selected status
-          console.log("Firestore Document Path:", `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`); // Log the Firestore path
-
-          // Update the projectStatus field in Firestore for the issue
-          await updateDoc(issueRef, {
-            issueStatus: status, // Update the status field
-          });
-
-          console.log("Status updated successfully"); // Confirmation message after the update
-
-          // Update the status in the local state to reflect changes instantly in the UI
-          setTasks((prevTasks) => prevTasks.map((task) => (task.id === issueId ? { ...task, status: status } : task)));
-
-          // Format current date and time to match the format: 12/14/2024 3:48 AM (without seconds)
-          const currentDate = new Date()
-            .toLocaleString("en-US", {
-              timeZone: "Asia/Manila",
-              hour12: true,
-              hour: "numeric",
-              minute: "numeric",
-              day: "numeric",
-              month: "numeric",
-              year: "numeric",
-            })
-            .replace(/(\d{1,2})\/(\d{1,2})\/(\d{4}) (\d{1,2}):(\d{2}) (\w{2})/, "$1/$2/$3 $4:$5 $6"); // Remove the comma
-
-          // Get the current user's UID (from Firebase Auth)
-          const uid = getAuth().currentUser.uid; // Get the current user's UID
-
-          // Create log entry for the current user (under users/${uid}/logReport)
-       // Create log entry for the user (assignee)
-const logRefForUser = doc(db, "users", assignId, "logReport", Date.now().toString()); // Unique ID for the document
-
-// Count the existing documents in the user's logReport collection
-const userLogCollectionRef = collection(db, "users", assignId, "logReport");
-const userLogDocs = await getDocs(userLogCollectionRef);
-const userLogCount = userLogDocs.size; // Number of existing documents
-
-await setDoc(logRefForUser, {
-  status: status,
-  dateTime: currentDate, // Current date and time in the requested format
-  projectName: epicName, // Epic name
-  issue: issueName, // Issue name
-  type: issueType, // Issue type (e.g., story, task, bug)
-  assignee: admin, // Admin UID (creator of the epic)
-  row: userLogCount + 1, // Add 1 to the count for the new entry
-});
-
-console.log("Log report entry created for user successfully");
-
-// Create log entry for the admin (under users/${admin}/logReport)
-const logRefForAdmin = doc(db, "users", admin, "logReport", Date.now().toString()); // Unique ID for the document
-
-// Count the existing documents in the admin's logReport collection
-const adminLogCollectionRef = collection(db, "users", admin, "logReport");
-const adminLogDocs = await getDocs(adminLogCollectionRef);
-const adminLogCount = adminLogDocs.size; // Number of existing documents
-
-await setDoc(logRefForAdmin, {
-  status: status,
-  dateTime: currentDate, // Current date and time in the requested format
-  projectName: epicName, // Epic name
-  issue: issueName, // Issue name
-  type: issueType, // Issue type (e.g., story, task, bug)
-  admin: admin, // Admin UID (creator of the epic)
-  row: adminLogCount + 1, // Add 1 to the count for the new entry
-});
-
-console.log("Log report entry created for admin successfully");
-
-        } else {
-          console.log("Epic or Issue document not found");
-        }
-      } catch (error) {
-        console.error("Error updating status: ", error); // Log any errors
-        setSelectedStatus(issueStatus);
-      }
-    };
-
-    useEffect(() => {
-      const fetchFavoriteStatus = async () => {
-        try {
-          const userUid = getAuth().currentUser.uid;  // Get the current user's UID
-          const issueRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`);
-          const issueDoc = await getDoc(issueRef);
-  
-          if (issueDoc.exists()) {
-            const currentFavorites = issueDoc.data()?.favorite || [];
-            setIsFavorite(currentFavorites.includes(userUid));
-          }
-        } catch (error) {
-          console.error("Error fetching favorite status:", error);
-        }
-      };
-  
-      fetchFavoriteStatus();
-    }, [selectedEpicId, issueId]);
-  
-    const handlePinClick = async () => {
-      try {
-        const userUid = getAuth().currentUser.uid;  // Get the current user's UID
-        const issueRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`);
-  
-        // Get current favorite list from Firestore
-        const issueDoc = await getDoc(issueRef);
-        const currentFavorites = issueDoc.data()?.favorite || [];
-  
-        // Check if the userUid is in the favorite list
-        const isFavorite = currentFavorites.includes(userUid);
-  
-        // Update local favorite state immediately (this changes the pin color instantly)
-        const updatedFavorites = isFavorite
-          ? currentFavorites.filter(uid => uid !== userUid) // Remove the userUid
-          : [...currentFavorites, userUid]; // Add the userUid
-  
-        setIsFavorite(updatedFavorites.includes(userUid));
-  
-        // Update Firestore with the new favorite list
-        await updateDoc(issueRef, { favorite: updatedFavorites });
-  
-        // Update local state
-        setTasks((prevTasks) =>
-          prevTasks.map((task) => {
-            if (task.id === issueId) {
-              return {
-                ...task,
-                favorite: updatedFavorites,  // Update the favorite field with the new array
-              };
-            }
-            return task;
-          }),
-        );
-      } catch (error) {
-        console.error("Error updating favorite status:", error);
-      }
-    };
-  
-    
-
-    // Function to handle description edit
-    const handleDescriptionClick = () => {
-      setIsEditingDescription(true);
-    };
-
-    // Function to handle description update
-    const handleDescriptionKeyPress = async (e) => {
-      if (e.key === "Enter") {
-        try {
-          // Update the description in Firestore
-          const issueRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`);
-
-          if (description) {
-            await updateDoc(issueRef, { description });
-          } else {
-            await setDoc(issueRef, { description }, { merge: true });
-          }
-
-          // Update tasks array with new description
-          setTasks((prevTasks) =>
-            prevTasks.map((task) => {
-              if (task.id === issueId) {
-                return {
-                  ...task,
-                  issuedescription: description,
-                };
-              }
-              return task;
-            }),
-          );
-
-          // Update the parent component's state
-          setIssueDescription(description);
-
-          setIsEditingDescription(false); // End editing mode
-        } catch (error) {
-          console.error("Error updating description:", error);
-        }
-      }
-    };
-
-    const handleDescriptionBlur = async () => {
-      try {
-        if (description !== issuedescription) {
-          // Only update if changed
-          const issueRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`);
-
-          if (description) {
-            await updateDoc(issueRef, { description });
-          } else {
-            await setDoc(issueRef, { description }, { merge: true });
-          }
-
-          // Update tasks array with new description
-          setTasks((prevTasks) =>
-            prevTasks.map((task) => {
-              if (task.id === issueId) {
-                return {
-                  ...task,
-                  issuedescription: description,
-                };
-              }
-              return task;
-            }),
-          );
-
-          // Update the parent component's state
-          setIssueDescription(description);
-        }
-        setIsEditingDescription(false);
-      } catch (error) {
-        console.error("Error updating description:", error);
-      }
-    };
-
-    // Function to handle description change
-    const handleDescriptionChange = (e) => {
-      setDescription(e.target.value);
-    };
-
-    useEffect(() => {
-      setLocalSubtasks(initialSubtasks);
-      setLocalSubtaskCount(initialSubtaskCount);
-    }, [initialSubtasks, initialSubtaskCount]);
-
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-const handleCreateSubtask = () => {
-  if (!isSubmitting) {
-    setIsCreatingSubtask(true);
-  }
-};
-
-const handleSubmitSubtask = async () => {
-  if (newSubtask.trim() && !isSubmitting) {
-    setIsSubmitting(true);
-    try {
-      const issueRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`);
-      const issueDoc = await getDoc(issueRef);
-
-      if (issueDoc.exists()) {
-        const issueData = issueDoc.data();
-        const currentSubtaskCount = issueData.subtaskCount || 0;
-        const currentSubtasks = issueData.subtasks || [];
-
-        if (currentSubtasks.some((subtask) => subtask.title === newSubtask.trim())) {
-          console.log("Subtask already exists");
-          setNewSubtask("");
-          setIsSubmitting(false);
-          return;
-        }
-
-        const newSubtaskObj = {
-          id: Date.now().toString(),
-          title: newSubtask.trim(),
-        };
-
-        await updateDoc(issueRef, {
-          subtasks: arrayUnion(newSubtaskObj),
-          subtaskCount: currentSubtaskCount + 1,
-        });
-
-        setSubtasks([...subtasks, newSubtaskObj]);
-        setSubtaskCount((prevCount) => {
-          const newCount = (parseInt(prevCount) || 0) + 1;
-          return newCount.toString();
-        });
-
-        setTasks((prevTasks) =>
-          prevTasks.map((task) => {
-            if (task.id === issueId) {
-              return {
-                ...task,
-                subtaskCount: currentSubtaskCount + 1,
-                hasSubtasks: true,
-              };
-            }
-            return task;
-          }),
-        );
-
-        setNewSubtask("");
-        setIsCreatingSubtask(false);
-        console.log("Subtask added successfully:", newSubtaskObj);
-      }
-    } catch (error) {
-      console.error("Error adding subtask to Firestore:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-};
-
-    const handleCancelSubtask = () => {
-      setNewSubtask("");
-      setIsCreatingSubtask(false);
-    };
-
-    const handleEditSubtask = (subtask) => {
-      setEditingSubtaskId(subtask.id);
-      setEditingSubtaskTitle(subtask.title);
-    };
-
-    const handleUpdateSubtask = async () => {
-      try {
-        if (!editingSubtaskTitle.trim()) {
-          console.log("Subtask title cannot be empty");
-          return;
-        }
-
-        // Reference to the issue document
-        const issueRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`);
-
-        // Get the current subtasks
-        const issueDoc = await getDoc(issueRef);
-        if (!issueDoc.exists()) {
-          console.log("Issue document not found");
-          return;
-        }
-
-        const currentSubtasks = issueDoc.data().subtasks || [];
-
-        // Find and update the specific subtask
-        const updatedSubtasks = currentSubtasks.map((subtask) => {
-          if (subtask.id === editingSubtaskId) {
-            return {
-              ...subtask,
-              title: editingSubtaskTitle.trim(),
-            };
-          }
-          return subtask;
-        });
-
-        // Update Firestore
-        await updateDoc(issueRef, {
-          subtasks: updatedSubtasks,
-        });
-
-        // Update local state
-        setSubtasks(updatedSubtasks);
-
-        // Reset editing state
-        setEditingSubtaskId(null);
-        setEditingSubtaskTitle("");
-
-        console.log("Subtask updated successfully");
-      } catch (error) {
-        console.error("Error updating subtask:", error);
-      }
-    };
-
-    const handleCancelEditSubtask = () => {
-      setEditingSubtaskId(null);
-      setEditingSubtaskTitle("");
-    };
-
-    const handleDeleteSubtask = (subtaskId) => {
-      setSubtaskToDelete(subtaskId);
-      setShowSubtaskDeleteConfirmation(true);
-    };
-
-    const cancelDeleteSubtask = () => {
-      setSubtaskToDelete(null);
-      setShowSubtaskDeleteConfirmation(false);
-    };
-
-    const confirmDeleteSubtask = async () => {
-      try {
-        // Store the subtask and its index for potential rollback
-        const subtaskIndex = subtasks.findIndex((subtask) => subtask.id === subtaskToDelete);
-        const deletedSubtask = subtasks[subtaskIndex];
-
-        // Optimistically update UI
-        setSubtasks((currentSubtasks) => currentSubtasks.filter((subtask) => subtask.id !== subtaskToDelete));
-        setSubtaskCount((prevCount) => {
-          const newCount = (parseInt(prevCount) || 0) - 1;
-          return newCount.toString();
-        });
-
-        // Clean up delete confirmation state
-        setSubtaskToDelete(null);
-        setShowSubtaskDeleteConfirmation(false);
-
-        // Then update Firestore
-        const issueRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`);
-        await updateDoc(issueRef, {
-          subtasks: arrayRemove(deletedSubtask),
-          subtaskCount: increment(-1),
-        });
-
-        // Update tasks array
-        setTasks((prevTasks) =>
-          prevTasks.map((task) => {
-            if (task.id === issueId) {
-              return {
-                ...task,
-                subtaskCount: parseInt(task.subtaskCount) - 1,
-                hasSubtasks: parseInt(task.subtaskCount) - 1 > 0,
-              };
-            }
-            return task;
-          }),
-        );
-        console.log("Subtask deleted successfully");
-      } catch (error) {
-        console.error("Error deleting subtask:", error);
-      } finally {
-        // Clean up
-        setSubtaskToDelete(null);
-        setShowSubtaskDeleteConfirmation(false);
-      }
-    };
-
-    const updateEffort = async () => {
-      try {
-        const effortValue = parseInt(effort, 10);
-
-        if (isNaN(effortValue)) {
-          console.error("Invalid effort input: not a number");
-          return;
-        }
-
-        // Update Firestore
-        const issueDocRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`);
-        await updateDoc(issueDocRef, { issueEffort: effortValue });
-
-        // Update local tasks state for kanban card
-        setTasks((prevTasks) => prevTasks.map((task) => (task.id === issueId ? { ...task, issueEffort: effortValue } : task)));
-
-        // Update parent component's state
-        setissueEffort(effortValue);
-
-        // Make sure popup's local effort state matches
-        setEffort(effortValue.toString());
-
-        console.log(`Effort updated to: ${effortValue}`);
-        return true;
-      } catch (error) {
-        console.error("Error updating effort:", error);
-        return false;
-      }
-    };
-
-    const handleEffortChange = async () => {
-      await updateEffort();
-    };
-
-    const handleEffortKeyPress = async (e) => {
-      if (e.key === "Enter") {
-        const success = await updateEffort();
-        if (success) {
-          e.target.blur();
-        }
-      }
-    };
-
-    // New handler for effort input
-    const handleEffortInput = (e) => {
-      const value = e.target.value;
-
-      // Allow empty string for backspace/delete
-      if (value === "") {
-        setEffort("");
-        return;
-      }
-
-      // Only update if input is a number
-      if (/^\d+$/.test(value)) {
-        setEffort(value);
-      }
-    };
-
-    // Update the priority options to use the direct image sources
-    const priorityOptions = [
-      {
-        id: "low",
-        label: <span>Low</span>,
-        icon: low, // Direct reference to the imported image
-        src: low, // Add src property for easier access
-      },
-      {
-        id: "medium",
-        label: <span>Medium</span>,
-        icon: medium,
-        src: medium,
-      },
-      {
-        id: "high",
-        label: <span>High</span>,
-        icon: high,
-        src: high,
-      },
-    ];
-
-    // Update the getPriorityIcon function to return the image source
-    const getPriorityIcon = (priorityId) => {
-      const priorityObj = priorityOptions.find((option) => option.id === priorityId);
-      return priorityObj ? priorityObj.src : low; // Return the image source directly
-    };
-
-    const handlePriorityChange = async (value) => {
-      try {
-        // Update the priority in your local state
-        setPriority(value);
-        setShowPriorityDropdown(false);
-
-        // Define the path to the document
-        const issueDocRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`);
-
-        // Update the priority field in the database
-        await updateDoc(issueDocRef, {
-          priority: value,
-        });
-
-        // Update the tasks array to reflect the new priority
-        setTasks((prevTasks) =>
-          prevTasks.map((task) => {
-            if (task.id === issueId) {
-              return {
-                ...task,
-                priority: value,
-                issuepriority: value, // Add this line to update issuepriority
-              };
-            }
-            return task;
-          }),
-        );
-
-        // Update the parent component's state if needed
-        if (typeof setIssuePriority === "function") {
-          setIssuePriority(value);
-        }
-      } catch (error) {
-        console.error("Error updating priority:", error);
-        // Revert local state if update fails
-        setPriority(issuepriority);
-      }
-    };
-
-    useEffect(() => {
-      async function fetchAllUsers() {
-        try {
-          // Reference to the Member collection
-          const memberRef = collection(db, `Kanban/${selectedEpicId}/Member`);
-
-          // Get all members (no filter on Access field)
-          const querySnapshot = await getDocs(memberRef);
-
-          // Prepare an array to hold the user objects
-          const fetchedUsers = [];
-
-          // Loop through each document in the query snapshot
-          for (const docSnap of querySnapshot.docs) {
-            const memberUid = docSnap.id; // This is the Member UID
-
-            // Check the Access field, even if it's true, false, or missing
-            const accessField = docSnap.data().Access; // Could be true, false, or undefined
-
-            // Reference to the user's document in the users collection
-            const userDocRef = doc(db, `users/${memberUid}`);
-            const userDocSnap = await getDoc(userDocRef);
-
-            // Check if the user document exists and extract firstName and lastName
-            if (userDocSnap.exists()) {
-              const { firstName, lastName, userPicture } = userDocSnap.data();
-              // Push the user data into the array
-              fetchedUsers.push({
-                id: memberUid,
-                name: `${firstName} ${lastName}`,
-                avatar: userPicture || null, // Assuming this is a placeholder avatar URL
-              });
-            } else {
-              console.log(`No user found for Member UID: ${memberUid}`);
-            }
-          }
-
-          // Set the state with the fetched user data
-          setUsers(fetchedUsers);
-        } catch (error) {
-          console.error("Error retrieving member data:", error);
-        }
-      }
-
-      fetchAllUsers();
-    }, [selectedEpicId]); // Trigger when selectedEpicId changes
-
-    // Filter users based on search term
-    const filteredUsers = users.filter((user) => user.name.toLowerCase().includes(assigneeSearchTerm.toLowerCase()));
-    const handleAssigneeSelect = async (user) => {
-      try {
-        // Set the selected assignee state with the complete user object including the avatar
-        setSelectedAssignee({
-          id: user.id,
-          name: user.name,
-          img: user.avatar,
-        });
-        setIsAssigneeDropdownOpen(false);
-        setAssigneeSearchTerm("");
-
-        // Get the current user's UID and the MemberUid of the selected user
-        const auth = getAuth();
-        const uid = auth.currentUser.uid;
-        const MemberUid = user.id;
-
-        const issueRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`);
-        const notifRef = collection(db, `Kanban/${selectedEpicId}/kanbanNotif`);
-
-        const issueDocSnapshot = await getDoc(issueRef);
-
-        if (issueDocSnapshot.exists()) {
-          const assignId = issueDocSnapshot.data().assignId;
-
-          // Update the issue with the new assignId (MemberUid) and timestamp
-          const updateData = {
-            assignId: MemberUid,
-            assignTimestamp: new Date(),
-          };
-
-          // Update Firestore
-          await updateDoc(issueRef, updateData);
-
-          // Update the tasks array to reflect the new assignee
-          setTasks((prevTasks) =>
-            prevTasks.map((task) => {
-              if (task.id === issueId) {
-                return {
-                  ...task,
-                  assignId: MemberUid,
-                  assignee: {
-                    id: user.id,
-                    name: user.name,
-                    picture: user.avatar || null,
-                  },
-                };
-              }
-              return task;
-            }),
-          );
-
-          // Prepare and add notification
-          const notificationData = {
-            sender: uid,
-            receiver: [MemberUid],
-            context: selectedEpicId,
-            action: "assigned you a task in",
-            timeAgo: new Date().toISOString(),
-            subType: `workload`,
-            type: `assigned`,
-            unread: true,
-          };
-
-          const notificationDocRef = await addDoc(notifRef, notificationData);
-          await updateDoc(notificationDocRef, {
-            id: notificationDocRef.id,
-          });
-
-          console.log(`Assignment and notification completed successfully`);
-        }
-      } catch (error) {
-        console.error("Error assigning user to issue:", error);
-        // Optionally revert the UI state if the update fails
-        setSelectedAssignee((prevState) => prevState);
-      }
-    };
-
-    const formatTimeAgo = (timestamp) => {
-      if (!timestamp) return "Unknown time";
-    
-      // Check if timestamp is a Firestore Timestamp or a regular Date
-      const commentDate = timestamp.seconds 
-        ? new Date(timestamp.seconds * 1000) 
-        : new Date(timestamp);
-    
-      const now = new Date();
-      const timeDiff = now - commentDate;
-    
-      const seconds = Math.floor(timeDiff / 1000);
-      const minutes = Math.floor(seconds / 60);
-      const hours = Math.floor(minutes / 60);
-      const days = Math.floor(hours / 24);
-      const years = Math.floor(days / 365);
-    
-      if (seconds < 60) return "Just now";
-      if (years > 0) return `${years} year${years > 1 ? "s" : ""} ago`;
-      if (days > 0) return `${days} day${days > 1 ? "s" : ""} ago`;
-      if (hours > 0) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
-      if (minutes > 0) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
-      return `${seconds} second${seconds > 1 ? "s" : ""} ago`;
-    };
-    
-    // Fetch comments and their authors' details
-    useEffect(() => {
-      const fetchUserDetails = async (authorId) => {
-        if (usersCache[authorId]) return usersCache[authorId];
-
-        try {
-          const userDoc = await getDoc(doc(db, `users/${authorId}`));
-          if (userDoc.exists()) {
-            const userData = {
-              firstName: userDoc.data().firstName || "",
-              lastName: userDoc.data().lastName || "",
-              avatar: userDoc.data().userPicture || "",
-            };
-            setUsersCache((prev) => ({
-              ...prev,
-              [authorId]: userData,
-            }));
-            return userData;
-          }
-          return null;
-        } catch (error) {
-          return null;
-        }
-      };
-
-      const commentsQuery = query(collection(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}/comments`), orderBy("dateCreated", "desc"));
-
-      const unsubscribe = onSnapshot(commentsQuery, async (querySnapshot) => {
-        const commentsPromises = querySnapshot.docs.map(async (doc) => {
-          const commentData = doc.data();
-          const userDetails = await fetchUserDetails(commentData.authorId);
-          const timeAgo = formatTimeAgo(commentData.dateCreated);
-
-          // Log assignId and uid to the console
-
-          return {
-            id: doc.id,
-            ...commentData,
-            author: userDetails ? `${userDetails.firstName} ${userDetails.lastName}` : "Unknown User",
-            avatar: userDetails?.avatar || "",
-            timestamp: timeAgo,
-          };
-        });
-
-        const resolvedComments = await Promise.all(commentsPromises);
-        setComments(resolvedComments);
-      });
-
-      return () => unsubscribe();
-    }, [selectedEpicId, issueId, db, usersCache]);
-    // Function to handle comment input change
-    const handleCommentChange = (e) => {
-      setNewComment(e.target.value);
-    };
-
-    const [isSubmittingComment, setIsSubmittingComment] = useState(false);
-const [isDeletingComment, setIsDeletingComment] = useState(false);
-
-// Updated comment submission handler
-const handleCommentSubmit = async (e, user) => {
-  if (e.key === "Enter" && newComment.trim() && !isSubmittingComment) {
-    setIsSubmittingComment(true);
-    try {
-      const commentRef = doc(collection(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}/comments`));
-      const issueRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`);
-      const epicRef = doc(db, `Kanban/${selectedEpicId}`);
-      const auth = getAuth();
-      const uid = auth.currentUser.uid;
-
-      let userDetails = usersCache[uid];
-      if (!userDetails) {
-        const userDoc = await getDoc(doc(db, `users/${uid}`));
-        if (userDoc.exists()) {
-          userDetails = {
-            firstName: userDoc.data().firstName || "",
-            lastName: userDoc.data().lastName || "",
-            avatar: userDoc.data().userPicture || "",
-          };
-          setUsersCache((prev) => ({
-            ...prev,
-            [uid]: userDetails,
-          }));
-        }
-      }
-
-      const newCommentObj = {
-        content: newComment.trim(),
-        timestamp: "Just now",
-        dateCreated: serverTimestamp(),
-        issueId: issueId,
-        epicId: selectedEpicId,
-        authorId: uid,
-        author: `${userDetails.firstName} ${userDetails.lastName}`,
-        avatar: userDetails.avatar,
-        column: 1,
-      };
-
-      const issueDoc = await getDoc(issueRef);
-      const currentCommentCount = issueDoc.exists() ? issueDoc.data().commentCount || 0 : 0;
-
-      const commentsSnapshot = await getDocs(
-        query(collection(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}/comments`), 
-        orderBy("column", "desc"), 
-        limit(1))
-      );
-
-      let nextColumn = 1;
-      if (!commentsSnapshot.empty) {
-        const lastComment = commentsSnapshot.docs[0].data();
-        nextColumn = lastComment.column + 1;
-      }
-
-      newCommentObj.column = nextColumn;
-
-      // Add comment to Firestore
-      await Promise.all([
-        setDoc(commentRef, newCommentObj),
-        updateDoc(issueRef, { commentCount: currentCommentCount + 1 })
-      ]);
-
-      // Update local states
-      setCommentCount((prevCount) => (parseInt(prevCount) + 1).toString());
-      setTasks((prevTasks) =>
-        prevTasks.map((task) =>
-          task.id === issueId
-            ? { ...task, commentCount: (parseInt(task.commentCount) + 1).toString() }
-            : task
-        )
-      );
-
-      // Handle notifications
-      const issueDocSnap = await getDoc(issueRef);
-      const assignId = issueDocSnap.exists() ? issueDocSnap.data().assignId : null;
-      const epicDocSnap = await getDoc(epicRef);
-      const adminId = epicDocSnap.exists() ? epicDocSnap.data().admin : null;
-
-      let receiverIds = [];
-      if (uid === adminId) {
-        receiverIds.push(assignId);
-      } else if (uid === assignId) {
-        receiverIds.push(adminId);
-      } else {
-        receiverIds.push(assignId, adminId);
-      }
-
-      const notificationObj = {
-        type: "social",
-        action: "commented on your work in",
-        context: selectedEpicId,
-        timeAgo: new Date().toISOString(),
-        subType: "comment",
-        unread: true,
-        receiver: receiverIds,
-        sender: uid,
-      };
-
-      const notifRef = doc(collection(db, `Kanban/${selectedEpicId}/kanbanNotif`));
-      await setDoc(notifRef, { ...notificationObj, id: notifRef.id });
-
-      setNewComment("");
-    } catch (error) {
-      console.error("Error adding comment or notification:", error);
-    } finally {
-      setIsSubmittingComment(false);
-    }
-  }
-};
-
-    const sortComments = (commentsToSort, sortType) => {
-      return [...commentsToSort].sort((a, b) => {
-        if (sortType === "Newest First") {
-          return b.dateCreated - a.dateCreated;
-        } else {
-          return a.dateCreated - b.dateCreated;
-        }
-      });
-    };
-    const handleDeleteClick = (id) => {
-      if (!isDeletingComment) {
-        setCommentToDelete(id);
-        setShowCommentDeleteConfirmation(true);
-      }
-    };
-
-    const cancelDeleteComment = () => {
-      setCommentToDelete(null);
-      setShowCommentDeleteConfirmation(false);
-    };
-
-    const confirmDeleteComment = async () => {
-      if (!commentToDelete || !selectedEpicId || !issueId || isDeletingComment) return;
-    
-      setIsDeletingComment(true);
-      try {
-        const commentRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}/comments/${commentToDelete}`);
-        await deleteDoc(commentRef);
-    
-        const issueRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`);
-        await updateDoc(issueRef, {
-          commentCount: increment(-1),
-        });
-    
-        setCommentCount((prevCount) => {
-          const newCount = Math.max(0, parseInt(prevCount) - 1);
-          return newCount.toString();
-        });
-    
-        setTasks((prevTasks) =>
-          prevTasks.map((task) =>
-            task.id === issueId
-              ? { ...task, commentCount: Math.max(0, parseInt(task.commentCount) - 1).toString() }
-              : task
-          )
-        );
-    
-        setComments((prevComments) => prevComments.filter((comment) => comment.id !== commentToDelete));
-        setShowCommentDeleteConfirmation(false);
-        setCommentToDelete(null);
-      } catch (error) {
-        console.error("Error deleting comment or updating commentCount:", error);
-      } finally {
-        setIsDeletingComment(false);
-      }
-    };
-    // Function to handle sort selection
-    const handleSortSelect = (sort) => {
-      setSelectedSort(sort);
-      setComments((prevComments) => sortComments(prevComments, sort));
-      setIsSortDropdownOpen(false);
-    };
-    // Update timestamps periodically
-    useEffect(() => {
-      const interval = setInterval(() => {
-        setComments((prevComments) =>
-          prevComments.map((comment) => ({
-            ...comment,
-            timestamp: formatTimeAgo(comment.dateCreated),
-          }))
-        );
-      }, 60000); // Update every minute
-    
-      return () => clearInterval(interval);
-    }, []);
-
-  const popupTitleRef = useRef(null);
-const [isPopupTitleOverflowing, setIsPopupTitleOverflowing] = useState(false);
-const [showPopupTitleTooltip, setShowPopupTitleTooltip] = useState(false);
-
-  useEffect(() => {
-    if (popupTitleRef.current) {
-      const isOverflow = popupTitleRef.current.offsetWidth < popupTitleRef.current.scrollWidth;
-      setIsPopupTitleOverflowing(isOverflow);
-    }
-  }, [issueName]);
-
-    return (
-      <div className="presentation-popup__overlay">
-        <div className="presentation-popup__container">
-          <div className="presentation-popup__header">
-            <div className="presentation-popup__title-group">
-              <div className="presentation-popup__title-wrapper">
-                <img src={projectPicture || "https://firebasestorage.googleapis.com/v0/b/dyci-academix.appspot.com/o/wagdelete%2Facademixlogo.png?alt=media&token=8f83d11b-3604-41e5-9a46-d1df0d44aed5"} alt="Presentation icon" className="presentation-popup__icon" />
-                <div className="presentation-popup__title-container" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  {isEditingTitle && projectStatus !== "Complete" && isAdmin ? (
-                    <input
-                      type="text"
-                      className="presentation-popup__title-edit"
-                      value={editedTitle}
-                      onChange={handleTitleChange}
-                      onKeyPress={handleTitleKeyPress}
-                      onBlur={() => {
-                        setIsEditingTitle(false);
-                        setEditedTitle(issueName); // Reset to original title if not submitted
-                      }}
-                      autoFocus
-                      style={{
-                        width: "100%",
-                        border: "none",
-                        background: "transparent",
-                        color: "#2665AC",
-                        outline: "none",
-                        borderBottom: "1px solid #2665AC",
-                        fontSize: "inherit",
-                        fontWeight: "inherit",
-                      }}
-                    />
-                  ) : (
-<h2
-      ref={popupTitleRef}
-      className="presentation-popup__title"
-      onClick={() => handleTitleClick()}
-      onMouseEnter={() => isPopupTitleOverflowing && setShowPopupTitleTooltip(true)}
-      onMouseLeave={() => setShowPopupTitleTooltip(false)}
-    >
-      {issueName}
-      {showPopupTitleTooltip && (
-        <div className="issue-popup-title-tooltip">{issueName}</div>
-      )}
-    </h2>
-                  )}
-                </div>
-              </div>
-              <div className="presentation-popup__status-group">
-                <span className="presentation-popup__tag-group">
-                  <TypeIcon type={issueType} size={1} onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)} />
-                  {issueEpicCode}
-                  {issueCount}
-                  <img src={img22} alt="Subtask" className="w-6 h-6 rounded-full" style={{ width: "14px" }} />
-                  <span>{subtaskCount}</span>
-                  {/* Type Dropdown */}
-                  {isTypeDropdownOpen && isAdmin && projectStatus !== "Complete" && (
-                    <div
-                      ref={typeChangeRef}
-                      style={{
-                        position: "absolute",
-                        zIndex: 10,
-                        backgroundColor: "white",
-                        boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-                        borderRadius: "4px",
-                        border: "1px solid #ddd",
-                        marginTop: "130px",
-                      }}
-                    >
-                      {typeOptions.map((option) => (
-                        <button
-                          key={option.id}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            width: "100%",
-                            padding: "8px 16px",
-                            fontSize: "14px",
-                            backgroundColor: "transparent",
-                            color: "#2665AC",
-                            border: "none",
-                            textAlign: "left",
-                            cursor: "pointer",
-                            transition: "background-color 0.2s",
-                          }}
-                          onMouseEnter={(e) => (e.target.style.backgroundColor = "#D6E6F2")}
-                          onMouseLeave={(e) => (e.target.style.backgroundColor = "transparent")}
-                          onClick={() => handleTypeChange(option.id)}
-                        >
-                          {option.icon}
-                          <span style={{ marginLeft: "8px" }}>{option.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </span>
-                <div className="presentation-popup__status-dropdown">
-                  {isAdmin && projectStatus !== "Complete" && (
-                    <button className="presentation-popup__status-btn" onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}>
-                      <span style={{ flexGrow: "1", textAlign: "center" }}>{selectedStatus}</span>
-                      <ChevronDown
-                        className="presentation-popup__chevron"
-                        size={14}
-                        style={{
-                          transform: isStatusDropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
-                          transition: "transform 0.2s ease",
-                        }}
-                      />
-                    </button>
-                  )}
-
-                  {isStatusDropdownOpen && (
-                    <div className="presentation-popup__dropdown-menu" ref={statusChangeRef}>
-                      {statusOptions.map((status) => (
-                        <button key={status} className="presentation-popup__dropdown-item" onClick={() => handleStatusSelect(status)}>
-                          {status}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Pin and Close Button Section */}
-            <div className="presentation-popup__actions" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <button
-                className="presentation-popup__pin-btn"
-                style={{
-                  position: "relative",
-                  top: "20px",
-                  padding: "4px",
-                  borderRadius: "4px",
-                  border: "none",
-                  cursor: projectStatus === "Complete" ? "default" : "pointer",
-                  background: "transparent",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-                onClick={handlePinClick}
-                disabled={projectStatus === "Complete"}
-              >
-                <Pin
-                  size={20}
-                  stroke="currentColor"
-                  style={{
-                    transform: "rotate(45deg)",
-                    transition: "all 0.2s",
-                    fill: isFavorite ? "#ED8A19" : "none",
-                    color: isFavorite ? "#ED8A19" : "#2563eb",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (projectStatus !== "Complete") {
-                      e.currentTarget.style.fill = "#ED8A19";
-                      e.currentTarget.style.color = "#ED8A19";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (projectStatus !== "Complete") {
-                      e.currentTarget.style.fill = isFavorite ? "#ED8A19" : "none";
-                      e.currentTarget.style.color = isFavorite ? "#ED8A19" : "#2563eb";
-                    }
-                  }}
-                />
-              </button>
-              <button onClick={() => setShowPresentationPopup(false)} className="presentation-popup__close-btn">
-                <X size={20} />
-              </button>
-            </div>
-          </div>
-
-          {/* Description Section */}
-          <div className="presentation-popup__content">
-            <div className="presentation-popup__section_description">
-              <h3 className="presentation-popup__section-description">Description</h3>
-              {isEditingDescription && projectStatus !== "Complete" && isAdmin ? (
-                <input
-                  type="text"
-                  className="presentation-popup__description"
-                  value={description}
-                  onChange={handleDescriptionChange}
-                  onKeyPress={handleDescriptionKeyPress}
-                  onBlur={handleDescriptionBlur}
-                  autoFocus
-                  style={{
-                    width: "100%",
-                    border: "none",
-                    background: "transparent",
-                    outline: "none",
-                    borderBottom: "1px solid #2665AC",
-                  }}
-                />
-              ) : (
-                <p className="presentation-popup__description" onClick={handleDescriptionClick}>
-                  {description || "No description available"}
-                </p>
-              )}
-            </div>
-
-            {/* Subtask Section */}
-            <div className="presentation-popup__section_subtask">
-              <div className="presentation-popup__subtask-header">
-                <h3 className="presentation-popup__section-subtask">Subtasks</h3>
-                {isAdmin && projectStatus !== "Complete" && (
-                  <button className="presentation-popup__create-btn" onClick={handleCreateSubtask}>
-                    + Create Subtask
-                  </button>
-                )}
-              </div>
-
-              <div className="presentation-popup__subtask-list" style={{ maxHeight: "100px", overflowY: "auto" }}>
-                {subtasks.map((subtask) => (
-                  <div key={subtask.id} className="presentation-popup__subtask-item">
-                    <img src={img7} alt="Task icon" className="presentation-popup__subtask-icon" />
-                    <div className="presentation-popup__subtask-content">
-                      {editingSubtaskId === subtask.id ? (
-                        <>
-                          <div className="presentation-popup__subtask-content">
-                            <input
-                              type="text"
-                              value={editingSubtaskTitle}
-                              onChange={(e) => setEditingSubtaskTitle(e.target.value)}
-                              className="presentation-popup__input"
-                              autoFocus
-                              onKeyPress={(e) => {
-                                if (e.key === "Enter") {
-                                  handleUpdateSubtask();
-                                }
-                              }}
-                              style={{ width: "100%" }}
-                            />
-                          </div>
-                          <div style={{ display: "flex", gap: "8px", marginLeft: "auto" }}>
-                            <button
-                              onClick={handleUpdateSubtask}
-                              className="presentation-popup__update-subtask-btn"
-                              style={{
-                                padding: "4px 8px",
-                                backgroundColor: "#2665AC",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "4px",
-                                cursor: "pointer",
-                                fontSize: "12px",
-                                transition: "background-color 0.3s",
-                              }}
-                              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1976d2")}
-                              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#2665AC")}
-                            >
-                              Update
-                            </button>
-                            <button
-                              onClick={handleCancelEditSubtask}
-                              className="presentation-popup__cancel-edit-subtask-btn"
-                              style={{
-                                padding: "4px 8px",
-                                backgroundColor: "#2665AC",
-                                color: "white",
-                                border: "1px solid #ddd",
-                                borderRadius: "4px",
-                                cursor: "pointer",
-                                fontSize: "12px",
-                                transition: "background-color 0.3s",
-                              }}
-                              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1976d2")}
-                              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#2665AC")}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <span className="presentation-popup__subtask-title" onDoubleClick={() => handleEditSubtask(subtask)}>
-                            {subtask.title}
-                          </span>
-                          {isAdmin && projectStatus !== "Complete" && (
-                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                              <Pencil
-                                size={16}
-                                color="#2665AC"
-                                style={{
-                                  cursor: "pointer",
-                                  opacity: 0.7,
-                                  transition: "opacity 0.3s",
-                                }}
-                                onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
-                                onMouseLeave={(e) => (e.currentTarget.style.opacity = 0.7)}
-                                onClick={() => handleEditSubtask(subtask)}
-                              />
-                              <Trash2
-                                size={16}
-                                color="#2665AC"
-                                style={{
-                                  cursor: "pointer",
-                                  opacity: 0.7,
-                                  transition: "opacity 0.3s",
-                                }}
-                                onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
-                                onMouseLeave={(e) => (e.currentTarget.style.opacity = 0.7)}
-                                onClick={() => handleDeleteSubtask(subtask.id)}
-                              />
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ))}
-
-                {isCreatingSubtask && (
-                  <div className="presentation-popup__subtask-input-container" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                    <div className="presentation-popup__subtask-input" style={{ display: "flex", alignItems: "center" }}>
-                      <img src={img7} alt="Subtask" className="presentation-popup__subtask-icon" />
-                      <input
-                        type="text"
-                        placeholder="What needs to be addressed?"
-                        className="presentation-popup__input"
-                        value={newSubtask}
-                        onChange={(e) => setNewSubtask(e.target.value)}
-                        onKeyPress={(e) => {
-                          if (e.key === "Enter") {
-                            handleSubmitSubtask();
-                          }
-                        }}
-                        autoFocus
-                        style={{ width: "100%" }}
-                      />
-                    </div>
-                    <div
-                      className="presentation-popup__subtask-buttons"
-                      style={{
-                        display: "flex",
-                        gap: "8px",
-                        marginLeft: "auto",
-                      }}
-                    >
-                      <button
-  onClick={handleSubmitSubtask}
-  className="presentation-popup__create-subtask-btn"
-  disabled={isSubmitting}
+                    {showRemoveIcon(member, index) && (
+<img
+  src={RemoveMemberIcon}
+  alt="Remove Member"
+  className="remove-member-icon-scrum"
+  onClick={() => handleRemoveMemberClick(member)}
   style={{
-    padding: "6px 12px",
-    backgroundColor: "#2665AC",
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    cursor: isSubmitting ? "not-allowed" : "pointer",
-    fontSize: "12px",
-    transition: "background-color 0.3s",
-    opacity: isSubmitting ? 0.7 : 1,
-  }}
-  onMouseEnter={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = "#1976d2")}
-  onMouseLeave={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = "#2665AC")}
->
-  {isSubmitting ? "Creating..." : "Create"}
-</button>
-
-<button
-  onClick={handleCancelSubtask}
-  className="presentation-popup__cancel-subtask-btn"
-  disabled={isSubmitting}
-  style={{
-    padding: "6px 12px",
-    backgroundColor: "#2665AC",
-    color: "white",
-    border: "1px solid #ddd",
-    borderRadius: "4px",
-    cursor: isSubmitting ? "not-allowed" : "pointer",
-    fontSize: "12px",
-    transition: "background-color 0.3s",
-    opacity: isSubmitting ? 0.7 : 1,
-  }}
-  onMouseEnter={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = "#1976d2")}
-  onMouseLeave={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = "#2665AC")}
->
-  Cancel
-</button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="presentation-popup__section">
-              <h3 className="presentation-popup__section-title">Details</h3>
-              <div className="presentation-popup__details-list">
-                {/* Effort section */}
-                <div className="presentation-popup__detail-item">
-                  <span className="presentation-popup__detail-label">Effort</span>
-                  <div className="presentation-popup__user">
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                      }}
-                    >
-                      {projectStatus !== "Complete" && isAdmin ? (
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          pattern="\d*"
-                          value={effort}
-                          onChange={handleEffortInput}
-                          onBlur={handleEffortChange}
-                          onKeyPress={handleEffortKeyPress}
-                          placeholder="Enter effort"
-                          className="effort-input"
-                          style={{
-                            border: "none",
-                            padding: "4px",
-                            color: "#2665AC",
-                            fontSize: "14px",
-                            outline: "none",
-                            background: "transparent",
-                            width: "100px",
-                          }}
-                        />
-                      ) : (
-                        <span style={{ padding: "4px", color: "#2665AC", fontSize: "14px" }}>{effort || "0"}</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Priority section */}
-                <div className="presentation-popup__detail-item">
-                  <span className="presentation-popup__detail-label">Priority</span>
-                  <div className="presentation-popup__user priority-dropdown" style={{ position: "relative" }}>
-                    <div
-                      onClick={() => isAdmin && projectStatus !== "Complete" && setShowPriorityDropdown(!showPriorityDropdown)}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        cursor: projectStatus !== "Complete" && isAdmin ? "pointer" : "default",
-                        gap: "8px",
-                        color: "#2665AC",
-                      }}
-                    >
-                      <img src={getPriorityIcon(priority)} alt={`${priority} priority`} />
-                      <span style={{ textTransform: "capitalize" }}>{priority}</span>
-                      {isAdmin && projectStatus !== "Complete" && (
-                        <ChevronDown
-                          size={14}
-                          style={{
-                            transform: showPriorityDropdown ? "rotate(180deg)" : "rotate(0deg)",
-                            transition: "transform 0.2s ease",
-                          }}
-                        />
-                      )}
-                    </div>
-
-                    {isAdmin && projectStatus !== "Complete" && showPriorityDropdown && (
-                      <div
-                        ref={priorityChangeRef}
-                        style={{
-                          position: "absolute",
-                          top: "100%",
-                          left: 0,
-                          backgroundColor: "white",
-                          border: "1px solid #e1e1e1",
-                          borderRadius: "4px",
-                          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                          zIndex: 1000,
-                          padding: "8px",
-                          width: "120px",
-                        }}
-                      >
-                        {priorityOptions.map((option) => (
-                          <div
-                            key={option.id}
-                            onClick={() => handlePriorityChange(option.id)}
-                            style={{
-                              padding: "8px",
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px",
-                              color: "#2665AC",
-                              backgroundColor: priority === option.id ? "#D6E6F2" : "transparent",
-                              borderRadius: "4px",
-                            }}
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#D6E6F2")}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = priority === option.id ? "#D6E6F2" : "transparent")}
-                          >
-                            <img src={option.src} alt={`${option.id} priority`} />
-                            {option.label}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Assignee section */}
-                <div className="presentation-popup__detail-item">
-                  <span className="presentation-popup__detail-label">Assignee</span>
-                  <div className="presentation-popup__user assignee-dropdown" style={{ position: "relative" }}>
-                    <div
-                      className="presentation-popup__user-toggle"
-                      onClick={() => isAdmin && projectStatus !== "Complete" && setIsAssigneeDropdownOpen(!isAssigneeDropdownOpen)}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        cursor: projectStatus !== "Complete" && isAdmin ? "pointer" : "default",
-                        gap: "8px",
-                      }}
-                    >
-                      {selectedAssignee.img ? (
-                        <img src={selectedAssignee.img} alt={selectedAssignee.name} className="presentation-popup__user-avatar" />
-                      ) : (
-                        <div
-                          className="presentation-popup__user-avatar"
-                          style={{
-                            backgroundColor: "#2665AC",
-                            color: "white",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            width: "24px",
-                            height: "24px",
-                            borderRadius: "50%",
-                            fontSize: "12px",
-                            fontWeight: "500",
-                          }}
-                        >
-                          {selectedAssignee.name.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <span className="presentation-popup__user-name">{selectedAssignee.name}</span>
-                    </div>
-
-                    {isAssigneeDropdownOpen && isAdmin && projectStatus !== "Complete" && (
-                      <div
-                        ref={assigneeChangeRef}
-                        className="presentation-popup__assignee-list"
-                        style={{
-                          position: "absolute",
-                          top: "100%",
-                          left: "-28px",
-                          width: "250px",
-                          backgroundColor: "white",
-                          border: "1px solid #e1e1e1",
-                          borderRadius: "4px",
-                          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                          zIndex: 1000,
-                          padding: "8px",
-                          maxHeight: "180px",
-                        }}
-                      >
-                        <div
-                          className="presentation-popup__search"
-                          style={{
-                            marginBottom: "8px",
-                            position: "relative",
-                          }}
-                        >
-                          <input
-                            type="text"
-                            value={assigneeSearchTerm}
-                            onChange={(e) => setAssigneeSearchTerm(e.target.value)}
-                            placeholder="Search"
-                            className="presentation-popup__search-input"
-                            style={{
-                              width: "100%",
-                              padding: "8px",
-                              paddingLeft: "15px",
-                              border: "1px solid #e1e1e1",
-                              borderRadius: "4px",
-                              marginBottom: "4px",
-                              color: "#2665AC",
-                              transition: "border-color 0.2s",
-                            }}
-                          />
-                          <Search
-                            size={16}
-                            style={{
-                              position: "absolute",
-                              left: "200px",
-                              top: "45%",
-                              transform: "translateY(-50%)",
-                              color: "#2665AC",
-                              pointerEvents: "none",
-                            }}
-                          />
-                        </div>
-                        <div
-                          className="presentation-popup__user-list"
-                          style={{
-                            maxHeight: "100px",
-                            overflowY: "auto",
-                          }}
-                        >
-                          {filteredUsers.map((user) => (
-                            <div
-                              key={user.id}
-                              className="presentation-popup__user-item"
-                              onClick={() => handleAssigneeSelect(user)}
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                padding: "8px",
-                                cursor: "pointer",
-                                gap: "8px",
-                                borderRadius: "4px",
-                                color: "#2665AC",
-                              }}
-                              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#D6E6F2")}
-                              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "white")}
-                            >
-                              {user.avatar ? (
-                                <img
-                                  src={user.avatar}
-                                  alt={user.name}
-                                  className="presentation-popup__user-avatar-small"
-                                  style={{
-                                    width: "24px",
-                                    height: "24px",
-                                    borderRadius: "50%",
-                                  }}
-                                />
-                              ) : (
-                                <div
-                                  className="presentation-popup__user-avatar-small"
-                                  style={{
-                                    backgroundColor: "#2665AC",
-                                    color: "white",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    width: "24px",
-                                    height: "24px",
-                                    borderRadius: "50%",
-                                    fontSize: "12px",
-                                    fontWeight: "500",
-                                  }}
-                                >
-                                  {user.name.charAt(0).toUpperCase()}
-                                </div>
-                              )}
-                              <span className="presentation-popup__user-name-small">{user.name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="presentation-popup__detail-item">
-                  <span className="presentation-popup__detail-label">Reporter</span>
-                  <div className="presentation-popup__user">
-                    <img src={userPicture} alt="Franco Bayani" className="presentation-popup__user-avatar" />
-                    <span className="presentation-popup__user-name">
-                      {firstName} {lastName}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Comment section */}
-            <div className="presentation-popup__section_comment">
-              <div className="presentation-popup__comment-header">
-                <h3 className="presentation-popup__section-comment">
-                  {parseInt(commentCount)} {parseInt(commentCount) === 1 ? "Comment" : "Comments"}
-                </h3>
-                <div className="presentation-popup__sort-dropdown" style={{ position: "relative" }}>
-                  <button
-                    className="presentation-popup__sort-btn"
-                    onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-                    style={{
-                      color: "#2665AC",
-                      fontSize: "14px",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px",
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      padding: "4px 8px",
-                      borderRadius: "4px",
-                      marginBottom: "0.4rem",
-                    }}
-                  >
-                    Sort by date: {selectedSort}
-                    <ChevronDown
-                      size={14}
-                      style={{
-                        transform: isSortDropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
-                        transition: "transform 0.2s ease",
-                      }}
-                    />
-                  </button>
-
-                  {isSortDropdownOpen && (
-                    <div
-                    ref={sortChangeRef}
-                      className="presentation-popup__dropdown-menu"
-                      style={{
-                        position: "absolute",
-                        right: 0,
-                        top: "80%",
-                        background: "white",
-                        border: "1px solid #e1e1e1",
-                        borderRadius: "4px",
-                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                        zIndex: 10,
-                      }}
-                    >
-                      {sortOptions.map((sort) => (
-                        <button
-                          key={sort}
-                          className="presentation-popup__dropdown-item"
-                          onClick={() => handleSortSelect(sort)}
-                          style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            width: "100%",
-                            padding: "8px 16px",
-                            textAlign: "left",
-                            border: "none",
-                            cursor: "pointer",
-                            color: selectedSort === sort ? "#2665AC" : "#2665AC",
-                            hover: {
-                              backgroundColor: selectedSort === sort ? "#D6E6F2" : "white",
-                            },
-                          }}
-                        >
-                          {sort}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="presentation-popup__comment-section">
-              {projectStatus !== "Complete" && (
-                <div
-                  className="presentation-popup__comment-input"
-                  style={{
-                    marginBottom: "16px",
-                    display: "flex",
-                    alignItems: "flex-start",
-                  }}
-                >
-                  {userPictureComment ? (
-                    <img
-                      src={userPictureComment}
-                      alt="Current user"
-                      className="presentation-popup__user-avatar"
-                      style={{
-                        width: "32px",
-                        height: "32px",
-                        marginRight: "8px",
-                        borderRadius: "50%",
-                      }}
-                    />
-                  ) : (
-                    <div
-                      className="presentation-popup__user-avatar"
-                      style={{
-                        backgroundColor: "#2665AC",
-                        color: "white",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        width: "32px",
-                        height: "32px",
-                        borderRadius: "50%",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        marginRight: "8px",
-                      }}
-                    >
-                      {firstName.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <input
-  type="text"
-  placeholder={isSubmittingComment ? "Submitting..." : "Add a comment"}
-  className="presentation-popup__comment-field"
-  value={newComment}
-  onChange={handleCommentChange}
-  onKeyPress={handleCommentSubmit}
-  disabled={isSubmittingComment}
-  style={{
-    opacity: isSubmittingComment ? 0.7 : 1,
-    cursor: isSubmittingComment ? "not-allowed" : "text"
+    cursor: "pointer",
+    width: "17px",
+    height: "17px",
+    marginLeft: "auto",
   }}
 />
-                </div>
-              )}
-
-                <div
-                  className="presentation-popup__comment-list"
-                  style={{
-                    overflowY: "auto",
-                    maxHeight: "80px",
-                    gap: "8px",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  {comments.map((comment) => (
-                    <div
-                      key={comment.id}
-                      className="presentation-popup__comment"
-                      style={{
-                        display: "flex",
-                        alignItems: "flex-start",
-                        position: "relative",
-                      }}
-                    >
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        {comment.avatar ? (
-                          <img
-                            src={comment.avatar}
-                            alt={comment.author}
-                            className="presentation-popup__user-avatar"
-                            style={{
-                              width: "32px",
-                              height: "32px",
-                              marginRight: "8px",
-                              borderRadius: "50%",
-                            }}
-                          />
-                        ) : (
-                          <div
-                            className="presentation-popup__user-avatar"
-                            style={{
-                              backgroundColor: "#2665AC",
-                              color: "white",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              width: "32px",
-                              height: "32px",
-                              borderRadius: "50%",
-                              fontSize: "14px",
-                              fontWeight: "500",
-                              marginRight: "8px",
-                            }}
-                          >
-                            {comment.author.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                        <div className="presentation-popup__comment-content" style={{ flex: 1 }}>
-                          <div className="presentation-popup__comment-header" style={{ display: "flex", justifyContent: "space-between" }}>
-                            <span
-                              className="presentation-popup__comment-author"
-                              onClick={() =>
-                                handleProfileNavigation({
-                                  memberId: comment.authorId,
-                                  name: comment.author,
-                                  img: comment.avatar,
-                                })
-                              }
-                            >
-                              {comment.author}
-                            </span>
-                            <span className="presentation-popup__comment-time">{comment.timestamp}</span>
-                            {comment.authorId === uid && isAdmin && projectStatus !== "Complete" && ( // Only show the trash icon if assignId matches uid
-                              <Trash2 size={16} color="#2665AC" style={{ cursor: "pointer", marginLeft: "8px" }} onClick={() => handleDeleteClick(comment.id)} />
-                            )}
-                          </div>
-                          <p className="presentation-popup__comment-text">{comment.content}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {showCommentDeleteConfirmation && (
-                  <div
-                    style={{
-                      position: "fixed",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
-                      backgroundColor: "rgba(0, 0, 0, 0.3)",
-                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      zIndex: 1000,
-                    }}
-                  >
-                    <div
-                      style={{
-                        backgroundColor: "white",
-                        padding: "20px",
-                        borderRadius: "8px",
-                        textAlign: "center",
-                        maxWidth: "400px",
-                        width: "100%",
-                      }}
-                    >
-                      <h3 style={{ color: "#2665AC", marginBottom: "10px" }}>Delete Comment</h3>
-                      <p style={{ color: "#3A74B4", marginBottom: "20px" }}>Are you sure you want to delete this comment?</p>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "center",
-                          gap: "10px",
-                          marginTop: "20px",
-                        }}
-                      >
-                        <button
-  onClick={cancelDeleteComment}
-  disabled={isDeletingComment}
-  style={{
-    padding: "8px 16px",
-    backgroundColor: "#2665AC",
-    color: "white",
-    border: "none",
-    borderRadius: "9999px",
-    cursor: isDeletingComment ? "not-allowed" : "pointer",
-    opacity: isDeletingComment ? 0.7 : 1,
-  }}
->
-  Cancel
-</button>
-<button
-  onClick={confirmDeleteComment}
-  disabled={isDeletingComment}
-  style={{
-    padding: "8px 16px",
-    backgroundColor: "#2665AC",
-    color: "white",
-    border: "none",
-    borderRadius: "9999px",
-    cursor: isDeletingComment ? "not-allowed" : "pointer",
-    opacity: isDeletingComment ? 0.7 : 1,
-  }}
->
-  {isDeletingComment ? "Deleting..." : "Delete"}
-</button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {showSubtaskDeleteConfirmation && (
-                  <div
-                    style={{
-                      position: "fixed",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: "100%",
-                      backgroundColor: "rgba(0, 0, 0, 0.3)",
-                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      zIndex: 1000,
-                    }}
-                  >
-                    <div
-                      style={{
-                        backgroundColor: "white",
-                        padding: "20px",
-                        borderRadius: "8px",
-                        textAlign: "center",
-                        maxWidth: "400px",
-                        width: "100%",
-                      }}
-                    >
-                      <h3 style={{ color: "#2665AC", marginBottom: "10px" }}>Delete Subtask</h3>
-                      <p style={{ color: "#3A74B4", marginBottom: "20px" }}>Are you sure you want to delete this subtask?</p>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "center",
-                          gap: "10px",
-                          marginTop: "20px",
-                        }}
-                      >
-                        <button
-                          onClick={cancelDeleteSubtask}
-                          onMouseEnter={(e) => (e.target.style.backgroundColor = "#1976d2")}
-                          onMouseLeave={(e) => (e.target.style.backgroundColor = "#2665AC")}
-                          style={{
-                            padding: "8px 16px",
-                            backgroundColor: "#2665AC",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "9999px",
-                            cursor: "pointer",
-                          }}
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={confirmDeleteSubtask}
-                          onMouseEnter={(e) => (e.target.style.backgroundColor = "#1976d2")}
-                          onMouseLeave={(e) => (e.target.style.backgroundColor = "#2665AC")}
-                          style={{
-                            padding: "8px 16px",
-                            backgroundColor: "#2665AC",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "9999px",
-                            cursor: "pointer",
-                          }}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  useEffect(() => {
-    const epicIdFromParams = epicId || location.state?.epicId;
-    if (epicIdFromParams) {
-      setSelectedEpicId(epicIdFromParams);
-      console.log("Epic ID set:", epicIdFromParams);
-    } else {
-      console.error("No Epic ID available from params or location state");
-    }
-  }, [epicId, location.state]);
-
-  // Modified fetchTasks function with better error handling
-  const fetchTasks = async () => {
-    const currentEpicId = selectedEpicId || epicId || location.state?.epicId;
-
-    if (!currentEpicId) {
-      console.error("No Epic ID available for fetching tasks");
-      return;
-    }
-
-    try {
-      // Fetch projectPicture from the selected Epic document
-      const epicDocRef = doc(db, `Kanban/${selectedEpicId}`);
-      const epicDoc = await getDoc(epicDocRef);
-      const projectPicture = epicDoc.exists() ? epicDoc.data().projectPicture : null;
-
-      // Fetch user details from Kanban/uid path
-      const auth = getAuth();
-      const uid = auth.currentUser ? auth.currentUser.uid : "";
-      const userDocRef = doc(db, `users/${uid}`);
-      const userDoc = await getDoc(userDocRef);
-      const userData = userDoc.exists() ? userDoc.data() : {};
-
-      const userFirstName = userData.firstName || "";
-      const userLastName = userData.lastName || "";
-      const userPictureComment = userData.userPicture || "";
-
-      // Log values to the console
-      console.log("User First Name:", userFirstName);
-      console.log("User Last Name:", userLastName);
-      console.log("User Picture:", userPictureComment);
-
-      const path = `Kanban/${selectedEpicId}/kanbanIssue`;
-      const querySnapshot = await getDocs(collection(db, path));
-      const issueIds = querySnapshot.docs.map((doc) => doc.id);
-
-      const tasksData = await Promise.all(
-        issueIds.map(async (issueId) => {
-          const issuePath = `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`;
-          const issueDoc = await getDoc(doc(db, issuePath));
-          const data = issueDoc.data();
-
-          let assigneeData = null;
-
-          if (data?.assignId) {
-            const userDocRef = doc(db, `users/${data.assignId}`);
-            const userDocSnapshot = await getDoc(userDocRef);
-            if (userDocSnapshot.exists()) {
-              const userData = userDocSnapshot.data();
-              assigneeData = {
-                id: data.assignId,
-                name: `${userData.firstName} ${userData.lastName}`,
-                picture: userData.userPicture,
-              };
-            }
-          }
-
-          return {
-            id: data?.IssueId || "Sample",
-            title: data?.IssueName || "Untitled",
-            type: data?.issueType || "task",
-            code: `${data?.issueEpicCode?.toUpperCase() || "STR"}-${data?.issueCount || "4"}`,
-            comments: 1,
-            status: data?.issueStatus || "To-do",
-            priority: data?.priority || "low",
-            hasSubtasks: data?.subtaskCount > 0 || false,
-            subtaskCount: data?.subtaskCount || 0,
-            commentCount: data?.commentCount || 0,
-            projectPicture: projectPicture,
-            issueEffort: data?.issueEffort || 0,
-            userFirstName: userFirstName,
-            userLastName: userLastName,
-            userPictureComment: userPictureComment,
-            assignId: data?.assignId, // Add the assignee ID to the task data
-            assignee: assigneeData, // Add the assignee data
-            favorite: data?.favorite,
-            originalData: data,
-            issuedescription: data?.description,
-          };
-        }),
-      );
-
-      console.log("Fetched tasks:", tasksData);
-      setTasks(tasksData);
-    } catch (error) {
-      console.error("Error in fetchTasks:", error);
-    }
-  };
-
-  // Modified useEffect for fetching tasks
-  useEffect(() => {
-    if (selectedEpicId) {
-      fetchTasks();
-    }
-  }, [selectedEpicId]);
-
-  const [isAddingColumn, setIsAddingColumn] = useState(false);
-
-// Update handleAddColumn function
-const handleAddColumn = (columnTitle) => {
-  if (isAddingColumn) return; // Prevent multiple clicks
-  setShowColumnInput(true);
-  setShowAddColumnTooltip(false);
-  setHoveredColumn(null);
-  setInsertAfterColumn(columnTitle);
-};
-
-
-  const fetchColumns = async () => {
-    if (!selectedEpicId) {
-      console.log("No Epic ID available yet");
-      return;
-    }
-
-    try {
-      const kanbanDocRef = doc(db, "Kanban", selectedEpicId, "EpicColumn", "p9Gdxwc3hs3tzZIdFDVi");
-
-      const kanbanDoc = await getDoc(kanbanDocRef);
-
-      if (kanbanDoc.exists()) {
-        const data = kanbanDoc.data();
-        setColumns(data.issueColumn || []);
-        setIssueCode(data.issueCode);
-      } else {
-        // If document doesn't exist, create it with default columns
-        const defaultColumns = ["To-do", "In Progress", "Complete"];
-        await setDoc(kanbanDocRef, {
-          issueColumn: defaultColumns,
-          issueCode: "DEFAULT",
-          createdAt: serverTimestamp(),
-        });
-        setColumns(defaultColumns);
-      }
-    } catch (error) {
-      console.error("Error fetching/creating columns: ", error);
-    }
-  };
-
-  const handleColumnSubmit = async (e) => {
-    e.preventDefault();
-    if (isAddingColumn) return;
-  
-    if (!selectedEpicId) {
-      console.error("No Epic ID available");
-      return;
-    }
-  
-    if (!newColumnName.trim()) {
-      console.error("Column name cannot be empty");
-      return;
-    }
-  
-    setIsAddingColumn(true);
-  
-    try {
-      const kanbanDocRef = doc(db, `Kanban/${selectedEpicId}/EpicColumn/p9Gdxwc3hs3tzZIdFDVi`);
-      const kanbanDoc = await getDoc(kanbanDocRef);
-  
-      let currentColumns = [];
-      if (kanbanDoc.exists()) {
-        currentColumns = kanbanDoc.data().issueColumn || [];
-      }
-  
-      const insertIndex = insertAfterColumn ? currentColumns.indexOf(insertAfterColumn) + 1 : currentColumns.length;
-      const updatedColumns = [...currentColumns.slice(0, insertIndex), newColumnName.trim(), ...currentColumns.slice(insertIndex)];
-  
-      await updateDoc(kanbanDocRef, {
-        issueColumn: updatedColumns,
-        updatedAt: serverTimestamp(),
-      });
-  
-      setColumns(updatedColumns);
-      setNewColumnName("");
-      setShowColumnInput(false);
-      setInsertAfterColumn(null);
-    } catch (error) {
-      console.error("Error updating columns:", error);
-    } finally {
-      setIsAddingColumn(false);
-    }
-  };  
-
-  // Call fetchColumns when selectedEpicId is available
-  useEffect(() => {
-    if (selectedEpicId) {
-      fetchColumns();
-    }
-  }, [selectedEpicId]);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      // Handle Filter dropdown
-      if (filterRef.current && !filterRef.current.contains(event.target)) {
-        setShowFilterDropdown(false);
-      }
-
-      // Handle Type dropdown
-      if (typeRef.current && !typeRef.current.contains(event.target)) {
-        setShowTypeFilterDropdown(false);
-      }
-
-      // Handle priority dropdown
-      if (priorityRef.current && !priorityRef.current.contains(event.target)) {
-        setShowPriorityDropdown(false);
-      }
-
-      // Handle Type issue dropdown
-      if (typeIssueRef.current && !typeIssueRef.current.contains(event.target)) {
-        setShowTypeDropdown(false);
-      }
-
-      // Handle create issue dropdown
-      if (createIssueRef.current && !createIssueRef.current.contains(event.target) && createIssueButtonRef.current && !createIssueButtonRef.current.contains(event.target)) {
-        setShowCreateIssueContainer(false);
-      }
-
-      // Handle column dropdown
-      const isColumnDotClick = event.target.closest(".column-menu-btn");
-      const isOutsideColumnMenu = !columnRef.current?.contains(event.target);
-      if (isOutsideColumnMenu && !isColumnDotClick) {
-        setActiveColumnMenu(null);
-      }
-
-      // Handle card dropdown
-      const isCardDotClick = event.target.closest(".remove-btn");
-      const isOutsideCardMenu = !cardRef.current?.contains(event.target);
-      if (isOutsideCardMenu && !isCardDotClick) {
-        setActiveCard(null);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  const FilterDropdown = () => (
-    <div className="filter-above-dropdown-menu">
-      <button className="dropdown-item">
-        <input
-          type="checkbox"
-          checked={selectedFilters.onlyMyIssue}
-          onChange={() =>
-            setSelectedFilters((prev) => ({
-              ...prev,
-              onlyMyIssue: !prev.onlyMyIssue,
-            }))
-          }
-          className="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300"
-        />
-        <span className="text-sm text-gray-700">Only My Issue</span>
-      </button>
-    </div>
-  );
-
-  const TypeFilterDropdown = () => (
-    <div className="type-above-dropdown-menu">
-      <button
-        className="dropdown-item"
-        onClick={() =>
-          setSelectedTypeFilters((prev) => ({
-            ...prev,
-            story: !prev.story,
-          }))
-        }
-      >
-        <input type="checkbox" checked={selectedTypeFilters.story} className="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300" />
-        <span className="inline-flex items-center gap-2">
-          <img src={img12} alt="Story" className="type-dropdown-icon" />
-          <span className="text-sm text-gray-700">Story</span>
-        </span>
-      </button>
-      <button
-        className="dropdown-item"
-        onClick={() =>
-          setSelectedTypeFilters((prev) => ({
-            ...prev,
-            task: !prev.task,
-          }))
-        }
-      >
-        <input type="checkbox" checked={selectedTypeFilters.task} className="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300" />
-        <span className="inline-flex items-center gap-2">
-          <img src={img6} alt="Task" className="type-dropdown-icon" />
-          <span className="text-sm text-gray-700">Task</span>
-        </span>
-      </button>
-      <button
-        className="dropdown-item"
-        onClick={() =>
-          setSelectedTypeFilters((prev) => ({
-            ...prev,
-            bug: !prev.bug,
-          }))
-        }
-      >
-        <input type="checkbox" checked={selectedTypeFilters.bug} className="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300" />
-        <span className="inline-flex items-center gap-2">
-          <img src={img13} alt="Bug" className="type-dropdown-icon" />
-          <span className="text-sm text-gray-700">Bug</span>
-        </span>
-      </button>
-    </div>
-  );
-
-  const getUserName = async () => {
-    const auth = getAuth();
-    const uid = auth.currentUser ? auth.currentUser.uid : null;
-
-    if (!uid) {
-      console.error("No user is logged in.");
-      return null;
-    }
-
-    try {
-      const db = getFirestore();
-      const userRef = doc(db, `users/${uid}`);
-      const userSnapshot = await getDoc(userRef);
-
-      if (userSnapshot.exists()) {
-        const userData = userSnapshot.data();
-        const firstName = userData.firstName || "";
-        const lastName = userData.lastName || "";
-
-        // Combine first name and last name
-        return `${firstName} ${lastName}`.trim();
-      } else {
-        console.error("User document does not exist.");
-        return null;
-      }
-    } catch (error) {
-      console.error("Error fetching user's name:", error);
-      return null;
-    }
-  };
-
-  useEffect(() => {
-    const fetchUserName = async () => {
-      const name = await getUserName();
-      if (name) {
-        setUserName(name);
-      }
-    };
-
-    fetchUserName();
-  }, []);
-
-  const getUserId = () => {
-    const auth = getAuth();
-    return auth.currentUser ? auth.currentUser.uid : null;
-  };
-  
-  useEffect(() => {
-    const userId = getUserId();
-    if (userId) {
-      setUserId(userId);
-    }
-  }, []);
-  
-  const getPriorityArrows = (priority) => {
-    let priorityImage;
-    switch (priority) {
-      case "low":
-        priorityImage = low;
-        break;
-      case "medium":
-        priorityImage = medium;
-        break;
-      case "high":
-        priorityImage = high;
-        break;
-      default:
-        priorityImage = low;
-    }
-
-    return (
-      <div className={`arrow-container ${priority}-container`}>
-        <img src={priorityImage} alt={`${priority} priority`} draggable="false" />
-      </div>
-    );
-  };
-
-  const handleCardHover = (task) => {
-    if (!hoveredTask || hoveredTask.id !== task.id) {
-      setHoveredTask(task);
-      setIssueID(task.id);
-      setIssueName(task.title);
-      setIssueStatus(task.status);
-      setIssueType(task.type);
-      setIssueEpicCode(task.code);
-      setSubtaskCount(task.subtaskCount);
-      setIssueCount(task.count);
-      setIssuePriority(task.priority);
-      setProjectPicture(task.projectPicture);
-      setissueEffort(task.issueEffort);
-      setUserFirstName(task.userFirstName);
-      setUserLastName(task.userLastName);
-      setUserPictureComment(task.userPictureComment);
-      setCommentCount(task.commentCount);
-      setAssignId(task.assignId); // Set assignId on hover
-      setIsFavorite(task.favorite); // Set isFavorite
-      setIssueDescription(task.issuedescription || task.description); // Set description on hover
-    }
-  };
-
-  const handleCardClick = async (task) => {
-    const auth = getAuth();
-    const uid = auth.currentUser ? auth.currentUser.uid : "";
-  
-    try {
-      // Fetch user data
-      const userDocRef = doc(db, `users/${uid}`);
-      const userDocSnapshot = await getDoc(userDocRef);
-      
-      if (userDocSnapshot.exists()) {
-        const userData = userDocSnapshot.data();
-        setUserPictureComment(userData.userPicture || null);
-        setFirstName(userData.firstName || "");
-        setLastName(userData.lastName || "");
-      }
-  
-      // Fetch project picture from Epic document
-      const epicDocRef = doc(db, `Kanban/${selectedEpicId}`);
-      const epicDoc = await getDoc(epicDocRef);
-      if (epicDoc.exists()) {
-        setProjectPicture(epicDoc.data().projectPicture || null);
-      }
-  
-      // Fetch the Member data
-      const memberSnapshot = await getDocs(
-        query(collection(db, `Kanban/${selectedEpicId}/Member`), 
-        where("MemberUid", "==", uid))
-      );
-  
-      if (!memberSnapshot.empty) {
-        const memberDoc = memberSnapshot.docs[0].data();
-        const hasAccess = memberDoc.Access === true;
-  
-        setShowPresentationPopup(true);
-        fetchMembersWithAccess();
-      } else {
-        console.warn("No member found with the provided UID.");
-        setShowPresentationPopup(true);
-      }
-    } catch (error) {
-      console.error("Error fetching member data:", error);
-      setShowPresentationPopup(true);
-    }
-  };
-
-  const fetchMembersWithAccess = async () => {
-    try {
-      // Reference to the Member collection
-      const memberRef = collection(db, `Kanban/${selectedEpicId}/Member`);
-      // Query to find members with Access: true
-      const q = query(memberRef, where("Access", "==", true));
-
-      const querySnapshot = await getDocs(q);
-      for (const docSnapshot of querySnapshot.docs) {
-        const MemberUid = docSnapshot.id;
-
-        // Reference to the user's document using MemberUid
-        const userDocRef = doc(db, `users/${MemberUid}`);
-        const userDocSnapshot = await getDoc(userDocRef);
-
-        if (userDocSnapshot.exists()) {
-          const userData = userDocSnapshot.data();
-          const { firstName, lastName, userPicture } = userData;
-
-          // Set the member's firstName and lastName in the state
-          setUserPicture(userPicture);
-          setFirstName(firstName);
-          setLastName(lastName);
-        } else {
-          console.log(`No user found for MemberUid: ${MemberUid}`);
-        }
-      }
-    } catch (error) {
-      console.error("Error retrieving member data:", error);
-    } finally {
-      setLoading(false); // Stop loading after fetching data
-    }
-  };
-
-  const typeOptions = [
-    { id: "story", label: "Story", icon: <img src={img12} alt="Story" style={{ width: 16, height: 16 }} draggable="false" />, color: "text-green-600" },
-    { id: "task", label: "Task", icon: <img src={img6} alt="Task" style={{ width: 16, height: 16 }} draggable="false" />, color: "text-red-600" },
-    { id: "bug", label: "Bug", icon: <img src={img13} alt="Bug" style={{ width: 16, height: 16 }} draggable="false" />, color: "text-blue-600" },
-  ];
-
-  const TypeIcon = ({ type, size }) => {
-    const typeOption = typeOptions.find((option) => option.id === type);
-    return typeOption ? (
-      <span className={typeOption.color} style={{ fontSize: size }}>
-        {typeOption.icon}
-      </span>
-    ) : null;
-  };
-
-  const handleDeleteColumn = (columnTitle) => {
-    setColumnToDelete(columnTitle);
-    setShowColumnDeleteConfirmation(true);
-    setActiveColumnMenu(null);
-  };
-
-  // New function to handle column deletion confirmation
-  const handleConfirmColumnDelete = async () => {
-    if (columnToDelete) {
-      // Log the name of the column you're deleting
-      console.log("Deleting column:", columnToDelete);
-
-      try {
-        // Dynamically construct the Firestore document reference using selectedEpicId
-        const docRef = doc(
-          db,
-          "Kanban", // Collection name
-          selectedEpicId, // Dynamic Epic ID
-          "EpicColumn", // Subcollection name
-          "p9Gdxwc3hs3tzZIdFDVi",
-        );
-
-        // Remove the column from the KanbanStatus array in Firestore
-        await updateDoc(docRef, {
-          issueColumn: arrayRemove(columnToDelete), // Remove the column title from KanbanStatus array
-        });
-
-        // Filter out the column to be deleted from columns array
-        const updatedColumns = columns.filter((col) => col !== columnToDelete);
-
-        // Remove all tasks that were in the deleted column
-        const updatedTasks = tasks.filter((task) => task.status !== columnToDelete);
-
-        // Update state
-        setColumns(updatedColumns);
-        setTasks(updatedTasks);
-        setShowColumnDeleteConfirmation(false);
-        setColumnToDelete(null);
-      } catch (error) {
-        console.error("Error updating Firestore:", error);
-      }
-    }
-  };
-
-  const handleToggleRemoveMenu = (id) => {
-    setActiveCard(activeCard === id ? null : id);
-  };
-
-  const handleDeleteClick = (task) => {
-    setSelectedTask(task);
-    setShowConfirmation(true);
-    setActiveCard(null);
-  };
-
-  const handleRemoveTask = async () => {
-    if (selectedTask) {
-      try {
-        // Remove task from Firestore
-        const taskDocRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue/${issueId}`);
-        await deleteDoc(taskDocRef);
-
-        // Remove task locally
-        setTasks(tasks.filter((task) => task.id !== selectedTask.id));
-        setSelectedTask(null);
-
-        // Hide confirmation
-        setShowConfirmation(false);
-      } catch (error) {
-        console.error("Error removing task:", error);
-      }
-    }
-  };
-
-  const handleDragStart = (e, task) => {
-    // Simple check for admin status
-    if (!isAdmin || projectStatus === "Complete") {
-      e.preventDefault();
-      return;
-    }
-
-    setDraggedTask(task);
-    e.currentTarget.classList.add("dragging");
-    e.dataTransfer.setData("text/plain", ""); // Required for Firefox
-  };
-
-  const handleDragEnd = (e) => {
-    e.currentTarget.classList.remove("dragging");
-    setDraggedTask(null);
-    setDragOverColumn(null);
-
-    // Remove all drop indicators
-    document.querySelectorAll(".drop-indicator").forEach((el) => el.remove());
-  };
-
-  const getDragAfterElement = (container, y) => {
-    const draggableElements = [...container.querySelectorAll(".kanban-card:not(.dragging)")];
-
-    return draggableElements.reduce(
-      (closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - box.top - box.height / 2;
-
-        if (offset < 0 && offset > closest.offset) {
-          return { offset, element: child };
-        } else {
-          return closest;
-        }
-      },
-      { offset: Number.NEGATIVE_INFINITY },
-    ).element;
-  };
-
-  const handleDragOver = (e, columnTitle) => {
-    e.preventDefault();
-    setDragOverColumn(columnTitle);
-
-    const column = e.currentTarget;
-    const afterElement = getDragAfterElement(column, e.clientY);
-
-    // Remove existing drop indicators
-    document.querySelectorAll(".drop-indicator").forEach((el) => el.remove());
-
-    // Create and insert new drop indicator
-    const dropIndicator = document.createElement("div");
-    dropIndicator.className = "drop-indicator";
-
-    if (afterElement) {
-      afterElement.parentNode.insertBefore(dropIndicator, afterElement);
-    } else {
-      // If no afterElement, append to the end of the column's card container
-      const cardContainer = column.querySelector(".column-content") || column;
-      cardContainer.appendChild(dropIndicator);
-    }
-  };
-
-  const handleDrop = async (e, columnTitle) => {
-    e.preventDefault();
-    if (!draggedTask) return;
-
-    const column = e.currentTarget;
-    const afterElement = getDragAfterElement(column, e.clientY);
-
-    // Get all tasks in the current column
-    const columnTasks = tasks.filter((task) => task.status === columnTitle);
-
-    // Remove dropped task from its original position
-    const remainingTasks = tasks.filter((task) => task.id !== draggedTask.id);
-
-    // Find the index where to insert the task
-    let newIndex;
-    if (afterElement) {
-      const afterTask = columnTasks.find((task) => afterElement.getAttribute("data-task-id") === task.id.toString());
-      newIndex = remainingTasks.findIndex((task) => task.id === afterTask.id);
-    } else {
-      // If no afterElement, append to the end
-      newIndex = remainingTasks.length;
-    }
-
-    // Create the Kanban URL with the task ID
-    const kanbanUrl = `Kanban/${selectedEpicId}/kanbanIssue/${draggedTask.id}`;
-    console.log("Kanban URL:", kanbanUrl);
-
-    // Update the task with the new issueStatus
-    const updatedDraggedTask = { ...draggedTask, status: columnTitle, issueStatus: columnTitle };
-
-    // Check if the Epic document exists and if the user is an admin
-    try {
-      const epicRef = doc(db, `Kanban/${selectedEpicId}`);
-      const epicDoc = await getDoc(epicRef);
-
-      if (epicDoc.exists()) {
-        const epicData = epicDoc.data();
-
-        const auth = getAuth();
-        const currentUserUid = auth.currentUser.uid;
-        if (epicData.admin !== currentUserUid) {
-          console.error("User is not the admin of this Epic.");
-          setShowErrorPopup(true);
-          setErrorMessage("You do not have permission to move tasks in this Epic.");
-          return;
-        }
-
-        if (epicData.projectStatus === "To-do") {
-          console.error('Cannot update issueStatus because Epic projectStatus is "To-do".');
-          setShowErrorPopup(true);
-          setErrorMessage('Task cannot be moved because the Epic is in "To-do" status.');
-          return;
-        }
-
-        const taskRef = doc(db, `Kanban/${selectedEpicId}/kanbanIssue`, draggedTask.id);
-        const taskDoc = await getDoc(taskRef);
-
-        if (taskDoc.exists()) {
-          const issueType = taskDoc.data().issueType || "Unknown";
-          let issueName = taskDoc.data().IssueName || "Unnamed Issue";
-
-          console.log("Issue Type:", issueType);
-          console.log("Issue Name:", issueName);
-
-          if (issueName === "Unnamed Issue") {
-            console.log('Special handling for "Unnamed Issue"');
-            const querySnapshot = await getDocs(query(collection(db, `Kanban/${selectedEpicId}/kanbanIssue`), where("issueName", "==", "Unnamed Issue")));
-            querySnapshot.forEach((doc) => {
-              console.log(`Found Unnamed Issue: ${doc.id}`, doc.data());
-            });
-          }
-
-          // Format the date and time as MM/DD/YYYY h:mm AM/PM
-          const now = new Date();
-          const formattedDateTime = now
-            .toLocaleString("en-US", {
-              month: "2-digit",
-              day: "2-digit",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: true,
-            })
-            .replace(",", ""); // Remove the comma
-
-          await updateDoc(taskRef, {
-            issueStatus: columnTitle,
-            IssueDoneTime: formattedDateTime,
-          });
-          console.log("Firestore update successful for issueStatus and IssueDoneTime!");
-          const epicName = epicData.epicName;
-          const admin = epicData.admin;
-          const taskId = draggedTask.id;
-
-          const assignId = draggedTask.assignId;
-        // Create log entry for the user (assignee)
-const logRefForUser = doc(db, "users", assignId, "logReport", Date.now().toString());
-
-// Count the existing documents in the user's logReport collection
-const userLogCollectionRef = collection(db, "users", assignId, "logReport");
-const userLogDocs = await getDocs(userLogCollectionRef);
-const userLogCount = userLogDocs.size; // Number of existing documents
-
-await setDoc(logRefForUser, {
-  status: columnTitle,
-  dateTime: formattedDateTime, // Formatted date and time
-  projectName: epicName, // Epic name
-  issue: issueName, // Issue name
-  type: issueType, // Issue type (e.g., story, task, bug)
-  assignee: admin, // Admin UID (creator of the epic)
-  taskId: taskId, // Task ID
-  row: userLogCount + 1, // Add 1 to the count for the new entry
-});
-
-console.log("Log report entry created for user successfully");
-
-// Create log entry for the admin
-const logRefForAdmin = doc(db, "users", admin, "logReport", Date.now().toString());
-
-// Count the existing documents in the admin's logReport collection
-const adminLogCollectionRef = collection(db, "users", admin, "logReport");
-const adminLogDocs = await getDocs(adminLogCollectionRef);
-const adminLogCount = adminLogDocs.size; // Number of existing documents
-
-await setDoc(logRefForAdmin, {
-  status: columnTitle,
-  dateTime: formattedDateTime, // Formatted date and time
-  projectName: epicName, // Epic name
-  issue: issueName, // Issue name
-  type: issueType, // Issue type (e.g., story, task, bug)
-  admin: admin, // Admin UID (creator of the epic)
-  taskId: taskId, // Task ID
-  row: adminLogCount + 1, // Add 1 to the count for the new entry
-});
-
-console.log("Log report entry created for admin successfully");
-
-        } else {
-          console.error("Task document not found in Firestore:", draggedTask.id);
-        }
-      } else {
-        console.error("Epic document not found in Firestore:", selectedEpicId);
-      }
-    } catch (error) {
-      console.error("Error updating Firestore:", error);
-    }
-
-    const updatedTasks = [...remainingTasks.slice(0, newIndex), updatedDraggedTask, ...remainingTasks.slice(newIndex)];
-
-    setTasks(updatedTasks);
-    setDraggedTask(null);
-    setDragOverColumn(null);
-
-    document.querySelectorAll(".drop-indicator").forEach((el) => el.remove());
-  };
-
-  const priorityOptions = [
-    {
-      id: "low",
-      label: <span style={{ flexGrow: "1", textAlign: "left" }}>Low</span>,
-      icon: <img src={low} alt="Low Priority" />,
-    },
-    {
-      id: "medium",
-      label: <span style={{ flexGrow: "1", textAlign: "left" }}>Medium</span>,
-      icon: <img src={medium} alt="Medium Priority" />,
-    },
-    {
-      id: "high",
-      label: <span style={{ flexGrow: "1", textAlign: "left" }}>High</span>,
-      icon: <img src={high} alt="High Priority" />,
-    },
-  ];
-
-  const [selectedPriority, setSelectedPriority] = useState(priorityOptions[0]);
-
-  const generateEpicCode = (projectName) => {
-    return projectName
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase())
-      .join("");
-  };
-
-  // Get the epic code before using handleCreateIssue
-  const epicCode = generateEpicCode(epicName);
-
-  const [isSubmittingIssue, setIsSubmittingIssue] = useState(false);
-
-  const handleCreateIssue = async () => {
-    // Prevent multiple submissions
-    if (isSubmittingIssue) return;
-  
-    if (!newIssueDescription.trim() || !selectedType || !selectedPriority.label) {
-      setErrorMessage("All fields are required.");
-      setShowErrorPopup(true);
-      return;
-    }
-  
-    if (!selectedEpicId) {
-      setErrorMessage("Epic ID not found. Please select an epic.");
-      setShowErrorPopup(true);
-      return;
-    }
-  
-    setIsSubmittingIssue(true); // Set submitting state to true
-    const db = getFirestore();
-  
-    try {
-      // Your existing Firebase operations...
-      const counterRef = doc(db, `Kanban/${selectedEpicId}/IssueCounter`, epicName);
-  
-      const counterDoc = await getDoc(counterRef);
-      if (!counterDoc.exists()) {
-        await setDoc(counterRef, { count: 0 });
-      }
-  
-      await updateDoc(counterRef, {
-        count: increment(1),
-      });
-  
-      const updatedCounterDoc = await getDoc(counterRef);
-      const newCode = updatedCounterDoc.data().count;
-  
-      const issueRef = collection(db, `Kanban/${selectedEpicId}/kanbanIssue`);
-      const docRef = await addDoc(issueRef, {
-        IssueName: newIssueDescription,
-        issueType: selectedType.toLowerCase(),
-        priority: selectedPriority.label.props.children.toLowerCase(),
-        createdAt: new Date(),
-        issueStatus: "To-do",
-        issueCount: newCode,
-        subtaskCount: 0,
-        issueEpicCode: epicCode,
-        commentCount: 0,
-        favorite: false,
-      });
-  
-      const commentRef = collection(
-        db,
-        `Kanban/${selectedEpicId}/kanbanIssue/${docRef.id}/comments`
-      );
-      const commentDocRef = await addDoc(commentRef, {
-        content: "",
-        createdAt: new Date(),
-      });
-      const commentId = commentDocRef.id;
-  
-      await updateDoc(docRef, {
-        IssueId: docRef.id,
-        commentId: commentId,
-      });
-  
-      const newIssueDoc = await getDoc(docRef);
-      const newIssueData = newIssueDoc.data();
-  
-      setTasks((prevTasks) => [
-        ...prevTasks,
-        {
-          id: newIssueData.IssueId,
-          title: newIssueData.IssueName,
-          type: newIssueData.issueType,
-          code: `${epicCode}-${newIssueData.issueCount}`,
-          commentCount: 0,
-          status: newIssueData.issueStatus,
-          priority: newIssueData.priority,
-          subtaskCount: 0,
-          issueEffort: 0,
-          favorite: false,
-          assignee: null,
-          userPictureComment: userPictureComment,
-          projectPicture: projectPicture,
-        },
-      ]);
-  
-      // Reset states
-      setNewIssueDescription("");
-      setSelectedType("Story");
-      setSelectedPriority(priorityOptions[0]);
-      setShowSuccessPopup(true);
-    } catch (error) {
-      console.error("Error creating issue:", error);
-      setErrorMessage("Failed to create issue. Please try again.");
-      setShowErrorPopup(true);
-    } finally {
-      setIsSubmittingIssue(false); // Reset submitting state regardless of success or failure
-    }
-  };
-
-  const titleRef = useRef(null);
-  const [isOverflowing, setIsOverflowing] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
-  const [showIssueTooltip, setShowIssueTooltip] = useState(false);
-  const [hoveredCardId, setHoveredCardId] = useState(null);
-  const cardRefs = useRef({});
-
-  useEffect(() => {
-    if (titleRef.current) {
-      const isOverflow =
-        titleRef.current.offsetWidth < titleRef.current.scrollWidth;
-      setIsOverflowing(isOverflow);
-    }
-
-    tasks.forEach(task => {
-      if (cardRefs.current[task.id]) {
-        const element = cardRefs.current[task.id];
-        const isOverflow = element.offsetWidth < element.scrollWidth;
-        element.dataset.isOverflowing = isOverflow;
-      }
-    });
-
-  }, [epicName, tasks]);
-
-  return (
-    <div className="kanban-board">
-      <div className="kanban-header">
-        <div className="flex items-center gap-4" style={{
-            display: "flex",
-            marginBottom: "30px",
-          }}
-        >
-          {/* HandleBack Button */}
-          <button
-            onClick={handleBack}
-            className="text-blue-600 hover:text-blue-700"
-            style={{
-              zIndex: 2, // Ensure it's above other elements
-            }}
-          >
-            <ArrowLeft size={15} style={{ marginTop: "2px" }} />
-          </button>
-
-          {/* Title with Tooltip */}
-          <div style={{ position: "relative" }}>
-            <h2
-              ref={titleRef}
-              className="kanban-issue-title"
-              style={{
-                marginLeft: "45px"
-              }}
-              onMouseEnter={() => isOverflowing && setShowTooltip(true)}
-              onMouseLeave={() => setShowTooltip(false)}
-            >
-              {epicName} Board
-            </h2>
-            {showTooltip && (
-              <div className="kanban-title-custom-tooltip">
-                {epicName} Board
-              </div>
-            )}
-          </div>
-
-          <div
-            className="flex -space-x-2 cursor-pointer"
-            onClick={() => setShowMembersPopup(true)}
-            style={{
-              display: "flex",
-              marginLeft: "40px",
-              marginTop: "30px",
-              cursor: "pointer",
-              position: "absolute",
-            }}
-          >
-            {members.slice(0, 3).map((member, index) =>
-              member.userPicture ? (
-                <img key={member.memberId} src={member.userPicture} alt={member.firstName} className="w-8 h-8 rounded-full border-2 border-white" />
-              ) : (
-                <div key={member.memberId} className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-sm border-2 border-white">
-                  {member.firstName?.charAt(0).toUpperCase()}
-                </div>
-              ),
-            )}
-            {members.length > 3 && <div className="members-img-count">+{members.length - 3}</div>}
-          </div>
-        </div>
-
-        {showMembersPopup && <MembersPopup members={members} onClose={() => setShowMembersPopup(false)} />}
-
-        <div
-          className="flex items-center gap-4"
-          style={{
-            display: "flex",
-            gap: "20px",
-            marginLeft: "20px",
-            marginBottom: "30px",
-          }}
-        >
-          {hasAccess && isAdmin && projectStatus !== "Complete" && (
-            <button className="invite-member-btn" onClick={() => setShowInviteMemberPopup(true)}>
-              <Users size={20} />
-              Invite Member
-            </button>
-          )}
-          <div className="filter-type-controls relative">
-            <div className="relative" ref={filterRef}>
-              <button className="filter-btn" onClick={() => setShowFilterDropdown(!showFilterDropdown)}>
-                Filter
-                <ChevronDown size={16} className={`kanban-issue-chevron-icon ${showFilterDropdown ? "rotate" : ""}`} />
-              </button>
-              {showFilterDropdown && <FilterDropdown />}
-            </div>
-            <div className="relative" ref={typeRef}>
-              <button className="type-btn" onClick={() => setShowTypeFilterDropdown(!showTypeFilterDropdown)}>
-                Type
-                <ChevronDown size={16} className={`kanban-issue-chevron-icon ${showTypeFilterDropdown ? "rotate" : ""}`} />
-              </button>
-              {showTypeFilterDropdown && <TypeFilterDropdown />}
-            </div>
-          </div>
-        </div>
-      </div>
-      {showInviteMemberPopup && <InviteMemberPopup onClose={() => setShowInviteMemberPopup(false)} />}
-
-      {showInviteSuccessPopup && (
-        <div className="kanban-invite-popup-overlay">
-          <div className="kanban-invite-popup-modal">
-            <img src={successPopup} alt="Success" className="kanban-invite-popup-icon" />
-            <p className="kanban-invite-popup-message">Member has been successfully invited!</p>
-            <button className="kanban-invite-popup-button" onClick={() => setShowInviteSuccessPopup(false)}>
-              OK
-            </button>
-          </div>
-        </div>
-      )}
-
-      {showInviteErrorPopup && (
-        <div className="kanban-invite-popup-overlay">
-          <div className="kanban-invite-popup-modal">
-            <img src={errorPopup} alt="Error" className="kanban-invite-popup-icon" />
-            <p className="kanban-invite-popup-error-message">{errorInviteMessage}</p>
-            <button className="kanban-invite-popup-error-button" onClick={() => setShowInviteErrorPopup(false)}>
-              OK
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className={`kanban-issue-columns ${isAdmin ? "is-admin" : ""}`}>
-        {columns.map((columnTitle, index) => (
-          <React.Fragment key={columnTitle}>
-            <div
-              className={`kanban-issue-column ${dragOverColumn === columnTitle ? "drag-over" : ""} ${activeColumnMenu === columnTitle ? "active" : ""}`}
-              onDragOver={(e) => handleDragOver(e, columnTitle)}
-              onDrop={(e) => handleDrop(e, columnTitle)}
-              onDragLeave={(e) => {
-                if (!e.currentTarget.contains(e.relatedTarget)) {
-                  setDragOverColumn(null);
-                }
-              }}
-            >
-              <div className="kanban-issue-header">
-                <h3 className="kanban-issue-column-title">{columnTitle}</h3>
-
-                {isAdmin && projectStatus !== "Complete" && (
-                  <div className="flex items-center gap-2">
-                    {columnTitle !== "Complete" && !showColumnInput && (
-  <div
-    className="add-button-container"
-    onMouseEnter={() => {
-      setShowAddColumnTooltip(true);
-      setHoveredColumn(columnTitle);
-    }}
-    onMouseLeave={() => {
-      setShowAddColumnTooltip(false);
-      setHoveredColumn(null);
-    }}
-  >
-    <button
-      className="add-button flex items-center justify-center w-6 h-6 rounded bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-colors duration-200"
-      onClick={() => handleAddColumn(columnTitle)}
-      disabled={isAddingColumn}
-      style={{
-        cursor: isAddingColumn ? 'not-allowed' : 'pointer',
-        opacity: isAddingColumn ? 0.7 : 1,
-      }}
-    >
-      <Plus className="plus-icon w-4 h-4 text-gray-600" />
-    </button>
-    {showAddColumnTooltip && hoveredColumn === columnTitle && (
-      <span className="add-column-tooltip">
-        {isAddingColumn ? 'Adding...' : 'Add Column'}
-      </span>
-    )}
-  </div>
 )}
 
-                    <button
-                      className="column-menu-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveColumnMenu(activeColumnMenu === columnTitle ? null : columnTitle);
-                      }}
-                    >
-                      {columnTitle !== "To-do" && columnTitle !== "Complete" && <span className="dots">...</span>}
-                    </button>
-
-                    {activeColumnMenu === columnTitle && (
-                      <div className="kanban-issue-column-menu" ref={columnRef}>
-                        <button className="delete-btn" onClick={() => handleDeleteColumn(columnTitle)}>
-                          Delete
-                        </button>
-                      </div>
-                    )}
                   </div>
-                )}
-              </div>
-
-              {/* Moved the cards container here, outside of the menu */}
-              <div className="column-content">
-  {tasks
-    .filter((task) => {
-      const statusMatch = task.status === columnTitle;
-      const assigneeMatch = !selectedFilters.onlyMyIssue || 
-        (task.assignee && task.assignee.id === userId);
-      const typeFiltersSelected = Object.values(selectedTypeFilters)
-        .some((value) => value);
-      const typeMatch = !typeFiltersSelected || 
-        selectedTypeFilters[task.type.toLowerCase()] === true;
-
-      return statusMatch && assigneeMatch && typeMatch;
-    })
-    .sort((a, b) => {
-      // First sort by favorite status
-      const aFavorites = Array.isArray(a.favorite) ? a.favorite : [];
-      const bFavorites = Array.isArray(b.favorite) ? b.favorite : [];
-      
-      if (aFavorites.length > 0 && bFavorites.length === 0) return -1;
-      if (aFavorites.length === 0 && bFavorites.length > 0) return 1;
-
-      // If favorite status is the same, sort by priority
-      const priorityOrder = { high: 1, medium: 2, low: 3 };
-      return priorityOrder[a.priority] - priorityOrder[b.priority];
-    })
-    .map((task) => (
-      <div
-        key={task.id}
-        data-task-id={task.id}
-        className={`kanban-card ${activeCard === task.id ? "active" : ""} 
-          ${Array.isArray(task.favorite) && task.favorite.length > 0 ? "favorite" : ""} 
-          ${(!isAdmin || projectStatus === "Complete") ? "non-draggable" : ""}`}
-        onMouseEnter={() => handleCardHover(task)}
-        onMouseLeave={() => setHoveredTask(null)}
-        onClick={() => handleCardClick(task)}
-        draggable={true}
-        onDragStart={(e) => handleDragStart(e, task)}
-        onDragEnd={handleDragEnd}
-      >
-                      <div className="card-header">
-            <h4
-            ref={(el) => (cardRefs.current[task.id] = el)}
-            className={task.completed ? "card-issue-title" : ""}
-            onMouseEnter={() => {
-              if (cardRefs.current[task.id]?.dataset.isOverflowing === 'true') {
-                setHoveredCardId(task.id);
-                setShowIssueTooltip(true);
-              }
-            }}
-            onMouseLeave={() => {
-              setHoveredCardId(null);
-              setShowIssueTooltip(false);
-            }}
-          >
-            {task.title}
-            {hoveredCardId === task.id && showIssueTooltip && (
-              <div className="issue-title-tooltip">{task.title}</div>
-            )}
-          </h4>
-                        {isAdmin && projectStatus !== "Complete" && (
-                          <button
-                            className="remove-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleToggleRemoveMenu(task.id);
-                            }}
-                          >
-                            <span className="dots">...</span>
-                          </button>
-                        )}
-                        {activeCard === task.id && (
-                          <div className="remove-menu" ref={cardRef} onClick={(e) => e.stopPropagation()}>
-                            <button className="remove-btn" onClick={() => handleDeleteClick(task)}>
-                              Delete
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                      <div className="card-content">
-                        <div
-                          className="task-code"
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            marginTop: "30px",
-                            color: "#2665AC",
-                          }}
-                        >
-                          <TypeIcon size={1} type={task.type} />
-                          <span>{task.code}</span>
-                          {getPriorityArrows(task.priority)}
-
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "4px",
-                              position: "relative",
-                            }}
-                          >
-                            <img src={img24} alt="effortIcon" className="w-6 h-6 rounded-full" style={{ width: "16px" }} draggable="false" />
-                            <span
-                              style={{
-                                position: "absolute",
-                                top: "50%",
-                                left: "50%",
-                                transform: "translate(-50%, -50%)",
-                                color: "#2665AC",
-                                fontSize: "12px",
-                              }}
-                            >
-                              {task.issueEffort || 0}
-                            </span>
-                          </div>
-
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "4px",
-                            }}
-                          >
-                            <img src={img23} alt="issueComment" className="w-6 h-6 rounded-full" style={{ width: "14px" }} draggable="false" />
-                            <span>{task.commentCount}</span>
-                          </div>
-
-                          {task.hasSubtasks && (
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "4px",
-                              }}
-                            >
-                              <img src={img22} alt="Subtask" className="w-6 h-6 rounded-full" style={{ width: "14px" }} />
-                              <span>{task.subtaskCount}</span>
-                            </div>
-                          )}
-
-                          <div className="assignee-avatar-issue">
-                            {task.assignee ? (
-                              task.assignee.picture ? (
-                                <img
-                                  src={task.assignee.picture}
-                                  alt={task.assignee.name}
-                                  className="w-6 h-6 rounded-full"
-                                  style={{
-                                    width: "20px",
-                                    height: "20px",
-                                    borderRadius: "9999px",
-                                  }}
-                                  draggable="false"
-                                />
-                              ) : (
-                                <div
-                                  className="w-6 h-6 rounded-full"
-                                  style={{
-                                    width: "20px",
-                                    height: "20px",
-                                    backgroundColor: "#2665AC",
-                                    color: "white",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    fontSize: "12px",
-                                    fontWeight: "500",
-                                    borderRadius: "9999px",
-                                  }}
-                                >
-                                  {task.assignee.name.charAt(0).toUpperCase()}
-                                </div>
-                              )
-                            ) : (
-                              <div className="kanban-issue-tooltip-container">
-                                <div
-                                  style={{
-                                    width: "20px",
-                                    height: "20px",
-                                    borderRadius: "9999px",
-                                    backgroundColor: "#F3F4F6",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                  }}
-                                >
-                                  <UserCircle2
-                                    style={{
-                                      color: "#2665AC",
-                                    }}
-                                  />
-                                </div>
-                                <span
-                                  style={{
-                                    marginLeft: "4px",
-                                    color: "#2665AC",
-                                    fontSize: "14px",
-                                  }}
-                                >
-                                  Unassigned
-                                </span>
-                                <div className="kanban-issue-custom-tooltip">No team member assigned to this task</div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                {/* Create Issue button and form (only in To-do column) */}
-                {columnTitle === toDoColumnName && (
-                  <>
-                    {showCreateIssueContainer && (
-                      <div className="kanban-card" ref={createIssueRef}>
-                        <div className="card-content">
-                          <input type="text" placeholder="What needs to be addressed?" value={newIssueDescription} onChange={(e) => setNewIssueDescription(e.target.value)} className="issue-input" />
-
-                          <div
-                            className="flex gap-2"
-                            style={{
-                              display: "flex",
-                              gap: "14px",
-                              marginTop: "-12px",
-                            }}
-                          >
-                            <div className="relative" ref={typeIssueRef}>
-                              <button className="type-selector-btn" onClick={() => setShowTypeDropdown(!showTypeDropdown)}>
-                                <TypeIcon type={selectedType.toLowerCase()} size={1} />
-                                {selectedType}
-                                <ChevronDown size={16} className={`kanban-issue-chevron-icon ${showTypeDropdown ? "rotate" : ""}`} />
-                              </button>
-
-                              {showTypeDropdown && (
-                                <div className="type-dropdown-menu">
-                                  {typeOptions.map((option) => (
-                                    <button
-                                      key={option.id}
-                                      className="dropdown-item"
-                                      onClick={() => {
-                                        setSelectedType(option.label);
-                                        setShowTypeDropdown(false);
-                                      }}
-                                    >
-                                      <span className={option.color}>{option.icon}</span>
-                                      {option.label}
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-
-                            <div className="relative" ref={priorityRef}>
-                              <button className="priority-selector-btn" onClick={() => setShowPriorityDropdown(!showPriorityDropdown)}>
-                                {selectedPriority.icon}
-                                {selectedPriority.label}
-                                <ChevronDown size={16} className={`kanban-issue-chevron-icon ${showPriorityDropdown ? "rotate" : ""}`} />
-                              </button>
-
-                              {showPriorityDropdown && (
-                                <div className="priority-dropdown-menu">
-                                  {priorityOptions.map((option) => (
-                                    <button
-                                      key={option.id}
-                                      className="dropdown-item"
-                                      onClick={() => {
-                                        setSelectedPriority({
-                                          label: option.label,
-                                          icon: option.icon,
-                                        });
-                                        setShowPriorityDropdown(false);
-                                      }}
-                                    >
-                                      {option.icon}
-                                      {option.label}
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-
-                            <button
-  className="create-issue-submit-btn"
-  onClick={handleCreateIssue}
-  disabled={!newIssueDescription || !selectedType || !selectedPriority || isSubmittingIssue}
-  style={{
-    cursor: isSubmittingIssue ? 'not-allowed' : 'pointer',
-    opacity: isSubmittingIssue ? 0.7 : 1,
-  }}
->
-  {isSubmittingIssue ? 'Creating' : 'Create'}
-</button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {isAdmin && projectStatus !== "Complete" && (
-                      <button
-                        ref={createIssueButtonRef}
-                        className="create-issue-btn"
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "8px",
-                          padding: "8px 16px",
-                          backgroundColor: "#f0f9ff",
-                          color: "#3b82f6",
-                          border: "1px solid #e3e8ef",
-                          borderRadius: "6px",
-                          width: "100%",
-                          marginTop: "12px",
-                          cursor: "pointer",
-                          transition: "all 0.2s",
-                          fontSize: "14px",
-                          fontWeight: "500",
-                          justifyContent: "center",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = "#D6E6F2";
-                          e.currentTarget.style.borderColor = "#2665AC";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = "white";
-                          e.currentTarget.style.borderColor = "#e3e8ef";
-                        }}
-                        onClick={() => setShowCreateIssueContainer(!showCreateIssueContainer)}
-                      >
-                        <Plus size={16} />
-                        Create Issue
-                      </button>
-                    )}
-                  </>
-                )}
+                ))}
               </div>
             </div>
 
-            {showSuccessPopup && (
-              <div className="kanban-issue-popup-overlay">
-                <div className="kanban-issue-popup-modal">
-                  <img src={successPopup} alt="Success" className="kanban-issue-popup-icon" />
-                  <p className="kanban-issue-popup-message">Issue has been successfully created!</p>
-                  <button className="kanban-issue-popup-button" onClick={() => setShowSuccessPopup(false)}>
-                    OK
-                  </button>
-                </div>
-              </div>
-            )}
 
-            {showErrorPopup && (
-              <div className="kanban-issue-popup-overlay">
-                <div className="kanban-issue-popup-modal">
-                  <img src={errorPopup} alt="Error" className="kanban-issue-popup-icon" />
-                  <p className="kanban-issue-popup-error-message">{errorMessage}</p>
-                  <button className="kanban-issue-popup-error-button" onClick={() => setShowErrorPopup(false)}>
-                    OK
-                  </button>
-                </div>
-              </div>
-            )}
 
-            {/* Removal Success Popup */}
-  {showRemovalSuccessPopup && (
-    <div className="kanban-remove-popup-overlay">
-      <div className="kanban-remove-popup-modal">
-        <img src={successPopup} alt="Success" className="kanban-remove-popup-icon" />
-        <p className="kanban-remove-popup-message">{removalSuccessMessage}</p>
+
+              
+    {showRemoveScrumPopup && (
+      <div className="remove-popup-overlay-scrum">
+        <div className="remove-popup-container-scrum">
+          <div className="remove-popup-body-scrum">
+            <p>
+              Are you sure you want to remove {selectedScrumMember?.name} from the
+              project?
+            </p>
+          </div>
+          <div className="remove-popup-actions-scrum">
+            <button onClick={handleConfirmRemovebacklog}>Yes</button>
+            <button onClick={handleCancelRemove}>No</button>
+          </div>
+        </div>
+      </div>
+    )}
+
+
+{/* Removal Success Popup */}
+{showRemovalSuccessPopup && (
+    <div className="backlog-remove-popup-overlay">
+      <div className="backlog-remove-popup-modal">
+        <img src={successPopup} alt="Success" className="backlog-remove-popup-icon" />
+        <p className="backlog-remove-popup-message">{removalSuccessMessage}</p>
         <button 
-          className="kanban-remove-popup-button" 
+          className="backlog-remove-popup-button" 
           onClick={() => setShowRemovalSuccessPopup(false)}
         >
           OK
@@ -4447,12 +3501,12 @@ console.log("Log report entry created for admin successfully");
 
   {/* Removal Error Popup */}
   {showRemovalErrorPopup && (
-    <div className="kanban-remove-popup-overlay">
-      <div className="kanban-remove-popup-modal">
-        <img src={errorPopup} alt="Error" className="kanban-remove-popup-icon" />
-        <p className="kanban-remove-popup-error-message">{removalErrorMessage}</p>
+    <div className="backlog-remove-popup-overlay">
+      <div className="backlog-remove-popup-modal">
+        <img src={errorPopup} alt="Error" className="backlog-remove-popup-icon" />
+        <p className="backlog-remove-popup-error-message">{removalErrorMessage}</p>
         <button 
-          className="kanban-remove-popup-error-button" 
+          className="backlog-remove-popup-error-button" 
           onClick={() => setShowRemovalErrorPopup(false)}
         >
           OK
@@ -4461,74 +3515,1044 @@ console.log("Log report entry created for admin successfully");
     </div>
   )}
 
-            {showColumnDeleteConfirmation && (
-              <div className="confirmation-modal">
-                <div className="confirmation-content">
-                  <h3>Are you sure you want to delete {columnToDelete} column?</h3>
-                  <div className="confirmation-actions">
-                    <button className="confirm-btn" onClick={handleConfirmColumnDelete}>
-                      Yes
-                    </button>
-                    <button
-                      className="no-btn"
-                      onClick={() => {
-                        setShowColumnDeleteConfirmation(false);
-                        setColumnToDelete(null);
-                      }}
-                    >
-                      No
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
 
-            {showConfirmation && (
-              <div className="confirmation-modal">
-                <div className="confirmation-content">
-                  <h3>Are you sure you want to delete {selectedTask?.title}?</h3>
-                  <div className="confirmation-actions">
-                    <button className="confirm-btn" onClick={handleRemoveTask}>
-                      Yes
-                    </button>
-                    <button className="no-btn" onClick={() => setShowConfirmation(false)}>
-                      No
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
 
-            {showColumnInput && insertAfterColumn === columnTitle && (
-              <div className="kanban-issue-column">
-                <div className="kanban-issue-header">
-                  <form onSubmit={handleColumnSubmit} className="add-column-form">
-                    <input type="text" value={newColumnName} onChange={(e) => setNewColumnName(e.target.value)} placeholder="Enter Column Name" className="column-name-input" autoFocus />
-                    <button type="submit" className="add-column-btn">
-                      Create
-                    </button>
-                    <button
-                      type="button"
-                      className="cancel-btn"
-                      onClick={() => {
-                        setShowColumnInput(false);
-                        setNewColumnName("");
-                        setInsertAfterColumn(null);
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </form>
-                </div>
-              </div>
-            )}
-          </React.Fragment>
+            </div>
+          )}
+
+          {/* Add presentation popup */}
+          {isPopupOpen && selectedIssue && (
+            <div className="backlog-presentation-popup__overlay">
+              <div className="backlog-presentation-popup__container">
+                <div className="backlog-presentation-popup__header">
+                  <div className="backlog-presentation-popup__title-group">
+                  <div className="backlog-presentation-popup__title-wrapper">
+  <img src={icon} alt="Presentation icon" className="backlog-presentation-popup__icon" />
+  <div>
+    {isEditingTitle ? (
+      <input
+        type="text"
+        className="backlog-presentation-popup__title"
+        value={editedTitle}
+        onChange={handleTitleChange}
+        onKeyPress={handleTitleKeyPress}
+        onBlur={() => setIsEditingTitle(false)}
+        autoFocus
+        style={{
+          width: "100%",
+          border: "none",
+          background: "transparent",
+          outline: "none",
+          borderBottom: "1px solid #2665AC",
+          fontSize: "inherit",
+          fontWeight: "inherit",
+        }}
+        disabled={isButtonDisabled}
+      />
+    ) : (
+      <h2
+  ref={issuePopupTitleRef}
+  className="backlog-presentation-popup__title"
+  onMouseEnter={() => {
+    if (issuePopupTitleRef.current && 
+        issuePopupTitleRef.current.scrollWidth > issuePopupTitleRef.current.offsetWidth) {
+      setShowIssuePopupTooltip(true);
+    }
+  }}
+  onMouseLeave={() => setShowIssuePopupTooltip(false)}
+  onClick={() => !isButtonDisabled && handleTitleClick()}
+>
+  {selectedIssue.title}
+  {showIssuePopupTooltip && (
+        <div className="backlog-issue-popup-title-tooltip">{selectedIssue.title}</div>
+      )}
+    </h2>
+    )}
+  </div>
+</div>
+
+<div className="backlog-presentation-popup__status-group">
+<span className="backlog-presentation-popup__tag-group">
+  <div style={{ position: 'relative' }}>
+    <img
+      src={getIconSrc(selectedIssue.type)}
+      alt="Type"
+      ref={iconRef}
+      style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+      onClick={() => setIsTypeDropdownOpen((prev) => !prev)}
+    />
+
+    {/* Dropdown */}
+    {isTypeDropdownOpen && hasAccess && (
+      <div
+        ref={dropdownRef}
+        style={{
+          position: 'absolute',
+          zIndex: 10,
+          backgroundColor: 'white',
+          boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+          borderRadius: '4px',
+          border: '1px solid #ddd',
+          marginTop: '4px',
+        }}
+      >
+        {issueTypes.map((issueType) => (
+          <div
+            key={issueType.type}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: '8px',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={(e) =>
+              (e.target.style.backgroundColor = '#D6E6F2')
+            }
+            onMouseLeave={(e) =>
+              (e.target.style.backgroundColor = 'transparent')
+            }
+            onClick={() => handleIssueTypeChange(issueType.type)}
+          >
+            <img
+              src={issueType.icon}
+              alt={issueType.type}
+              style={{
+                width: '16px',
+                height: '16px',
+                marginRight: '8px',
+              }}
+            />
+            <span>{issueType.type}</span>
+          </div>
         ))}
+      </div>
+    )}
+  </div>
+  {selectedIssue.code}
+  <img
+    src={subtask}
+    alt="Subtask"
+    className="backlog-presentation-popup__subtask-icon"
+  />
+  <span>{subtasksCount}</span>
+</span>
 
-        {showPresentationPopup && <PresentationSlidePopup onClose={() => setShowPresentationPopup(false)} />}
+</div>
+</div>
+
+                  <div className="backlog-presentation-popup__actions">
+                  <button onClick={handleCloseBacklogPopup} className="backlog-presentation-popup__close-btn">
+  <X size={20} />
+</button>
+                  </div>
+                </div>
+
+                <div className="backlog-presentation-popup__content">
+                  <div className="backlog-presentation-popup__section_description">
+                    <h3 className="backlog-presentation-popup__section-description">Description</h3>
+                    {isEditingDescription ? (
+                      <input
+                        type="text"
+                        className="backlog-presentation-popup__description"
+                        value={description}
+                        onChange={handleDescriptionChange}
+                        onKeyPress={handleDescriptionKeyPress}
+                        onBlur={() => setIsEditingDescription(false)}
+                        autoFocus
+                        style={{
+                          width: "100%",
+                          border: "none",
+                          background: "transparent",
+                          outline: "none",
+                          borderBottom: "1px solid #2665AC",
+                        }}
+                        disabled={isButtonDisabled}
+                      />
+                    ) : (
+                      <p className="backlog-presentation-popup__description" onClick={handleDescriptionClick}>
+                        {description || "No description available"}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="backlog-presentation-popup__section_subtask">
+                    <div className="backlog-presentation-popup__subtask-header">
+                      <h3 className="backlog-presentation-popup__section-subtask">Subtasks</h3>
+                      <button className="backlog-presentation-popup__create-btn" onClick={handleCreateSubtask} hidden={isButtonDisabled}>
+                        + Create Subtask
+                      </button>
+                    </div>
+
+                    <div className="backlog-presentation-popup__subtask-list">
+                      {subtasks.map((subtask) => (
+                        <div key={subtask.id} className="backlog-presentation-popup__subtask-item">
+                          <img src={inputSubtaskIcon} alt="Task icon" className="backlog-presentation-popup__subtask-icon" />
+                          <div className="backlog-presentation-popup__subtask-content">
+                            {editingSubtaskId === subtask.id ? (
+                              <>
+                                <div className="backlog-presentation-popup__subtask-content">
+                                  <input
+                                    disabled ={isButtonDisabled}
+                                    type="text"
+                                    value={editingSubtaskTitle}
+                                    onChange={(e) => setEditingSubtaskTitle(e.target.value)}
+                                    className="backlog-presentation-popup__input"
+                                    autoFocus
+                                    onKeyPress={(e) => {
+                                      if (e.key === "Enter") {
+                                        handleUpdateSubtask();
+                                      }
+                                    }}
+                                    style={{ width: "100%" }}
+                                  />
+                                </div>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px",
+                                    marginLeft: "auto",
+                                  }}
+                                >
+                                  <button
+                                  hidden ={isButtonDisabled}
+                                    onClick={handleUpdateSubtask}
+                                    className="backlog-presentation-popup__update-subtask-btn"
+                                    style={{
+                                      padding: "4px 8px",
+                                      backgroundColor: "#2665AC",
+                                      color: "white",
+                                      border: "none",
+                                      borderRadius: "4px",
+                                      cursor: "pointer",
+                                      fontSize: "12px",
+                                      transition: "background-color 0.3s",
+                                    }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1976d2")}
+                                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#2665AC")}
+                                  >
+                                    Update
+                                  </button>
+                                  <button
+                                        hidden ={isButtonDisabled}
+                                    onClick={handleCancelEditSubtask}
+                                    className="backlog-presentation-popup__cancel-edit-subtask-btn"
+                                    style={{
+                                      padding: "4px 8px",
+                                      backgroundColor: "#2665AC",
+                                      color: "white",
+                                      border: "1px solid #ddd",
+                                      borderRadius: "4px",
+                                      cursor: "pointer",
+                                      fontSize: "12px",
+                                      transition: "background-color 0.3s",
+                                    }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1976d2")}
+                                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#2665AC")}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div className="backlog-presentation-popup__subtask-content">
+                                  <span className="backlog-presentation-popup__subtask-title" onDoubleClick={() => handleEditSubtask(subtask)}>
+                                    {subtask.title}
+                                  </span>
+                                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                  {!isButtonDisabled && (
+    <>
+      <Pencil
+        size={16}
+        color="#2665AC"
+        style={{
+          cursor: "pointer",
+          opacity: 0.7,
+          transition: "opacity 0.3s",
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
+        onMouseLeave={(e) => (e.currentTarget.style.opacity = 0.7)}
+        onClick={() => handleEditSubtask(subtask)}
+      />
+      <Trash2
+        size={16}
+        color="#2665AC"
+        style={{
+          cursor: "pointer",
+          opacity: 0.7,
+          transition: "opacity 0.3s",
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
+        onMouseLeave={(e) => (e.currentTarget.style.opacity = 0.7)}
+        onClick={() => handleDeleteSubtask(subtask.id)}
+      />
+    </>
+  )}
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+
+{isCreatingSubtask && (
+  <div className="backlog-presentation-popup__subtask-input-container" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+    <div className="backlog-presentation-popup__subtask-input" style={{ display: "flex", alignItems: "center" }}>
+      <img src={inputSubtaskIcon} alt="Subtask" className="backlog-presentation-popup__subtask-icon" />
+      <input
+        type="text"
+        placeholder="What needs to be addressed?"
+        className="backlog-presentation-popup__input"
+        value={newSubtask}
+        onChange={(e) => setNewSubtask(e.target.value)}
+        onKeyPress={(e) => {
+          if (e.key === "Enter" && !isSubmittingSubtask) {
+            handleSubmitSubtask();
+          }
+        }}
+        disabled={isSubmittingSubtask}
+        autoFocus
+        style={{ width: "100%" }}
+      />
+    </div>
+    <div
+      className="backlog-presentation-popup__subtask-buttons"
+      style={{
+        display: "flex",
+        gap: "8px",
+        marginLeft: "330px",
+      }}
+    >
+      <button
+        onClick={handleSubmitSubtask}
+        className="backlog-presentation-popup__create-subtask-btn"
+        style={{
+          padding: "6px 12px",
+          backgroundColor: "#2665AC",
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          cursor: isSubmittingSubtask ? "not-allowed" : "pointer",
+          fontSize: "12px",
+          transition: "background-color 0.3s",
+          opacity: isSubmittingSubtask ? 0.7 : 1,
+        }}
+        disabled={isSubmittingSubtask}
+        onMouseEnter={(e) => !isSubmittingSubtask && (e.currentTarget.style.backgroundColor = "#1976d2")}
+        onMouseLeave={(e) => !isSubmittingSubtask && (e.currentTarget.style.backgroundColor = "#2665AC")}
+      >
+        {isSubmittingSubtask ? "Creating..." : "Create"}
+      </button>
+      <button
+        onClick={handleCancelSubtask}
+        className="backlog-presentation-popup__cancel-subtask-btn"
+        style={{
+          padding: "6px 12px",
+          backgroundColor: "#2665AC",
+          color: "white",
+          border: "1px solid #ddd",
+          borderRadius: "4px",
+          cursor: isSubmittingSubtask ? "not-allowed" : "pointer",
+          fontSize: "12px",
+          transition: "background-color 0.3s",
+          opacity: isSubmittingSubtask ? 0.7 : 1,
+        }}
+        disabled={isSubmittingSubtask}
+        onMouseEnter={(e) => !isSubmittingSubtask && (e.currentTarget.style.backgroundColor = "#1976d2")}
+        onMouseLeave={(e) => !isSubmittingSubtask && (e.currentTarget.style.backgroundColor = "#2665AC")}
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+)}
+                    </div>
+                  </div>
+                  <div className="backlog-popup__section">
+                    <h3 className="backlog-popup__section-title">Details</h3>
+                    <div className="backlog-popup__details-list">
+                      {/* Points section */}
+                      <div className="backlog-popup__detail-item">
+                        <span className="backlog-popup__detail-label">Story Points</span>
+                        <div className="backlog-popup__user">
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <input
+                            disabled={isButtonDisabled}
+                              type="text"
+                              value={pointsCount}
+                              onChange={(e) => setPointsCount(e.target.value)}
+                              onBlur={handlePointsBlur}
+                              placeholder="Enter points"
+                              style={{
+                                border: "none",
+                                padding: "4px",
+                                color: "#2665AC",
+                                fontSize: "14px",
+                                outline: "none",
+                                background: "transparent",
+                                width: "100px",
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Effort section */}
+                      <div className="backlog-popup__detail-item">
+                        <span className="backlog-popup__detail-label">Effort</span>
+                        <div className="backlog-popup__user">
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <input
+                            disabled={isButtonDisabled}
+                              type="text"
+                              value={effortCount}
+                              onChange={(e) => setEffortCount(e.target.value)}
+                              onBlur={handleEffortBlur}
+                              placeholder="Enter effort"
+                              style={{
+                                border: "none",
+                                padding: "4px",
+                                color: "#2665AC",
+                                fontSize: "14px",
+                                outline: "none",
+                                background: "transparent",
+                                width: "100px",
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Priority section */}
+                      <div className="backlog-popup__detail-item">
+                        <span className="backlog-popup__detail-label">Priority</span>
+                        <div className="backlog-popup__user backlog-priority-dropdown" style={{ position: "relative" }}>
+                          <div
+                            onClick={() => !isButtonDisabled && setPopupShowPriorityDropdown(!showPopupPriorityDropdown)} // Disable onClick if isButtonDisabled
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              cursor: "pointer",
+                              gap: "8px",
+                              color: "#2665AC",
+                            }}
+                          >
+                            <img src={getPriorityIcon(priority)} alt={`${priority} priority`} />
+                            <span style={{ textTransform: "capitalize" }}>{priority}</span>
+                            <ChevronDown
+                            size={14}
+                            style={{
+                              transform: showPopupPriorityDropdown ? "rotate(180deg)" : "rotate(0deg)",
+                              transition: "transform 0.2s ease",
+                            }}
+                            />
+                          </div>
+
+                          {showPopupPriorityDropdown && (
+                            <div
+                            ref={priorityChangeRef}
+                              style={{
+                                position: "absolute",
+                                top: "100%",
+                                left: 0,
+                                backgroundColor: "white",
+                                border: "1px solid #e1e1e1",
+                                borderRadius: "4px",
+                                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                                zIndex: 1000,
+                                padding: "8px",
+                                width: "120px",
+                              }}
+                            >
+                              {priorityOptions.map((option) => (
+                                <div
+                                  key={option.value}
+                                  onClick={() => handlePriorityChange(option.value)}
+                                  style={{
+                                    padding: "8px",
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px",
+                                    color: "#2665AC",
+                                    backgroundColor: priority === option.value ? "#D6E6F2" : "transparent",
+                                    borderRadius: "4px",
+                                  }}
+                                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#D6E6F2")}
+                                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = priority === option.value ? "#D6E6F2" : "transparent")}
+                                >
+                                  <img src={option.icon} alt={`${option.label} priority`} />
+                                  {option.label}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Assignee section */}
+                      <div className="backlog-popup__detail-item">
+                        <span className="backlog-popup__detail-label">Assignee</span>
+                        <div className="backlog-popup__user backlog-assignee-dropdown" style={{ position: "relative" }}>
+                          <div
+                            className="backlog-popup__user-toggle"
+                            onClick={() => !isButtonDisabled && setIsAssigneeDropdownOpen(!isAssigneeDropdownOpen)} // Disable onClick if isButtonDisabled
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              cursor: isButtonDisabled ? "not-allowed" : "pointer",
+                              gap: "8px",
+                              pointerEvents: isButtonDisabled ? "none" : "auto",
+                            }}
+                          >
+                            {selectedAssignee.img ? (
+                              <img src={selectedAssignee.img} alt={selectedAssignee.name} className="backlog-popup__user-avatar" />
+                            ) : (
+                              <div
+                                className="backlog-popup__user-avatar"
+                                style={{
+                                  backgroundColor: "#2665AC",
+                                  color: "white",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  width: "24px",
+                                  height: "24px",
+                                  borderRadius: "50%",
+                                  fontSize: "12px",
+                                  fontWeight: "500",
+                                }}
+                              >
+                                {selectedAssignee.name.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            <span className="backlog-popup__user-name">{selectedAssignee.name}</span>
+                          </div>
+
+                          {isAssigneeDropdownOpen && (
+                            <div
+                            ref={assigneeChangeRef}
+                              className="backlog-popup__assignee-list"
+                              style={{
+                                position: "absolute",
+                                top: "100%",
+                                left: "-28px",
+                                width: "250px",
+                                backgroundColor: "white",
+                                border: "1px solid #e1e1e1",
+                                borderRadius: "4px",
+                                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                                zIndex: 1000,
+                                padding: "8px",
+                                maxHeight: "180px",
+                              }}
+                            >
+                              <div
+                                className="backlog-popup__search"
+                                style={{
+                                  marginBottom: "8px",
+                                  position: "relative",
+                                }}
+                              >
+                                <input
+                                  type="text"
+                                  value={assigneeSearchTerm}
+                                  onChange={(e) => setAssigneeSearchTerm(e.target.value)}
+                                  placeholder="Search"
+                                  className="backlog-popup__search-input"
+                                  style={{
+                                    width: "100%",
+                                    padding: "8px",
+                                    paddingLeft: "15px",
+                                    border: "1px solid #e1e1e1",
+                                    borderRadius: "4px",
+                                    marginBottom: "4px",
+                                    color: "#2665AC",
+                                    transition: "border-color 0.2s",
+                                  }}
+                                />
+                                <Search
+                                  size={16}
+                                  style={{
+                                    position: "absolute",
+                                    left: "200px",
+                                    top: "45%",
+                                    transform: "translateY(-50%)",
+                                    color: "#2665AC",
+                                    pointerEvents: "none",
+                                  }}
+                                />
+                              </div>
+                              <div
+                                className="backlog-popup__user-list"
+                                style={{
+                                  maxHeight: "100px",
+                                  overflowY: "auto",
+                                }}
+                              >
+                                {filteredUsers.map((user) => (
+                                  <div
+                                    key={user.id}
+                                    className="backlog-popup__user-item"
+                                    onClick={() => handleAssigneeSelect(user)}
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      padding: "8px",
+                                      cursor: "pointer",
+                                      gap: "8px",
+                                      borderRadius: "4px",
+                                      color: "#2665AC",
+                                    }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#D6E6F2")}
+                                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "white")}
+                                  >
+                                    {user.avatar ? (
+                                      <img
+                                        src={user.avatar}
+                                        alt={user.name}
+                                        className="backlog-popup__user-avatar-small"
+                                        style={{
+                                          width: "24px",
+                                          height: "24px",
+                                          borderRadius: "50%",
+                                        }}
+                                      />
+                                    ) : (
+                                      <div
+                                        className="backlog-popup__user-avatar-small"
+                                        style={{
+                                          backgroundColor: "#2665AC",
+                                          color: "white",
+                                          display: "flex",
+                                          alignItems: "center",
+                                          justifyContent: "center",
+                                          width: "24px",
+                                          height: "24px",
+                                          borderRadius: "50%",
+                                          fontSize: "12px",
+                                          fontWeight: "500",
+                                        }}
+                                      >
+                                        {user.name.charAt(0).toUpperCase()}
+                                      </div>
+                                    )}
+                                    <span className="backlog-popup__user-name-small">{user.name}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="backlog-popup__detail-item">
+                        <span className="backlog-popup__detail-label">Reporter</span>
+                        <div className="backlog-popup__user">
+                          <img src={masterIcon} alt="Franco Bayani" className="backlog-popup__user-avatar" />
+                          <span className="backlog-popup__user-name">{scrumMaster}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="backlog--presentation-popup__section_comment">
+                    <div className="backlog-presentation-popup__comment-header">
+                      <h3 className="backlog-presentation-popup__section-comment">
+                      {parseInt(commentCount)} {parseInt(commentCount) === 1 ? "Comment" : "Comments"}
+                      </h3>
+                      <div className="backlog-presentation-popup__sort-dropdown" style={{ position: "relative" }}>
+                        <button
+                          className="backlog-presentation-popup__sort-btn"
+                          onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                          style={{
+                            color: "#2665AC",
+                            fontSize: "14px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            padding: "4px 8px",
+                            borderRadius: "4px",
+                            marginBottom: "0.4rem",
+                          }}
+                        >
+                          Sort by date: {selectedSort}
+                          <ChevronDown
+                            size={14}
+                            style={{
+                              transform: isSortDropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
+                              transition: "transform 0.2s ease",
+                            }}
+                          />
+                        </button>
+
+                        {isSortDropdownOpen && (
+                          <div
+                          ref={sortChangeRef}
+                            className="backlog-presentation-popup__dropdown-menu"
+                            style={{
+                              position: "absolute",
+                              right: 0,
+                              top: "80%",
+                              background: "white",
+                              border: "1px solid #e1e1e1",
+                              borderRadius: "4px",
+                              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                              zIndex: 10,
+                            }}
+                          >
+                            {sortOptions.map((sort) => (
+                              <button
+                                key={sort}
+                                className="backlog-presentation-popup__dropdown-item"
+                                onClick={() => handleSortSelect(sort)}
+                                style={{
+                                  display: "block",
+                                  width: "100%",
+                                  padding: "8px 16px",
+                                  textAlign: "left",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  color: selectedSort === sort ? "#2665AC" : "#2665AC",
+                                  hover: {
+                                    backgroundColor: selectedSort === sort ? "#D6E6F2" : "white",
+                                  },
+                                }}
+                              >
+                                {sort}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="backlog-presentation-popup__comment-section">
+                    {!isDone && (
+  <div
+    className="backlog-presentation-popup__comment-input"
+    style={{
+      marginBottom: "16px",
+      display: "flex",
+      alignItems: "flex-start",
+    }}
+  >
+    {masterIcon ? (
+      <img
+        src={userPicture}
+        alt={""}
+        className="backlog-presentation-popup__user-avatar"
+        style={{
+          width: "32px",
+          height: "32px",
+          marginRight: "8px",
+          borderRadius: "50%",
+        }}
+      />
+    ) : (
+      <div
+        className="backlog-presentation-popup__user-avatar"
+        style={{
+          backgroundColor: "#2665AC",
+          color: "white",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "32px",
+          height: "32px",
+          borderRadius: "50%",
+          fontSize: "14px",
+          fontWeight: "500",
+          marginRight: "8px",
+        }}
+      >
+        {scrumMaster.charAt(0).toUpperCase()}
+      </div>
+    )}
+    <input
+      type="text"
+      placeholder="Add a comment"
+      className="backlog-presentation-popup__comment-field"
+      value={newComment}
+      onChange={handleCommentChange}
+      onKeyPress={handleCommentSubmit}
+    />
+    {newComment.trim() && (
+      <button
+        onClick={handleCommentSubmit}
+        disabled={isSubmittingComment}
+        style={{
+          padding: "8px 12px",
+          backgroundColor: "#2665AC",
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          cursor: isSubmittingComment ? "not-allowed" : "pointer",
+          opacity: isSubmittingComment ? 0.7 : 1,
+          fontSize: "12px",
+          transition: "background-color 0.3s",
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1976d2")}
+        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#2665AC")}
+      >
+        {isSubmittingComment ? "Sending..." : "Send"}
+      </button>
+    )}
+  </div>
+)}
+
+
+                      <div
+                        className="backlog-presentation-popup__comment-list"
+                        style={{
+                          overflowY: "auto",
+                          maxHeight: "80px",
+                          gap: "8px",
+                          display: "flex",
+                          flexDirection: "column",
+                        }}
+                      >
+                        {(issueComments[selectedIssue?.id] || []).map((comment) => (
+                          <div
+                            key={comment.id}
+                            className="backlog-presentation-popup__comment"
+                            style={{
+                              display: "flex",
+                              alignItems: "flex-start",
+                              position: "relative",
+                            }}
+                          >
+                            {masterIcon ? (
+                              <img
+                                src={comment.avatar}
+                                alt={scrumMaster}
+                                className="backlog-presentation-popup__user-avatar"
+                                style={{
+                                  width: "32px",
+                                  height: "32px",
+                                  marginRight: "8px",
+                                  borderRadius: "50%",
+                                }}
+                              />
+                            ) : (
+                              <div
+                                className="backlog-presentation-popup__user-avatar"
+                                style={{
+                                  backgroundColor: "#2665AC",
+                                  color: "white",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  width: "32px",
+                                  height: "32px",
+                                  borderRadius: "50%",
+                                  fontSize: "14px",
+                                  fontWeight: "500",
+                                  marginRight: "8px",
+                                }}
+                              >
+                                {scrumMaster.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            <div className="backlog-presentation-popup__comment-content" style={{ flex: 1 }}>
+  <div className="backlog-presentation-popup__comment-header">
+    <span className="backlog-presentation-popup__comment-author"  
+                     onClick={() => handleProfileNavigation({
+                        memberId: comment.authorId,
+                        name: comment.author,
+                        img: comment.avatar
+                    })}>{comment.author}</span>
+    <span className="backlog-presentation-popup__comment-time">{comment.timestamp}</span>
+    {!isDone && comment.authorId === uid && (
+  <Trash2
+    size={16}
+    color="#2665AC"
+    style={{
+      cursor: "pointer",
+      opacity: 0.7,
+      transition: "opacity 0.3s",
+    }}
+    onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
+    onMouseLeave={(e) => (e.currentTarget.style.opacity = 0.7)}
+    onClick={() => handleDeleteComment(comment.id)}
+  />
+)}
+
+  </div>
+  <p className="backlog-presentation-popup__comment-text">{comment.content}</p>
+</div>
+
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showCommentDeleteConfirmation && (
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                backgroundColor: "rgba(0, 0, 0, 0.3)",
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                zIndex: 1000,
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "white",
+                  padding: "20px",
+                  borderRadius: "8px",
+                  textAlign: "center",
+                  maxWidth: "400px",
+                  width: "100%",
+                }}
+              >
+                <h3 style={{ color: "#2665AC", marginBottom: "10px" }}>Delete Comment</h3>
+                <p style={{ color: "#3A74B4", marginBottom: "20px" }}>Are you sure you want to delete this comment?</p>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: "10px",
+                    marginTop: "20px",
+                  }}
+                >
+                  <button
+                    onClick={cancelDeleteComment}
+                    disabled={isDeletingComment}
+                    style={{
+                      padding: "8px 16px",
+                      backgroundColor: "#2665AC",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "9999px",
+                      cursor: isDeletingComment ? "not-allowed" : "pointer",
+                      opacity: isDeletingComment ? 0.7 : 1,
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDeleteComment}
+                    disabled={isDeletingComment}
+                    style={{
+                      padding: "8px 16px",
+                      backgroundColor: "#2665AC",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "9999px",
+                      cursor: isDeletingComment ? "not-allowed" : "pointer",
+                      opacity: isDeletingComment ? 0.7 : 1,
+                    }}
+                  >
+                    {isDeletingComment ? "Deleting..." : "Delete"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          {showSubtaskDeleteConfirmation && (
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                backgroundColor: "rgba(0, 0, 0, 0.3)",
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                zIndex: 1000,
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "white",
+                  padding: "20px",
+                  borderRadius: "8px",
+                  textAlign: "center",
+                  maxWidth: "400px",
+                  width: "100%",
+                }}
+              >
+                <h3 style={{ color: "#2665AC", marginBottom: "10px" }}>Delete Subtask</h3>
+                <p style={{ color: "#3A74B4", marginBottom: "20px" }}>Are you sure you want to delete this subtask?</p>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: "10px",
+                    marginTop: "20px",
+                  }}
+                >
+                  <button
+                    onClick={cancelDeleteSubtask}
+                    disabled={isDeletingSubtask}
+                    onMouseEnter={(e) => (e.target.style.backgroundColor = "#1976d2")}
+                    onMouseLeave={(e) => (e.target.style.backgroundColor = "#2665AC")}
+                    style={{
+                      padding: "8px 16px",
+                      backgroundColor: "#2665AC",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "9999px",
+                      cursor: isDeletingSubtask ? "not-allowed" : "pointer",
+                      opacity: isDeletingSubtask ? 0.7 : 1
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmDeleteSubtask}
+                    disabled={isDeletingSubtask}
+                    onMouseEnter={(e) => (e.target.style.backgroundColor = "#1976d2")}
+                    onMouseLeave={(e) => (e.target.style.backgroundColor = "#2665AC")}
+                    style={{
+                      padding: "8px 16px",
+                      backgroundColor: "#2665AC",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "9999px",
+                      cursor: isDeletingSubtask ? "not-allowed" : "pointer",
+                      opacity: isDeletingSubtask ? 0.7 : 1
+                    }}
+                  >
+                    {isDeletingSubtask ? "Deleting..." : "Delete"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+<div hidden={!allow} className="create-issue-container">
+      <button className="create-issue-btn" onClick={handleCreateIssue}>
+        <Plus size={16} />
+        Create Issue
+      </button>
+    </div>
+        </div>
       </div>
     </div>
   );
 };
 
-export default KanbanIssue;
+export default Backlogs;
