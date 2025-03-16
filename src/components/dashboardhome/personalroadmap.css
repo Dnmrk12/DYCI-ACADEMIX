@@ -870,6 +870,12 @@ box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 
 .delete-confirmation-popup p{
 color: #2665AC;
+word-wrap: break-word; /* Ensures long words break */
+overflow-wrap: break-word; /* Breaks long words */
+max-width: 100%; /* Ensures it stays within the container */
+max-height: 200px; /* Adjust based on your needs */
+overflow: auto; /* Adds scroll if content overflows */
+white-space: normal; /* Prevents text from staying in one line */
 }
 
 .confirmation-actions-roadmap {
@@ -1692,6 +1698,12 @@ color:#2665AC;
     
     .issue-delete-confirmation-content p{
     color: #2665AC;
+    word-wrap: break-word; /* Ensures long words break */
+overflow-wrap: break-word; /* Breaks long words */
+max-width: 100%; /* Ensures it stays within the container */
+max-height: 200px; /* Adjust based on your needs */
+overflow: auto; /* Adds scroll if content overflows */
+white-space: normal; /* Prevents text from staying in one line */
     }
     
     .issue-delete-confirmation-buttons {
@@ -2056,6 +2068,12 @@ color:#2665AC;
       
       .subtask-delete-confirmation-content p{
       color: #2665AC;
+      word-wrap: break-word; /* Ensures long words break */
+      overflow-wrap: break-word; /* Breaks long words */
+max-width: 100%; /* Ensures it stays within the container */
+max-height: 200px; /* Adjust based on your needs */
+overflow: auto; /* Adds scroll if content overflows */
+white-space: normal; /* Prevents text from staying in one line */
       }
       
       .subtask-delete-confirmation-buttons {
