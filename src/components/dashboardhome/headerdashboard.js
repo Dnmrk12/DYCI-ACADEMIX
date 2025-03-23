@@ -627,7 +627,7 @@ const getNotificationCount = (tabName) => {
               ): (
                 <>
                   <p>
-                    <strong>{notification.userName}</strong> {notification.action} <strong  className="project-link hover:underline cursor-pointer"
+                    {notification.userName} {notification.action} <strong  className="project-link hover:underline cursor-pointer"
                         onClick={(e) => handleProjectClick(e, notification.fetchdata)}>{notification.context}</strong>
                   </p>
                   <span className='notifTime'>{formatTimeAgo(notification.timestamp)}</span>
