@@ -1060,54 +1060,38 @@ const getFileIcon = (fileName) => {
     const parseMessageWithMentions = (text) => {
       if (!text) return text;
     
-      const memberMentionRegex = /(@\w+\s+\w+)/g;
-      const everyoneMentionRegex = /(@everyone)/g;
-      
-      return text.split(/((?:@everyone)|(?:@\w+\s+\w+))/).map((part, index) => {
-        // Check for "@everyone" mention first
-        if (everyoneMentionRegex.test(part)) {
-          return (
-            <span 
-              key={index} 
-              className="everyone-mention"
-            >
-              {part}
-            </span>
-          );
-        }
-        
-        // Then check for member mentions
-        if (memberMentionRegex.test(part)) {
-          const mentionedName = part.slice(1).trim(); // Remove @ and trim
-          
-          return (
-            <span 
-              key={index} 
-              className="mention"
-              onClick={() => {
-                // Try multiple methods to find the member
-                const memberToNavigate = 
-                  // Method 1: Full name match
-                  members.find(m => 
-                    `${m.firstName} ${m.lastName}`.toLowerCase() === mentionedName.toLowerCase()
-                  ) || 
-                  // Method 2: Name match
-                  members.find(m => 
-                    m.name.toLowerCase() === mentionedName.toLowerCase()
-                  );
-                
-                if (memberToNavigate) {
-                  const memberId = memberToNavigate.memberId || memberToNavigate.id;
-                  const memberName = memberToNavigate.name || `${memberToNavigate.firstName} ${memberToNavigate.lastName}`;
-                  const profileImage = memberToNavigate.img || memberToNavigate.userPicture;
+      const uid = auth.currentUser.uid; // Get current user ID
+      const memberMentionRegex = /@(\w+\s*\w*)/g; // Supports first + last names
+      const everyoneMentionRegex = /@everyone/g;
     
-                  navigate("/ProfileDetails", { 
-                    state: { 
-                      edit: true,
-                      memberId: memberId, 
-                      name: memberName,
-                      profileImage: profileImage
-                    } 
+      return text.split(/(@everyone|@\w+\s*\w*)/).map((part, index) => {
+        if (everyoneMentionRegex.test(part)) {
+          return <span key={index} className="everyone-mention">{part}</span>;
+        }
+    
+        if (memberMentionRegex.test(part)) {
+          const mentionedName = part.slice(1).trim(); // Remove "@" and trim spaces
+    
+          // Find the mentioned user in members list
+          const mentionedUser = members.find(m => 
+            `${m.firstName} ${m.lastName}`.toLowerCase() === mentionedName.toLowerCase() ||
+            m.name.toLowerCase() === mentionedName.toLowerCase()
+          );
+    
+          return (
+            <span
+              key={index}
+              className="mention"
+              style={{ color: "blue", cursor: "pointer" }}
+              onClick={() => {
+                if (mentionedUser) {
+                  navigate("/ProfileDetails", {
+                    state: {
+                      memberId: mentionedUser.memberId, // Ensure the user ID is passed
+                      name: mentionedUser.name || `${mentionedUser.firstName} ${mentionedUser.lastName}`,
+                      profileImage: mentionedUser.userPicture,
+                      edit: uid === mentionedUser.memberId, // Enable edit mode if it's the current user
+                    }
                   });
                 } else {
                   console.warn(`Could not find member: ${mentionedName}`);
@@ -1118,11 +1102,11 @@ const getFileIcon = (fileName) => {
             </span>
           );
         }
-        
-        // Regular text remains unchanged
+    
         return part;
       });
     };
+    
   
     return (
       <div
@@ -1231,7 +1215,28 @@ const handleProfileNavigation = (member) => {
     },
   });
 };
+const [isDone, setIsDone] = useState(false);
 
+useEffect(() => {
+  const fetchIsDone = async () => {
+    try {
+      const db = getFirestore();
+      const docRef = doc(db, `Scrum/${scrumId}`);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setIsDone(data.isDone === true);
+      }
+    } catch (error) {
+      console.error("Error fetching isDone status:", error);
+    }
+  };
+
+  if (scrumId) {
+    fetchIsDone();
+  }
+}, [scrumId]);
 const titleRef = useRef(null);
 const titleProjectRef = useRef(null);
 const [isOverflowing, setIsOverflowing] = useState(false);
@@ -1346,81 +1351,85 @@ return (
             {/* File Upload Preview */}
             {uploadedFiles.length > 0 && renderFilePreview(uploadedFiles)}
 
-            <div className="groupchat-message-input-container">
-              <div
-                className="groupchat-file-upload"
-                onClick={() => !isSending && fileInputRef.current.click()}
-                title="Upload File" // Added title attribute for hover text
-                style={{ opacity: isSending ? 0.5 : 1, cursor: isSending ? 'not-allowed' : 'pointer' }}
-              >
-                <img src={attach} alt="Attach Files" className="groupchat-upload-icon" style={{ width: "20px", height: "20px" }} />
-        <input 
-          type="file" 
-          ref={fileInputRef} 
-          style={{ display: "none" }} 
-          multiple 
-          onChange={handleFileUpload}
-          disabled={isSending}
-        />
-      </div>
-
-              {/* Mention List Overlay */}
-              {showMentionList && (
-                <div className="groupchat-mention-list">
-                  {filteredMembers.map((member) => (
-                    <div key={member.name} className="groupchat-mention-item" onClick={() => handleMentionSelect(member)}>
-                      {member.name === "everyone" ? (
-                        <>
-                          <div className="groupchat-mention-avatar group-icon">
-                            <img
-                              src={everyoneIcon}
-                              alt="Everyone Icon"
-                              className="groupchat-mention-avatar" // Add a specific class for styling, if needed
-                            />
-                          </div>
-                          <div className="groupchat-mention-details">
-                            <span className="groupchat-mention-name">@everyone</span>
-                            <span className="groupchat-mention-role">All Project Members</span>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <img src={getProfileImage(member.img, member.name)} alt={`${member.name} profile`} className="groupchat-mention-avatar" />
-                          <div className="groupchat-mention-details">
-                            <span className="groupchat-mention-name">{member.name}</span>
-                            <span className="groupchat-mention-role">{member.role}</span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-<input
-        ref={mentionInputRef}
-        type="text"
-        className="groupchat-message-input"
-        placeholder="Type a message..."
-        value={message}
-        onChange={handleMessageChange}
-        onKeyPress={(e) => e.key === "Enter" && !isSending && handleSendMessage()}
+            {!isDone && (
+  <div className="groupchat-message-input-container">
+    <div
+      className="groupchat-file-upload"
+      onClick={() => !isSending && fileInputRef.current.click()}
+      title="Upload File"
+      style={{ opacity: isSending ? 0.5 : 1, cursor: isSending ? "not-allowed" : "pointer" }}
+    >
+      <img src={attach} alt="Attach Files" className="groupchat-upload-icon" style={{ width: "20px", height: "20px" }} />
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        style={{ display: "none" }} 
+        multiple 
+        onChange={handleFileUpload}
         disabled={isSending}
-        style={{ opacity: isSending ? 0.7 : 1 }}
       />
-              <div 
-        className="groupchat-send-message" 
-        onClick={!isSending ? handleSendMessage : undefined}
-        style={{ opacity: isSending ? 0.5 : 1, cursor: isSending ? 'not-allowed' : 'pointer' }}
-      >
-        <Send 
-          size={22} 
-          className="groupchat-send-icon" 
-          color="#2665AC" 
-          strokeWidth={1.5} 
-        />
-      </div>
     </div>
+
+    {/* Mention List Overlay */}
+    {showMentionList && (
+      <div className="groupchat-mention-list">
+        {filteredMembers.map((member) => (
+          <div key={member.name} className="groupchat-mention-item" onClick={() => handleMentionSelect(member)}>
+            {member.name === "everyone" ? (
+              <>
+                <div className="groupchat-mention-avatar group-icon">
+                  <img
+                    src={everyoneIcon}
+                    alt="Everyone Icon"
+                    className="groupchat-mention-avatar"
+                  />
+                </div>
+                <div className="groupchat-mention-details">
+                  <span className="groupchat-mention-name">@everyone</span>
+                  <span className="groupchat-mention-role">All Project Members</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <img src={getProfileImage(member.img, member.name)} alt={`${member.name} profile`} className="groupchat-mention-avatar" />
+                <div className="groupchat-mention-details">
+                  <span className="groupchat-mention-name">{member.name}</span>
+                  <span className="groupchat-mention-role">{member.role}</span>
+                </div>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    )}
+
+    <input
+      ref={mentionInputRef}
+      type="text"
+      className="groupchat-message-input"
+      placeholder="Type a message..."
+      value={message}
+      onChange={handleMessageChange}
+      onKeyPress={(e) => e.key === "Enter" && !isSending && handleSendMessage()}
+      disabled={isSending}
+      style={{ opacity: isSending ? 0.7 : 1 }}
+    />
+
+    <div 
+      className="groupchat-send-message" 
+      onClick={!isSending ? handleSendMessage : undefined}
+      style={{ opacity: isSending ? 0.5 : 1, cursor: isSending ? "not-allowed" : "pointer" }}
+    >
+      <Send 
+        size={22} 
+        className="groupchat-send-icon" 
+        color="#2665AC" 
+        strokeWidth={1.5} 
+      />
+    </div>
+  </div>
+)}
+
           </div>
 
           <div className="groupchat-right-container">
